@@ -4,5 +4,6 @@ public enum CardType {
     Event,
     Enemy,
     Door,
-    Key
+    Key,
+    Trap
 }
