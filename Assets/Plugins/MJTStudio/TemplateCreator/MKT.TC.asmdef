@@ -1,0 +1,18 @@
+{
+    "name": "MJTStudio.TemplateCreator.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:3bf8a35c8df8c1547a112e05b3ad75da"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
