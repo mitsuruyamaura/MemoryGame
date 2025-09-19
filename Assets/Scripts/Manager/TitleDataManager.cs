@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Reflection;
 
 public class TitleDataManager : AbstractSingleton<TitleDataManager> {
-    //public ActiveSkillMasterTable activeSkillMasterTable;
+    public CardTypeMasterTable cardTypeMasterTable;
     //public AutoRewardMasterTable autoRewardMasterTable;
     //public BannerMasterTable bannerMasterTable;
     //public BoxRewardMasterTable boxRewardMasterTable;
@@ -42,6 +42,11 @@ public class TitleDataManager : AbstractSingleton<TitleDataManager> {
     // 型 → テーブル インスタンスのマッピング
     private static Dictionary<Type, IMasterTable> tableMap;
 
+
+    protected override void Awake() {
+        // マスターテーブルのマップを作成
+        BuildTableMap();
+    }
 
     /// <summary>
     /// PlayFab の TilteData(各種マスターデータ)をローカルにキャッシュ
@@ -129,6 +134,8 @@ public class TitleDataManager : AbstractSingleton<TitleDataManager> {
             DebugLogger.Log($"FindById: マスターテーブルが登録されていません ({typeof(M).Name})");
             return default;
         }
+
+        DebugLogger.Log(id);
 
         var boxed = table.GetDataBoxed(id);
         if (boxed == null) {

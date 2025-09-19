@@ -1,5 +1,5 @@
 [System.Serializable]
 public class CardData {
-    public CardType cardType;
+    public CardTypeMaster cardTypeMaster;
     public IMasterData masterData;
 }

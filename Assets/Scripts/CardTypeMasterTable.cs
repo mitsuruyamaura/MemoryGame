@@ -1,0 +1,1 @@
+public class CardTypeMasterTable : MasterTableBase<CardTypeMaster, CardTypeMasterTable> { }
