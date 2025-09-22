@@ -148,7 +148,7 @@ GameObject:
   - component: {fileID: 8072039101371467009}
   - component: {fileID: 8208814301745025046}
   - component: {fileID: 6869783236505599698}
-  - component: {fileID: 1880097048195856697}
+  - component: {fileID: 4381261659051553142}
   m_Layer: 5
   m_Name: Card
   m_TagString: Untagged
@@ -174,7 +174,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 200, y: 200}
+  m_SizeDelta: {x: 150, y: 150}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &8072039101371467009
 CanvasRenderer:
@@ -258,7 +258,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &1880097048195856697
+--- !u!114 &4381261659051553142
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -267,13 +267,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 4571000651752947485}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 91e4535d506cb994fba5f242b84e155f, type: 3}
+  m_Script: {fileID: 11500000, guid: 5d590ed827074034caf98b1fa41355d8, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Card
-  cardImage: {fileID: 8208814301745025046}
-  button: {fileID: 6869783236505599698}
+  m_EditorClassIdentifier: Assembly-CSharp::CardView
+  imgCard: {fileID: 8208814301745025046}
+  btnCard: {fileID: 6869783236505599698}
   defaultSprite: {fileID: 21300000, guid: 816c9df99b36e7e42b516d593e2679aa, type: 3}
-  cardData:
-    cardTypeMaster:
-      cardType: 0
-      spriteCardType: {fileID: 0}
+  cardIndex: 0
