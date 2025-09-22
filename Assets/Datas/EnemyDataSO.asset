@@ -1,0 +1,48 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9f9e126c4451cfd49a4e32dcff1e159f, type: 3}
+  m_Name: EnemyDataSO
+  m_EditorClassIdentifier: 
+  enemyDatasList:
+  - name: Assasin
+    enemyNo: 0
+    hp: 2
+    attackPower: 1
+    moveSpeed: 3
+    attackInterval: 100
+    exp: 3
+    enemyPrefab: {fileID: 1458318548233567103, guid: 4dc995d8eec81fb48ba027c47656d984, type: 3}
+    debuffDatas:
+    - debuffConditionType: 7
+      rate: 50
+  - name: Archaer
+    enemyNo: 1
+    hp: 3
+    attackPower: 1
+    moveSpeed: 2
+    attackInterval: 200
+    exp: 5
+    enemyPrefab: {fileID: 5290185962481650826, guid: 6b44520406eb8c74b985e1ce1179bf20, type: 3}
+    debuffDatas: []
+  - name: Boss_0
+    enemyNo: 100
+    hp: 10
+    attackPower: 2
+    moveSpeed: 2
+    attackInterval: 200
+    exp: 0
+    enemyPrefab: {fileID: 5290185962481650826, guid: 6b44520406eb8c74b985e1ce1179bf20, type: 3}
+    debuffDatas:
+    - debuffConditionType: 7
+      rate: 20
+    - debuffConditionType: 5
+      rate: 30
