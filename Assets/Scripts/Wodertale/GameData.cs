@@ -15,6 +15,22 @@ public class InventryAbilityItemData {
 
 public class GameData : AbstractSingleton<GameData>
 {
+
+    public void AddMemoryStoneList(int addStoneType, int addFlipCount) {
+        // 獲得数を加算
+        userData.MemoryStoneCount.Value++;
+
+        // 思い出の秘石をスロットにセット
+        userData.MemoryStoneSlotList.Add(addStoneType);
+
+        userData.FlipPoint.Value += addFlipCount;
+    }
+
+    public void ClearMemoryStoneList() {
+        userData.MemoryStoneSlotList.Clear();
+    }
+
+
     //public ReactiveProperty<int> staminaPoint = new ReactiveProperty<int>();
 
     //public ReactiveDictionary<int, bool> orbs = new ReactiveDictionary<int, bool>();
