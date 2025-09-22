@@ -163,7 +163,7 @@ namespace PlayFab.Json
             if (obj == null)
                 throw new ArgumentNullException("obj");
             if (index >= obj.Count)
-                throw new ArgumentOutOfRangeException("index");
+                throw new ArgumentOutOfRangeException("cardIndex");
             int i = 0;
             foreach (KeyValuePair<string, object> o in obj)
                 if (i++ == index) return o.Value;
