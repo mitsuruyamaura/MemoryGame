@@ -1,0 +1,64 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &7125656954279440092
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7125656954279440094}
+  - component: {fileID: 7125656954279440095}
+  m_Layer: 0
+  m_Name: DataBaseManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7125656954279440094
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7125656954279440092}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7125656954279440095
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7125656954279440092}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e67bcd37482e84439ca4dde592e550f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  enemyDataSO: {fileID: 11400000, guid: ec81d48725951e04587730e0ea399cbc, type: 2}
+  conditionDataSO: {fileID: 11400000, guid: ee479803e2c4ae245b160393ebfd5499, type: 2}
+  expTableSO: {fileID: 11400000, guid: 56e379c00098b8e4a87d4fb3376afe75, type: 2}
+  stageDataSO: {fileID: 11400000, guid: cc032b19ae1577f4c80a295a2249dfa4, type: 2}
+  itemDataSO: {fileID: 11400000, guid: 1584c5eb68ceaa34fb39800569032785, type: 2}
+  nameDataSO: {fileID: 11400000, guid: d8b954a8db3b7e0489d8950bab6fe77a, type: 2}
+  expTableDataSO: {fileID: 11400000, guid: 5b79b0e3eb477d94fb53b661752af8a2, type: 2}
+  waveDataSO: {fileID: 11400000, guid: c7601d62f058f88459463cf26366a155, type: 2}
+  symbolRateDataSO: {fileID: 11400000, guid: ae9c012f5008d3a46857cee5590a265e, type: 2}
+  powerSpotDataSO: {fileID: 11400000, guid: fbcb2bcf27704804c921b0bb4896e37e, type: 2}
+  terrainDataSO: {fileID: 11400000, guid: 86235ec0fc223e440add518d3466ba01, type: 2}
+  enemyMoveEventDataSO: {fileID: 11400000, guid: 4336fc092ce914a43a12d2b21ced7f90, type: 2}
+  orbDataSO: {fileID: 11400000, guid: 482a589a6a036cb4a9db267a6adcc491, type: 2}
+  treasureTableSO: {fileID: 11400000, guid: f4da82ad5e176794b88042b5b1d6fd1e, type: 2}
+  abilityItemDataSOList:
+  - {fileID: 11400000, guid: 58d10d67aa371264ba5c7064f2065321, type: 2}
+  - {fileID: 11400000, guid: 58d10d67aa371264ba5c7064f2065321, type: 2}
+  dropItemDatasList: []

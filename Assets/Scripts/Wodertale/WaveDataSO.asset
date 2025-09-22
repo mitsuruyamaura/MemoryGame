@@ -1,0 +1,85 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aea71cb9392f6244ebb8c3bea6d581c1, type: 3}
+  m_Name: WaveDataSO
+  m_EditorClassIdentifier: 
+  waveDataList:
+  - waveNo: 1
+    walkCount: 0
+    rarities: 00000000
+    rates: 64000000
+    row: 12
+    column: 7
+    generateSymbolRate: 80
+  - waveNo: 2
+    walkCount: 50
+    rarities: 0000000001000000
+    rates: 4b00000019000000
+    row: 12
+    column: 7
+    generateSymbolRate: 80
+  - waveNo: 3
+    walkCount: 100
+    rarities: 0000000001000000
+    rates: 3200000032000000
+    row: 12
+    column: 7
+    generateSymbolRate: 80
+  - waveNo: 4
+    walkCount: 150
+    rarities: 0000000001000000
+    rates: 190000004b000000
+    row: 14
+    column: 9
+    generateSymbolRate: 85
+  - waveNo: 5
+    walkCount: 200
+    rarities: 01000000
+    rates: 64000000
+    row: 14
+    column: 9
+    generateSymbolRate: 85
+  - waveNo: 6
+    walkCount: 250
+    rarities: 0100000002000000
+    rates: 4b00000019000000
+    row: 14
+    column: 9
+    generateSymbolRate: 85
+  - waveNo: 7
+    walkCount: 300
+    rarities: 0100000002000000
+    rates: 3200000032000000
+    row: 14
+    column: 9
+    generateSymbolRate: 90
+  - waveNo: 8
+    walkCount: 350
+    rarities: 0100000002000000
+    rates: 190000004b000000
+    row: 16
+    column: 11
+    generateSymbolRate: 90
+  - waveNo: 9
+    walkCount: 400
+    rarities: 02000000
+    rates: 64000000
+    row: 16
+    column: 11
+    generateSymbolRate: 90
+  - waveNo: 10
+    walkCount: 450
+    rarities: 02000000
+    rates: 64000000
+    row: 16
+    column: 11
+    generateSymbolRate: 90

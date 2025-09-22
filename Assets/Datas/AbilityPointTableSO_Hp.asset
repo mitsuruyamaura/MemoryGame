@@ -1,0 +1,106 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5723a402db4f0824f8b8b535a20fcb9c, type: 3}
+  m_Name: AbilityPointTableSO_Hp
+  m_EditorClassIdentifier: 
+  abilityType: 0
+  abilityItemDatasList:
+  - abilityType: 0
+    abilityLevel: 1
+    abilityCost: 2
+    powerUpValue: 5
+    abilityName: "\u76AE\u93A7"
+    abilitySprite: {fileID: 21300040, guid: 34ecf51bcd3f4424eafda7dafd885bd0, type: 3}
+    rarity: 0
+    abitilyNo: 0
+    weight: 100
+  - abilityType: 0
+    abilityLevel: 2
+    abilityCost: 5
+    powerUpValue: 7
+    abilityName: "\u9396\u5E37\u5B50"
+    abilitySprite: {fileID: 21300048, guid: 31e24ed712cbf3b4595a8dbc9b18aa9c, type: 3}
+    rarity: 0
+    abitilyNo: 1
+    weight: 80
+  - abilityType: 0
+    abilityLevel: 3
+    abilityCost: 9
+    powerUpValue: 10
+    abilityName: "\u9244\u306E\u80F8\u5F53\u3066"
+    abilitySprite: {fileID: 21300008, guid: c568092d7452f4cf9b5a6e629a61dcd2, type: 3}
+    rarity: 0
+    abitilyNo: 2
+    weight: 60
+  - abilityType: 0
+    abilityLevel: 4
+    abilityCost: 14
+    powerUpValue: 12
+    abilityName: "\u92FC\u306E\u93A7"
+    abilitySprite: {fileID: 21300000, guid: f3e42cb7317f6f14186e2c2267014de2, type: 3}
+    rarity: 0
+    abitilyNo: 3
+    weight: 50
+  - abilityType: 0
+    abilityLevel: 5
+    abilityCost: 20
+    powerUpValue: 15
+    abilityName: "\u307F\u304B\u308F\u3057\u306E\u670D"
+    abilitySprite: {fileID: 21300000, guid: df73b4bce81f34a13ad5c1760f1a7a40, type: 3}
+    rarity: 0
+    abitilyNo: 4
+    weight: 40
+  - abilityType: 0
+    abilityLevel: 6
+    abilityCost: 27
+    powerUpValue: 20
+    abilityName: "\u30C9\u30E9\u30B4\u30F3\u30E1\u30A4\u30EB"
+    abilitySprite: {fileID: 0}
+    rarity: 1
+    abitilyNo: 5
+    weight: 30
+  - abilityType: 0
+    abilityLevel: 7
+    abilityCost: 35
+    powerUpValue: 25
+    abilityName: "\u6C37\u306E\u9396\u5E37\u5B50"
+    abilitySprite: {fileID: 21300038, guid: 34ecf51bcd3f4424eafda7dafd885bd0, type: 3}
+    rarity: 1
+    abitilyNo: 6
+    weight: 20
+  - abilityType: 0
+    abilityLevel: 8
+    abilityCost: 45
+    powerUpValue: 30
+    abilityName: "\u5973\u795E\u306E\u80F8\u5F53\u3066"
+    abilitySprite: {fileID: 21300000, guid: 01e9d8ad731cc2846a654908a9a7d87f, type: 3}
+    rarity: 1
+    abitilyNo: 7
+    weight: 10
+  - abilityType: 0
+    abilityLevel: 9
+    abilityCost: 55
+    powerUpValue: 35
+    abilityName: "\u5149\u8F2A\u306E\u93A7"
+    abilitySprite: {fileID: 21300070, guid: 297a514ba6a7c44e6a1eac9511e640e5, type: 3}
+    rarity: 2
+    abitilyNo: 8
+    weight: 5
+  - abilityType: 0
+    abilityLevel: 10
+    abilityCost: 70
+    powerUpValue: 45
+    abilityName: "\u5927\u5929\u4F7F\u306E\u8863"
+    abilitySprite: {fileID: 21300000, guid: 01e9d8ad731cc2846a654908a9a7d87f, type: 3}
+    rarity: 2
+    abitilyNo: 9
+    weight: 5
