@@ -1,11 +1,13 @@
 ﻿using System.Collections.Generic;
+using ObservableCollections;
 using R3;
 
 [System.Serializable]
 public class UserData {
     public SerializableReactiveProperty<bool> CanUseStairs = new(false);      // 階段が使える状態かどうか
     public SerializableReactiveProperty<int> FlipPoint = new(0);              // めくれる回数
-    public SerializableReactiveProperty<int> MemoryFragmentCount = new(0);    // 思い出の断片の獲得数
+    public SerializableReactiveProperty<int> MemoryStoneCount = new(0);       // 思い出の秘石の獲得数
+    public SerializableReactiveProperty<int> FloorCount = new(1);
 
     public SerializableReactiveProperty<int> SoulPoint = new();
     public SerializableReactiveProperty<int> WalkCount = new();
@@ -23,6 +25,9 @@ public class UserData {
 
     public SerializableReactiveProperty<int> Stamina = new();
     public List<int> equipItemList = new();
+
+    public ObservableList<int> MemoryStoneSlotList = new();
+
 
     /// <summary>
     /// JsonConvert に利用するには、引数なしのコンストラクタが必要 

@@ -1,5 +1,7 @@
-﻿using Cysharp.Threading.Tasks;
+﻿using Coffee.UIExtensions;
+using Cysharp.Threading.Tasks;
 using DG.Tweening;
+using ObservableCollections;
 using R3;
 using R3.Triggers;
 using System.Collections.Generic;
@@ -24,8 +26,12 @@ public class MemoryGameManager : MonoBehaviour {
 
     [SerializeField] private Button btnStairs;
     [SerializeField] private CanvasGroup cgSlotSet;
-    [SerializeField] private TMP_Text txtFlipPoint;
+    [SerializeField] private Text txtFlipPoint;
+    [SerializeField] private Text txtFloorCount;
     [SerializeField] private GridLayoutGroup gridLayoutGroup;
+    [SerializeField] private Image[] imgMemoryStoneIcons;
+    [SerializeField] private ShinyEffectForUGUI[] shinyEffects;
+    [SerializeField] private Sprite spriteMemoryStone;
 
     [SerializeField] private int debugFlipPoint;
     [SerializeField] private int debugFloorClearBonusFlipPoint;
@@ -33,11 +39,15 @@ public class MemoryGameManager : MonoBehaviour {
     private readonly Subject<CardView> onCardSelected = new(); // カード選択イベント
     private List<GameObject> slotList = new();                 // スロットを保持
     private CancellationTokenSource cts;
+    private int memoryStoneCount;
 
 
     private async void Start() {
         cts = new ();
         cardGenerator.InitObjectPool();
+
+        // フロア表示の更新
+        GameData.instance.userData.FloorCount.Subscribe(count => UpdateDisplayFloorCount(count)).AddTo(this);
 
         // 仮
         GameData.instance.userData.FlipPoint.Value = debugFlipPoint != 0 ? debugFlipPoint : 0;
@@ -71,6 +81,10 @@ public class MemoryGameManager : MonoBehaviour {
             .Where(flipPoint => flipPoint <= 0)
             .Take(1)
             .Subscribe(flipPoint => GameEndAsync().Forget()).AddTo(this);
+
+        // 思い出の秘石獲得時の購読処理
+        GameData.instance.userData.MemoryStoneSlotList.ObserveAdd()
+            .Subscribe(memoryStoneId => SetMemoryStoneIcon(memoryStoneId.Value)).AddTo(this);
 
         // デバッグ用リセット機能
         this.UpdateAsObservable()
@@ -256,6 +270,8 @@ public class MemoryGameManager : MonoBehaviour {
 
         GameData.instance.userData.FlipPoint.Value += debugFloorClearBonusFlipPoint;
 
+        GameData.instance.userData.FloorCount.Value++;
+
         InitFloorAsync().Forget();
     }
 
@@ -283,6 +299,47 @@ public class MemoryGameManager : MonoBehaviour {
     private void UpdateDisplayFlipPoint(int prevPoint, int nextPoint) {
         txtFlipPoint.DOCounter(prevPoint, nextPoint, 0.5f).SetEase(Ease.Linear).SetLink(gameObject);
     }
+
+    private void UpdateDisplayFloorCount(int newFloorCount) {
+        txtFloorCount.text = newFloorCount.ToString();
+    }
+
+
+    public void SetMemoryStoneIcon(int memoryStoneId) {
+        // オーブを UI に表示、光らせる
+        imgMemoryStoneIcons[memoryStoneCount].sprite = spriteMemoryStone;
+        imgMemoryStoneIcons[memoryStoneCount].enabled = true;
+        shinyEffects[memoryStoneCount].Play(0.75f);
+
+        memoryStoneCount++;
+        memoryStoneCount = memoryStoneCount % imgMemoryStoneIcons.Length;
+
+        if (memoryStoneCount == 0) {
+            FlashIconsAsync().Forget();
+        }
+    }
+
+
+    private async UniTask FlashIconsAsync() {
+        await UniTask.Delay(1000);
+
+        for (int i = 0; i < imgMemoryStoneIcons.Length; i++) {
+            shinyEffects[i].Play();
+        }
+
+        await UniTask.Delay(1000);
+
+        // すべての思い出の秘石を UI から消す
+        InitMemoryStoneIcons();
+        GameData.instance.ClearMemoryStoneList();
+    }
+
+    public void InitMemoryStoneIcons() {
+        for (int i = 0; i < imgMemoryStoneIcons.Length; i++) {
+            imgMemoryStoneIcons[i].enabled = false;
+        }
+    }
+
 
     private async UniTask GameEndAsync() {
         cgSlotSet.blocksRaycasts = false;
