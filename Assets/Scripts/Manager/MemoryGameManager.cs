@@ -40,6 +40,7 @@ public class MemoryGameManager : MonoBehaviour {
     private List<GameObject> slotList = new();                 // スロットを保持
     private CancellationTokenSource cts;
     private int memoryStoneCount;
+    private FloorData currentFloorData;
 
 
     private async void Start() {
@@ -149,18 +150,154 @@ public class MemoryGameManager : MonoBehaviour {
     private List<CardData> CreateCardPairsAndShuffle(int pairCount) {
         // 各カードをペアで作成
         List<CardData> selectedCardDataList = new();
-        for (int i = 0; i < pairCount; i++) {
-            CardTypeMaster cardTypeMaster = TitleDataManager.FindById<CardTypeMaster>(i);
+
+        // CardType の List を フロアの階数より作成
+        List<CardTypeMaster> cardTypeMasterList = CreateCardTypeList();
+
+        // カードの種類ごとにペアを作成
+        for (int i = 0; i < cardTypeMasterList. Count; i++) {
             CardData cardData = new() {
-                cardTypeMaster = cardTypeMaster,
+                cardTypeMaster = cardTypeMasterList[i],
                 masterData = null
             };
             selectedCardDataList.Add(cardData);
             selectedCardDataList.Add(cardData);
         }
 
+        // デバッグ用
+        //for (int i = 0; i < pairCount; i++) {
+        //    CardTypeMaster cardTypeMaster = TitleDataManager.FindById<CardTypeMaster>(i);
+        //    CardData cardData = new() {
+        //        cardTypeMaster = cardTypeMaster,
+        //        masterData = null
+        //    };
+        //    selectedCardDataList.Add(cardData);
+        //    selectedCardDataList.Add(cardData);
+        //}
+
         // カード配置をランダム化するためにシャッフル
         return selectedCardDataList.OrderBy(_ => Random.value).ToList();
+    }
+
+    /// <summary>
+    /// フロアのデータに基づいて出現するカードの種類を必要数作成
+    /// </summary>
+    /// <returns></returns>
+    private List<CardTypeMaster> CreateCardTypeList() {
+        // 現在のフロア数より、フロアのデータを取得
+        currentFloorData = DataBaseManager.instance.GetFloorDataByFloor(GameData.instance.userData.FloorCount.Value);
+        
+        List<CardTypeMaster> cardTypeMasterList = new();
+
+        // FloorData のフィールドを Dictionary にまとめる
+        Dictionary<CardEventType, int> typeCounts = new()  {
+            { CardEventType.TreasureChest,   currentFloorData.treasureChest },
+            { CardEventType.Blessing,        currentFloorData.blessing },
+            { CardEventType.Enemy,           currentFloorData.enemy },
+            { CardEventType.Trap,            currentFloorData.trap },
+            { CardEventType.MemoryFragments, currentFloorData.memoryStone },
+            { CardEventType.Stairs,          currentFloorData.key },
+        };
+
+        // 1枚以上ある種類のカードタイプを順番に登録
+        foreach (var kvp in typeCounts) {
+            if (kvp.Value > 0) {
+                CardTypeMaster cardTypeMaster = GetCardType(kvp.Key);
+                cardTypeMasterList.AddRange(Enumerable.Repeat(cardTypeMaster, kvp.Value));
+            }
+        }
+
+        // 重み付け辞書を作成
+        Dictionary<CardEventType, int> weightTable = new() {
+            { CardEventType.TreasureChest,   currentFloorData.treasureChestWeight },
+            { CardEventType.Blessing,        currentFloorData.blessingWeight },
+            { CardEventType.Enemy,           currentFloorData.enemyWeight },
+            { CardEventType.Trap,            currentFloorData.trapWeight },
+            { CardEventType.MemoryFragments, currentFloorData.memoryStoneWeight },
+        };
+
+        // ランダム要素がない場合には終了
+        if (currentFloorData.random == 0) {
+            return cardTypeMasterList;
+        }
+
+        // 合計 weight
+        int totalWeight = weightTable.Values.Sum();
+        if (totalWeight == 0) {
+            return cardTypeMasterList;
+        }
+        
+        System.Random random = new();
+
+        // ランダムなカードタイプの抽出        
+        for (int i = 0; i < currentFloorData.random; i++) {
+
+            // 0 ～ totalWeight - 1 の乱数
+            int randomValue = random.Next(totalWeight);
+
+            // weightTable から当選カードを選ぶ
+            int cumulative = 0;
+            foreach (var kvp in weightTable) {
+
+                // 累積和を使って重み付き抽選
+                cumulative += kvp.Value;
+
+                // 抽選した場合
+                if(randomValue < cumulative) {
+                    // ランダムなカードタイプを追加
+                    CardTypeMaster cardTypeMaster = GetCardType(kvp.Key);
+                    cardTypeMasterList.Add(cardTypeMaster);
+
+                    // foreach を抜ける
+                    break;
+                }
+            }
+        }
+
+        //// 固定のカードタイプを登録(べた書きした場合)
+        //if (currentFloorData.treasureChest != 0) {
+        //    CardTypeMaster cardTypeMaster = GetCardType(CardEventType.TreasureChest);
+        //    cardTypeMasterList.AddRange(Enumerable.Repeat(cardTypeMaster, currentFloorData.treasureChest));
+        //}
+
+        //if (currentFloorData.blessing != 0) {
+        //    CardTypeMaster cardTypeMaster = GetCardType(CardEventType.Blessing);
+        //    cardTypeMasterList.AddRange(Enumerable.Repeat(cardTypeMaster, currentFloorData.blessing));
+        //}
+
+        //if (currentFloorData.enemy != 0) {
+        //    CardTypeMaster cardTypeMaster = GetCardType(CardEventType.Enemy);
+        //    cardTypeMasterList.AddRange(Enumerable.Repeat(cardTypeMaster, currentFloorData.enemy));
+        //}
+
+        //if (currentFloorData.trap != 0) {
+        //    CardTypeMaster cardTypeMaster = GetCardType(CardEventType.Trap);
+        //    cardTypeMasterList.AddRange(Enumerable.Repeat(cardTypeMaster, currentFloorData.trap));
+        //}
+
+        //if (currentFloorData.memoryStone != 0) {
+        //    CardTypeMaster cardTypeMaster = GetCardType(CardEventType.MemoryFragments);
+        //    cardTypeMasterList.AddRange(Enumerable.Repeat(cardTypeMaster, currentFloorData.memoryStone));
+        //}
+
+        //if (currentFloorData.key != 0) {
+        //    CardTypeMaster cardTypeMaster = GetCardType(CardEventType.Stairs);
+        //    cardTypeMasterList.AddRange(Enumerable.Repeat(cardTypeMaster, currentFloorData.key));
+        //}
+
+        return cardTypeMasterList;
+    }
+
+    /// <summary>
+    /// CardTypeMaster を ID や Enum から取得
+    /// </summary>
+    /// <param name="type"></param>
+    /// <returns></returns>
+    CardTypeMaster GetCardType(CardEventType type) => DataBaseManager.instance.cardTypeSO.cardTypeList.FirstOrDefault(c => c.cardEventType == type);
+
+
+    private CardTypeMaster GetCardTypeMaster(int id) {
+        return TitleDataManager.FindById<CardTypeMaster>(id);
     }
 
     /// <summary>

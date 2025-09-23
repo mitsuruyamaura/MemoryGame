@@ -3,7 +3,7 @@ using UnityEngine;
 using System.Linq;
 
 public class DataBaseManager : AbstractSingleton<DataBaseManager> {
-
+    public CardTypeSO cardTypeSO;
     public EnemyDataSO enemyDataSO;
     public ItemDataSO itemDataSO;
     public NameDataSO nameDataSO;
@@ -26,6 +26,15 @@ public class DataBaseManager : AbstractSingleton<DataBaseManager> {
         } else {
             Destroy(gameObject);
         }
+    }
+
+    /// <summary>
+    /// 現在のフロア数から FloorData を取得
+    /// </summary>
+    /// <param name="currentFloorCount"></param>
+    /// <returns></returns>
+    public FloorData GetFloorDataByFloor(int currentFloorCount) {
+        return floorDataSO.floorDataList.LastOrDefault(data => data.minFloorCount <= currentFloorCount);
     }
 
     /// <summary>
