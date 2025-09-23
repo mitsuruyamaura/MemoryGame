@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b1b361cad901bd42b7a23bf661f8c12, type: 3}
+  m_Name: CardTypeSO
+  m_EditorClassIdentifier: Assembly-CSharp::CardTypeSO
+  cardTypeList:
+  - cardEventType: 0
+    spriteCardType: {fileID: 21300000, guid: 6c75c0c49e293c04eb0c1d9e7d67a8b8, type: 3}
+  - cardEventType: 1
+    spriteCardType: {fileID: 21300000, guid: c52f1ab8e1ff1c2498364f2688796638, type: 3}
+  - cardEventType: 2
+    spriteCardType: {fileID: 21300000, guid: 9e7d26bd46466ff4492c111d7968aee3, type: 3}
+  - cardEventType: 3
+    spriteCardType: {fileID: 21300000, guid: e8cb18989903f3e4bb561d927b5aed7d, type: 3}
+  - cardEventType: 4
+    spriteCardType: {fileID: 21300000, guid: 822a89e9f66c4c845802d3ec400be2fc, type: 3}
+  - cardEventType: 5
+    spriteCardType: {fileID: 21300000, guid: 486504ad69059ac4aa11b7efd3497353, type: 3}
