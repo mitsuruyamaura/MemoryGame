@@ -95,10 +95,33 @@ public class MemoryGameManager : MonoBehaviour {
     }
 
     /// <summary>
+    /// フロアの状態をリセット
+    /// </summary>
+    private void ResetFloorState() {
+        GameData.instance.userData.CanUseStairs.Value = false;
+
+        firstSelectedCardView = null;
+        firstSelectedCardModel = null;
+
+        cardModelList.Clear();
+
+        cardViewList.ForEach(cardView => cardView?.Release());
+        cardViewList.Clear();
+
+        slotList.ForEach(slot => Destroy(slot));
+        slotList.Clear();
+
+        cgSlotSet.blocksRaycasts = false;
+    }
+
+    /// <summary>
     /// フロアの初期化処理
     /// </summary>
     /// <returns></returns>
     private async UniTask InitFloorAsync() {
+        // 現在のフロア数より、フロアのデータを取得
+        currentFloorData = DataBaseManager.instance.GetFloorDataByFloor(GameData.instance.userData.FloorCount.Value);
+
         // スロットを生成
         CreateSlots();
 
@@ -112,10 +135,11 @@ public class MemoryGameManager : MonoBehaviour {
     /// カードを配置するためのスロットを生成(カードが消えても詰まらないようにするため)
     /// </summary>
     private void CreateSlots() {
-        // GridLayoutGroup の Constraint Count を設定
-        //gridLayoutGroup.constraintCount = 3;
+        // カードの枚数に応じて横方向の長さをフロアごとに変えるため、GridLayoutGroup の Constraint Count を設定
+        gridLayoutGroup.constraintCount = currentFloorData.row;
 
-        int totalSlots = pairCount * 2;
+        // カード配置用のスロット生成
+        int totalSlots = currentFloorData.pairCount;
         for (int i = 0; i < totalSlots; i++) {
             GameObject slot = Instantiate(slotPrefab, slotParent);
             slotList.Add(slot);
@@ -155,7 +179,7 @@ public class MemoryGameManager : MonoBehaviour {
         List<CardTypeMaster> cardTypeMasterList = CreateCardTypeList();
 
         // カードの種類ごとにペアを作成
-        for (int i = 0; i < cardTypeMasterList. Count; i++) {
+        for (int i = 0; i < cardTypeMasterList.Count; i++) {
             CardData cardData = new() {
                 cardTypeMaster = cardTypeMasterList[i],
                 masterData = null
@@ -183,10 +207,7 @@ public class MemoryGameManager : MonoBehaviour {
     /// フロアのデータに基づいて出現するカードの種類を必要数作成
     /// </summary>
     /// <returns></returns>
-    private List<CardTypeMaster> CreateCardTypeList() {
-        // 現在のフロア数より、フロアのデータを取得
-        currentFloorData = DataBaseManager.instance.GetFloorDataByFloor(GameData.instance.userData.FloorCount.Value);
-        
+    private List<CardTypeMaster> CreateCardTypeList() {        
         List<CardTypeMaster> cardTypeMasterList = new();
 
         // FloorData のフィールドを Dictionary にまとめる
@@ -428,26 +449,8 @@ public class MemoryGameManager : MonoBehaviour {
         InitFloorAsync().Forget();
     }
 
-    /// <summary>
-    /// フロアの状態をリセット
-    /// </summary>
-    private void ResetFloorState() {
-        GameData.instance.userData.CanUseStairs.Value = false;
 
-        firstSelectedCardView = null;
-        firstSelectedCardModel = null;
-
-        cardModelList.Clear();
-
-        cardViewList.ForEach(cardView => cardView?.Release());
-        cardViewList.Clear();
-
-        slotList.ForEach(slot => Destroy(slot));
-        slotList.Clear();
-
-        cgSlotSet.blocksRaycasts = false;
-    }
-
+    // UI 関連。一旦ここに書いておいてあとで分割する
 
     private void UpdateDisplayFlipPoint(int prevPoint, int nextPoint) {
         txtFlipPoint.DOCounter(prevPoint, nextPoint, 0.5f).SetEase(Ease.Linear).SetLink(gameObject);
@@ -456,7 +459,6 @@ public class MemoryGameManager : MonoBehaviour {
     private void UpdateDisplayFloorCount(int newFloorCount) {
         txtFloorCount.text = newFloorCount.ToString();
     }
-
 
     public void SetMemoryStoneIcon(int memoryStoneId) {
         // オーブを UI に表示、光らせる
