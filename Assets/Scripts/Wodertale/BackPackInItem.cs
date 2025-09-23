@@ -13,7 +13,7 @@ public enum ReleaseType {
 }
 
 
-public class BackPackInItem : PoolBase, IPoolable {
+public class BackPackInItem : PoolBase {
 
     public Image imgItemIcon;
     public Image imgIconGauge;
@@ -54,7 +54,7 @@ public class BackPackInItem : PoolBase, IPoolable {
 
 
     /// <summary>
-    /// 
+    /// 初期設定
     /// </summary>
     /// <param name="itemData"></param>
     /// <param name="token"></param>
@@ -131,7 +131,7 @@ public class BackPackInItem : PoolBase, IPoolable {
         disuseButtonSubscribe = btnDisuse.OnClickAsObservable()
             .Where(_ => GameData.instance.gameState.Value == GameData.GameState.Play)
             .ThrottleFirst(TimeSpan.FromSeconds(0.5f))
-            .Subscribe(_ => ChandeDisuseshade());
+            .Subscribe(_ => ChangeDisuseshade());
 
         // リリースボタンの設定
         releaseButtonSubscribe = btnRelease.OnClickAsObservable()
@@ -143,28 +143,28 @@ public class BackPackInItem : PoolBase, IPoolable {
             });
 
         // 交渉成功時
-        successSettlementDisposable = SymbolManager.instance.onSuccessSettlement
-            .Subscribe(_ => {
-                // パッシブの場合には耐久値を1回分だけ減らす
-                // 必ず this で、新しく作成した ItemData を参照する
-                if (entityType == EntityType.Player && this.itemData.effectType == EffectType.Passive) {
-                    this.itemData.durability--;
-                    if (this.itemData.durability <= 0) {
-                        UpdateDurabilityDisplay(0);
-                        AddPriceToMoney(ReleaseType.Destroy);  // 0 だが一応
-                        Release();
-                    } else {
-                        UpdateDurabilityDisplay(this.itemData.durability);
-                    }
-                    DebugLogger.Log(this.itemData.durability);
-                }
-            });
+        //successSettlementDisposable = SymbolManager.instance.onSuccessSettlement
+        //    .Subscribe(_ => {
+        //        // パッシブの場合には耐久値を1回分だけ減らす
+        //        // 必ず this で、新しく作成した ItemData を参照する
+        //        if (entityType == EntityType.Player && this.itemData.effectType == EffectType.Passive) {
+        //            this.itemData.durability--;
+        //            if (this.itemData.durability <= 0) {
+        //                UpdateDurabilityDisplay(0);
+        //                AddPriceToMoney(ReleaseType.Destroy);  // 0 だが一応
+        //                Release();
+        //            } else {
+        //                UpdateDurabilityDisplay(this.itemData.durability);
+        //            }
+        //            DebugLogger.Log(this.itemData.durability);
+        //        }
+        //    });
     }
 
     /// <summary>
     /// アイテムの利用状態を変更し、状態に応じてシェードをかける
     /// </summary>
-    private void ChandeDisuseshade() {
+    private void ChangeDisuseshade() {
         isDisuse = !isDisuse;
         canvasGroupShade.gameObject.SetActive(isDisuse);
         DebugLogger.Log(isDisuse);

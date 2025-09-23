@@ -61,7 +61,6 @@ public class GameData : AbstractSingleton<GameData>
     //// クリア済のステージの番号
     //public List<int> clearedStageNos;
 
-    public StageData currentStageData;
 
     //public bool isBossBattled;
 
@@ -79,7 +78,6 @@ public class GameData : AbstractSingleton<GameData>
     public List<int> defeatEnemyNoList = new();   // 倒したことのある敵のリスト
     public List<int> getItemNoList = new();       // 獲得したことのあるアイテムのリスト
 
-    public List<OrbType> getOrbTypeList = new();
     public List<PlayerConditionBase> conditionList = new();
 
     [SerializeField]
@@ -271,71 +269,8 @@ public class GameData : AbstractSingleton<GameData>
         defeatEnemyNoList.Add(enemyNo);
     }
 
-
-    public void AddOrbList(OrbType orbType) {
-        getOrbTypeList.Add(orbType);
-    }
-
-    public void ClearOrbList() {
-        getOrbTypeList.Clear();
-    }
-
-
-    public void CheckStaminaBonusByOrbs() {
-        if (getOrbTypeList.Count <= 2) {
-            return;
-        }
-
-        // OrbType をグループ化してカウントし、最大値を取得
-        int maxCount = getOrbTypeList
-            .GroupBy(orb => orb)
-            .Max(g => g.Count());
-
-        // オーブの種類がいくつそろったかによってボーナス
-        if (maxCount == 2) {
-            userData.Stamina.Value += 10;
-        } else if(maxCount == 3) {
-            userData.Stamina.Value += 20;
-        }
-        DebugLogger.Log($"maxCount : {maxCount}");
-    }
-
-    /// <summary>
-    /// 未使用
-    /// この方法だと、最後のときに IndexOutOfRange になるので使わない
-    /// </summary>
-    /// <param name="waveNo"></param>
-    /// <returns></returns>
-    public int GetMaxWaveCount(int waveNo) {
-        if(waveNo >= DataBaseManager.instance.waveDataSO.waveDataList.Count) {
-            return DataBaseManager.instance.waveDataSO.waveDataList[DataBaseManager.instance.waveDataSO.waveDataList.Count].walkCount -
-                DataBaseManager.instance.waveDataSO.waveDataList[DataBaseManager.instance.waveDataSO.waveDataList.Count - 1].walkCount;
-        }
-
-        return DataBaseManager.instance.waveDataSO.waveDataList[waveNo + 1].walkCount -
-                DataBaseManager.instance.waveDataSO.waveDataList[waveNo].walkCount;
-    }
-
-
     public int GetTotalStatusValues() {
         return charaStatus.statusValueList.Select(data => data.statusValue.Value).Sum();
-    }
-
-    /// <summary>
-    /// 指定された各ステータス値が目標値を超えているか判定
-    /// １つでも超えていれば true
-    /// </summary>
-    /// <param name="powerSpotData"></param>
-    /// <returns></returns>
-    public bool IsStatusValueGreaterThanRequired(PowerSpotData powerSpotData) {
-        return powerSpotData.statusTypes
-            .Select((statusType, index) => new { statusType, requiredValue = powerSpotData.requiredValues[index] })
-            .Any(pair =>
-                charaStatus.statusValueList.Any(statusValue =>
-                    statusValue.statusType == pair.statusType &&
-                    statusValue.statusValue.Value > pair.requiredValue
-                )
-            );
     }
 
     /// <summary>
@@ -372,7 +307,7 @@ public class GameData : AbstractSingleton<GameData>
     /// </summary>
     public void RemoveConditionList(PlayerConditionBase playerCondition) {
         conditionList.Remove(playerCondition);
-        
+
         // エフェクト削除
         //Destroy(playerCondition);
     }

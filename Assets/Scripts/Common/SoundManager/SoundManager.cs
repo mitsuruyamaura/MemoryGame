@@ -147,40 +147,40 @@ public class SoundManager : AbstractSingleton<SoundManager> {
         // ミュート設定
         //BGMsources[0].mute = volume.Mute;
         //BGMsources[1].mute = volume.Mute;
-  //      foreach(AudioSource source in SEsources ){
-		//	source.mute = volume.Mute;
-		//}
-		//foreach(AudioSource source in VoiceSources ){
-		//	source.mute = volume.Mute;
-		//}
+        //      foreach(AudioSource source in SEsources ){
+        //	source.mute = volume.Mute;
+        //}
+        //foreach(AudioSource source in VoiceSources ){
+        //	source.mute = volume.Mute;
+        //}
 
         // ボリューム設定
-  //      if(!isXFading) {
-  //          //BGMsources[0].volume = volume.BGM;
-  //          //BGMsources[1].volume = volume.BGM;
-  //      }
-  //      foreach(AudioSource source in SEsources ){
-		//	source.volume = volume.SE;
-		//}
-		//foreach(AudioSource source in VoiceSources ){
-		//	source.volume = volume.Voice;
-		//}
+        //      if(!isXFading) {
+        //          //BGMsources[0].volume = volume.BGM;
+        //          //BGMsources[1].volume = volume.BGM;
+        //      }
+        //      foreach(AudioSource source in SEsources ){
+        //	source.volume = volume.SE;
+        //}
+        //foreach(AudioSource source in VoiceSources ){
+        //	source.volume = volume.Voice;
+        //}
 
         // Loop処理
-        //if(currentBgmIndex != 999) {
-            //if(BGM[currentBgmIndex].loopTime > 0f) {
-            //    if(!BGMsources[0].mute && BGMsources[0].isPlaying && BGMsources[0].clip != null) {
-            //        if(BGMsources[0].time >= BGM[currentBgmIndex].endTime) {
-            //            BGMsources[0].time = BGM[currentBgmIndex].loopTime;
-            //        }
-            //    }
-            //    if(!BGMsources[1].mute && BGMsources[1].isPlaying && BGMsources[1].clip != null) {
-            //        if(BGMsources[1].time >= BGM[currentBgmIndex].endTime) {
-            //            BGMsources[1].time = BGM[currentBgmIndex].loopTime;
-            //        }
-            //    }
-            //}
-        //}
+        if (currentBgmIndex != 999) {
+            if (BGM[currentBgmIndex].loopTime > 0f) {
+                if (!BGMsources[0].mute && BGMsources[0].isPlaying && BGMsources[0].clip != null) {
+                    if (BGMsources[0].time >= BGM[currentBgmIndex].endTime) {
+                        BGMsources[0].time = BGM[currentBgmIndex].loopTime;
+                    }
+                }
+                if (!BGMsources[1].mute && BGMsources[1].isPlaying && BGMsources[1].clip != null) {
+                    if (BGMsources[1].time >= BGM[currentBgmIndex].endTime) {
+                        BGMsources[1].time = BGM[currentBgmIndex].loopTime;
+                    }
+                }
+            }
+        }
     }
 
     //***** BGM再生 *****

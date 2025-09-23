@@ -9,6 +9,7 @@ public enum Rarity {
     Mystic,
     Epic,
     Legendary,
+    None
 }
 
 public enum ItemType {
@@ -16,7 +17,7 @@ public enum ItemType {
     Axe,
     Bow,
     Ring,
-    Spaer,
+    Spear,
     Dagger,
     Armor,
     Shield,
@@ -83,8 +84,7 @@ public enum BuffDebuffType {
 }
 
 [System.Serializable]
-public class ItemData
-{
+public class ItemData : IMasterData {
     public int id;
     public string itemName;
     public Rarity rarity;
@@ -117,6 +117,10 @@ public class ItemData
     public float parryRate;                // ダメージ 0 受け流し
     public float absorptionRate;           // ダメージ半分吸収
     public float settlementRate;           // 交渉
+
+    public float criticalDamageRate;       // クリティカルの倍率ボーナス
+
+    public int Id => id;
 
     // サイズ(ウェイト)
 
@@ -159,6 +163,8 @@ public class ItemData
         parryRate = otherItemData.parryRate;
         absorptionRate = otherItemData.absorptionRate;
         settlementRate = otherItemData.settlementRate;
+
+        criticalDamageRate = otherItemData.criticalDamageRate;
     }
 
     public ItemData(string[] datas) {
@@ -193,6 +199,8 @@ public class ItemData
         parryRate = float.Parse(datas[22]);
         absorptionRate = float.Parse(datas[23]);
         settlementRate = float.Parse(datas[24]);
+
+        criticalDamageRate = float.Parse(datas[25]);
     }
 
 

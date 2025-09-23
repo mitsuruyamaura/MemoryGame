@@ -24,7 +24,7 @@ public class TreasurePopUp : PopUpBase
     /// 設定してポップアップを開く
     /// </summary>
     /// <param name="itemData"></param>
-    public void DisplayPopUp(AbilityItemDataSO.AbilityItemData itemData) {
+    public void DisplayPopUp(ItemData itemData) {
 
         canvasGroup.alpha = 0;
 
@@ -32,10 +32,10 @@ public class TreasurePopUp : PopUpBase
         btnFilter.onClick.AddListener(() => ClosePopUp());   //  ClosePopUp(token).Forget()
         btnFilter.interactable = false;
 
-        imgTreasureIcon.sprite = itemData.abilitySprite;
-        txtTreasureName.text = itemData.abilityName;
+        //imgTreasureIcon.sprite = itemData. .abilitySprite;
+        //txtTreasureName.text = itemData.abilityName;
 
-        canvasGroup.DOFade(1.0f, 0.5f).SetEase(Ease.Linear).SetLink(gameObject).OnComplete(() => { StartCoroutine(CreateRarityDetails(itemData.rarity)); });
+        //canvasGroup.DOFade(1.0f, 0.5f).SetEase(Ease.Linear).SetLink(gameObject).OnComplete(() => { StartCoroutine(CreateRarityDetails(itemData.rarity)); });
     }
 
     /// <summary>

@@ -27,9 +27,9 @@ public class BattleManager : AbstractSingleton<BattleManager> {
     public RectTransform playerFloatingViewTran;
     public RectTransform enemyFloatingViewTran;
 
-    public ReactiveProperty<int> PlayerHP = new ();
-    public ReactiveProperty<int> EnemyHP = new ();
-    public ReactiveProperty<float> BattleDuration = new(5.0f); // バトルの制限時間（秒）
+    public SerializableReactiveProperty<int> PlayerHP = new ();
+    public SerializableReactiveProperty<int> EnemyHP = new ();
+    public SerializableReactiveProperty<float> BattleDuration = new(5.0f); // バトルの制限時間（秒）
 
     private CancellationTokenSource cts;
     public CancellationTokenSource Cts => cts;
@@ -46,7 +46,6 @@ public class BattleManager : AbstractSingleton<BattleManager> {
 
     [SerializeField] private CinemachineCamera virtualCamera;
     public CinemachineCamera VirtualCamera => virtualCamera;
-    [SerializeField] private SpriteMask mask;
     [SerializeField] private CinemachineBasicMultiChannelPerlin virtualCameraNoise;
     
     [SerializeField] private GameObject battleEffectSetObj;
@@ -59,8 +58,8 @@ public class BattleManager : AbstractSingleton<BattleManager> {
     private CompositeDisposable enemyDisposables;
     private BattleResultType battleResultType;
 
-    public ReactiveProperty<int> PlayerShieldHP = new ();
-    public ReactiveProperty<int> EnemyShieldHP = new ();
+    public SerializableReactiveProperty<int> PlayerShieldHP = new ();
+    public SerializableReactiveProperty<int> EnemyShieldHP = new ();
     [SerializeField] private int maxShield;
     [SerializeField] private float defaultBattleTime = 5.0f;
     public float bossBattleTime = 20.0f;
@@ -75,6 +74,10 @@ public class BattleManager : AbstractSingleton<BattleManager> {
         if (virtualCamera != null) {
             virtualCameraNoise = (CinemachineBasicMultiChannelPerlin)virtualCamera.GetCinemachineComponent(CinemachineCore.Stage.Noise);
             //battleEffectSetObj = virtualCamera.transform.GetChild(2).gameObject;
+
+            if(virtualCameraNoise != null) {
+                StopBattleShake();
+            }
         }   
     }
 
@@ -122,6 +125,7 @@ public class BattleManager : AbstractSingleton<BattleManager> {
         //enemyBackPackItemList.ForEach(item => item.Hoge(item.itemData, cts.Token, EntityType.Enemy).Forget());
 
         UpdatePlayerHp(GameData.instance.debugMaxHp, EffectType.Heal, false, false);
+
         PlayerHP
             .Zip(PlayerHP.Skip(1), (oldValue, newValue) => (oldValue, newValue))
             .Subscribe(hp => {
@@ -142,7 +146,7 @@ public class BattleManager : AbstractSingleton<BattleManager> {
     /// </summary>
     /// <param name="enemySymbol"></param>
     /// <returns></returns>
-    public async UniTask<BattleResultType> StartBattle(EnemySymbol enemySymbol, TurnState turnState) {
+    public async UniTask<BattleResultType> StartBattle(EnemyData enemyData, TurnState turnState) {
         GameData.instance.gameState.Value = GameData.GameState.Battle;
 
         // バトル時間設定
@@ -157,17 +161,16 @@ public class BattleManager : AbstractSingleton<BattleManager> {
         cts = new CancellationTokenSource();
         enemyDisposables = new();
 
-        // ホバー表示中の情報を一旦非表示にしてから、敵の情報設定(そうしないとホバーの敵の情報が残ってしまうため)
-        PowerSpotInfoDisplayManager.instance.HidePowerSpotInfo();
-        EnemyInfoDisplayManager.instance.HideEnemyInfo();
+        // 敵の装備情報を取得
+        List<int> equipItemNoList = enemyData.GetEquipItemNoList();
 
-        EnemyInfoDisplayManager.instance.ShowEnemyInfo(enemySymbol.enemyData, enemySymbol.nameData.name, enemySymbol.equipItemNoList, GameData.GameState.Battle);
+        EnemyInfoDisplayManager.instance.ShowEnemyInfo(enemyData, equipItemNoList, GameData.GameState.Battle);
         EnemyInfoDisplayManager.instance.NoShadeEnemy();
 
-        enemyMaxHp = enemySymbol.enemyData.hp;
+        enemyMaxHp = enemyData.hp;
 
         // 敵の Hp 表示更新
-        EnemyHP.Value = enemySymbol.enemyData.hp;
+        EnemyHP.Value = enemyData.hp;
 
         EnemyHP
             .Zip(EnemyHP.Skip(1), (oldValue, newValue) => (oldValue, newValue))
@@ -177,7 +180,7 @@ public class BattleManager : AbstractSingleton<BattleManager> {
             }).AddTo(enemyDisposables);
 
         // 敵のシールド 表示更新
-        EnemyShieldHP.Value = enemySymbol.enemyData.shieldPower;
+        EnemyShieldHP.Value = enemyData.shieldPower;
 
         EnemyShieldHP
             .Subscribe(shield => {

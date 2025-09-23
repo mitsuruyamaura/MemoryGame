@@ -36,7 +36,7 @@ public class EnemyInfoDisplayManager : AbstractSingleton<EnemyInfoDisplayManager
     /// <param name="name"></param>
     /// <param name="equipItemNoList"></param>
     /// <param name="gameState"></param>
-    public void ShowEnemyInfo(EnemyData enemyData, string name, List<int> equipItemNoList, GameData.GameState gameState) {
+    public void ShowEnemyInfo(EnemyData enemyData, List<int> equipItemNoList, GameData.GameState gameState) {
         // エネミー情報表示中(バトル中)は動作させない(バトル中に敵シンボルにマウスオーバーすると、アイテムが重複表示されるため)
         if (enemyInfoCanvas.enabled) {
             return;

@@ -14,16 +14,16 @@ public class GSSReceiver : MonoBehaviour {
     public bool IsLoading { get; set; }
 
 
-    private void Awake() {
-        // GSS のデータ取得準備
-        PrepareGSSLoadStartAsync().Forget();
-    }
+    //private void Awake() {
+    //    // GSS のデータ取得準備
+    //    PrepareGSSLoadStartAsync().Forget();
+    //}
 
     /// <summary>
     /// GSS のデータ取得準備
     /// </summary>
     /// <returns></returns>
-    private async UniTask PrepareGSSLoadStartAsync() {
+    public async UniTask PrepareGSSLoadStartAsync() {
         IsLoading = false;
 
         await GetComponent<GSSReader>().GetFromWebAsync();
@@ -57,20 +57,20 @@ public class GSSReceiver : MonoBehaviour {
             DataBaseManager.instance.enemyDataSO.enemyDatasList =
                 new List<EnemyData>(sheetDataslist.Find(x => x.SheetName == SheetName.EnemyData).DatasList.Select(x => new EnemyData(x)).ToList());
 
-            DataBaseManager.instance.expTableDataSO.expTableDataList =
-                new List<ExpTableData>(sheetDataslist.Find(x => x.SheetName == SheetName.ExpTableData).DatasList.Select(x => new ExpTableData(x)).ToList());
+            DataBaseManager.instance.memoryStoneDataSO.memoryStoneList =
+                new List<MemoryStoneData>(sheetDataslist.Find(x => x.SheetName == SheetName.MemoryStoneData).DatasList.Select(x => new MemoryStoneData(x)).ToList());
 
-            DataBaseManager.instance.waveDataSO.waveDataList =
-                new List<WaveData>(sheetDataslist.Find(x => x.SheetName == SheetName.WaveData).DatasList.Select(x => new WaveData(x)).ToList());
+            DataBaseManager.instance.floorDataSO.floorDataList =
+                new List<FloorData>(sheetDataslist.Find(x => x.SheetName == SheetName.FloorData).DatasList.Select(x => new FloorData(x)).ToList());
 
-            DataBaseManager.instance.symbolRateDataSO.symbolRateDataList =
-                new List<SymbolRateData>(sheetDataslist.Find(x => x.SheetName == SheetName.SymbolRateData).DatasList.Select(x => new SymbolRateData(x)).ToList());
+            DataBaseManager.instance.trapDataSO.trapDataList =
+                new List<TrapData>(sheetDataslist.Find(x => x.SheetName == SheetName.TrapData).DatasList.Select(x => new TrapData(x)).ToList());
 
-            DataBaseManager.instance.powerSpotDataSO.powerSpotDataList =
-                new List<PowerSpotData>(sheetDataslist.Find(x => x.SheetName == SheetName.PowerSpotData).DatasList.Select(x => new PowerSpotData(x)).ToList());
+            DataBaseManager.instance.blessingDataSO.blessingDataList =
+                new List<BlessingData>(sheetDataslist.Find(x => x.SheetName == SheetName.BlessingData).DatasList.Select(x => new BlessingData(x)).ToList());
 
-            DataBaseManager.instance.terrainDataSO.terrainDataList =
-                new List<TerrainData>(sheetDataslist.Find(x => x.SheetName == SheetName.TerrainData).DatasList.Select(x => new TerrainData(x)).ToList());
+            //DataBaseManager.instance.terrainDataSO.terrainDataList =
+            //    new List<TerrainData>(sheetDataslist.Find(x => x.SheetName == SheetName.TerrainData).DatasList.Select(x => new TerrainData(x)).ToList());
 
             // TODO 他の SO を追加する
         }

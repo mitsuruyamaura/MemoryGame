@@ -19,7 +19,11 @@ public enum SheetName {
     ExpTableData,
     WaveData,
     SymbolRateData,
-    TerrainData
+    TerrainData,
+    MemoryStoneData,
+    TrapData,
+    BlessingData,
+    FloorData,
 }
 
 /// <summary>

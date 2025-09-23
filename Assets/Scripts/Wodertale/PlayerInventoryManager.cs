@@ -5,30 +5,25 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using System.Linq;
 using UnityEngine.UI;
-using Coffee.UIExtensions;
 using System;
-using DG.Tweening;
 
 public class PlayerInventoryManager : AbstractSingleton<PlayerInventoryManager> {
 
     public ObservableList<BackPackInItem> PlayerBackPackItemList = new();
     private CancellationTokenSource cts;
 
-    [SerializeField] private BackPackInItem BackPackInItem_1;
-    [SerializeField] private BackPackInItem BackPackInItem_2;
-
     [SerializeField] private BackPackItemGenerator backPackItemGenerator;
     [SerializeField] private Text txtCurrentInventorySize;
     [SerializeField] private Text txtMaxInventorySize;
     [SerializeField] private Text txtMaxHp;
 
-    [SerializeField] private Image imgExclamationIcon;
+    //[SerializeField] private Image imgExclamationIcon;
 
-    [SerializeField] private Image[] imgOrbIcons;
-    [SerializeField] private ShinyEffectForUGUI[] shinyEffects;
+    //[SerializeField] private Image[] imgOrbIcons;
+    //[SerializeField] private ShinyEffectForUGUI[] shinyEffects;
     [SerializeField] private Text[] txtStutsValues;
-    [SerializeField] private Text txtTotalStutsValue;
-    [SerializeField] private Text txtEnchantPoint;
+    //[SerializeField] private Text txtTotalStutsValue;
+    ///[SerializeField] private Text txtEnchantPoint;
     [SerializeField] private Text txtParry;
     [SerializeField] private Text txtAbsorb;
     [SerializeField] private Text txtReflect;
@@ -61,7 +56,7 @@ public class PlayerInventoryManager : AbstractSingleton<PlayerInventoryManager> 
         //    removeEvent.Value.Release(); // 必要に応じてリソースを解放
         //});
 
-        InitOrbIcons();
+        //InitOrbIcons();
     }
 
     private void Start() {
@@ -120,17 +115,17 @@ public class PlayerInventoryManager : AbstractSingleton<PlayerInventoryManager> 
             .Merge();
 
         // 結合したいずれかの ReactiveProperty に変更があった場合、処理を行う機能を購読する
-        mergedObservable.Subscribe(result => {
-            txtTotalStutsValue.text = $"{GameData.instance.GetTotalStatusValues():N0}";
+        //mergedObservable.Subscribe(result => {
+        //    txtTotalStutsValue.text = $"{GameData.instance.GetTotalStatusValues():N0}";
 
-            GameData.instance.EnchantPoint.Value = GameData.instance.GetTotalStatusValues() - GameData.instance.consumeEnchantPoint; ;
+        //    GameData.instance.EnchantPoint.Value = GameData.instance.GetTotalStatusValues() - GameData.instance.consumeEnchantPoint; ;
 
-            // 変更があった際の処理
-            DebugLogger.Log($"{result.StatusValue.statusType} changed to: {result.Value}");
-        }).AddTo(this);
+        //    // 変更があった際の処理
+        //    DebugLogger.Log($"{result.StatusValue.statusType} changed to: {result.Value}");
+        //}).AddTo(this);
 
 
-        GameData.instance.EnchantPoint.Subscribe(point => txtEnchantPoint.text = $"{point:N0}").AddTo(this);
+        //GameData.instance.EnchantPoint.Subscribe(point => txtEnchantPoint.text = $"{point:N0}").AddTo(this);
     }
 
     /// <summary>
@@ -299,51 +294,51 @@ public class PlayerInventoryManager : AbstractSingleton<PlayerInventoryManager> 
     }
 
 
-    public void SetOrbIcon(OrbType orbType) {
-        // オーブを UI に表示、光らせる
-        imgOrbIcons[orbCount].sprite = DataBaseManager.instance.orbDataSO.orbDatasList[(int)orbType].spriteOrb;
-        imgOrbIcons[orbCount].enabled = true;
-        shinyEffects[orbCount].Play(0.75f);
+    //public void SetOrbIcon(OrbType orbType) {
+    //    // オーブを UI に表示、光らせる
+    //    imgOrbIcons[orbCount].sprite = DataBaseManager.instance.orbDataSO.orbDatasList[(int)orbType].spriteOrb;
+    //    imgOrbIcons[orbCount].enabled = true;
+    //    shinyEffects[orbCount].Play(0.75f);
 
-        orbCount++;
-        orbCount = orbCount % imgOrbIcons.Length;
+    //    orbCount++;
+    //    orbCount = orbCount % imgOrbIcons.Length;
 
-        if (orbCount == 0) {
-            FlashIconsAsync().Forget();
-        }
-    }
+    //    if (orbCount == 0) {
+    //        FlashIconsAsync().Forget();
+    //    }
+    //}
 
 
-    private async UniTask FlashIconsAsync() {
-        await UniTask.Delay(1000);
+    //private async UniTask FlashIconsAsync() {
+    //    await UniTask.Delay(1000);
 
-        for (int i = 0; i < imgOrbIcons.Length; i++) {
-            shinyEffects[i].Play();
-        }
+    //    for (int i = 0; i < imgOrbIcons.Length; i++) {
+    //        shinyEffects[i].Play();
+    //    }
 
-        await UniTask.Delay(1000);
+    //    await UniTask.Delay(1000);
 
-        // すべてのオーブを UI から消す
-        InitOrbIcons();
-        GameData.instance.ClearOrbList();
-    }
+    //    // すべてのオーブを UI から消す
+    //    InitOrbIcons();
+    //    GameData.instance.ClearOrbList();
+    //}
 
-    public void InitOrbIcons() {
-        for (int i = 0; i < imgOrbIcons.Length; i++) {
-            imgOrbIcons[i].enabled = false;
-        }
-    }
+    //public void InitOrbIcons() {
+    //    for (int i = 0; i < imgOrbIcons.Length; i++) {
+    //        imgOrbIcons[i].enabled = false;
+    //    }
+    //}
 
-    public void FindTreasureAnim(){
-        imgExclamationIcon.transform.localScale = Vector3.zero;
-        imgExclamationIcon.enabled = true;
+    //public void FindTreasureAnim(){
+    //    imgExclamationIcon.transform.localScale = Vector3.zero;
+    //    imgExclamationIcon.enabled = true;
 
-        Sequence sequence = DOTween.Sequence();
-        sequence.SetLink(gameObject);
-        sequence.Append(imgExclamationIcon.transform.DOScale(Vector3.one * 1.25f, 0.25f).SetEase(Ease.InQuart));
-        sequence.Append(imgExclamationIcon.transform.DOScale(Vector3.one, 0.25f).SetEase(Ease.OutBack));
-        sequence.AppendInterval(0.25f).OnComplete(() => imgExclamationIcon.enabled = false);
-    }
+    //    Sequence sequence = DOTween.Sequence();
+    //    sequence.SetLink(gameObject);
+    //    sequence.Append(imgExclamationIcon.transform.DOScale(Vector3.one * 1.25f, 0.25f).SetEase(Ease.InQuart));
+    //    sequence.Append(imgExclamationIcon.transform.DOScale(Vector3.one, 0.25f).SetEase(Ease.OutBack));
+    //    sequence.AppendInterval(0.25f).OnComplete(() => imgExclamationIcon.enabled = false);
+    //}
 
     /// <summary>
     /// 対象のアイテムを所持しているか判定

@@ -192,9 +192,6 @@ public class ItemInfoDisplayManager : AbstractSingleton<ItemInfoDisplayManager> 
     public async UniTask ShowTreasureItemInfoAsync(ItemData itemData, CancellationToken token) {
         isTreasureShow = true;
 
-        // パワースポットのシンボルがアイテム表示に重なってしまうとホバーできずに隠れないので隠す
-        PowerSpotInfoDisplayManager.instance.HidePowerSpotInfo();
-
         // 表示内容の設定
         txtName.text = itemData.itemName;
 
