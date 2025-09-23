@@ -18,11 +18,11 @@ public class ConditionManager : AbstractSingleton<ConditionManager>
     /// </summary>
     /// <param name="conditionData"></param>
     /// <param name="playerCondition"></param>
-    public void GenerateConditionIndicator(ConditionData conditionData, PlayerConditionBase playerCondition) {
-        ConditionIndicator conditionIndicator = (ConditionIndicator)indicatorGenerator.GetObjectFromPool(indicatorTran);
-        conditionIndicator.SetUpIndiator(conditionData, playerCondition, ReleaseIndicator);
-        indicatorList.Add(conditionIndicator);
-    }
+    //public void GenerateConditionIndicator(ConditionData conditionData, PlayerConditionBase playerCondition) {
+    //    ConditionIndicator conditionIndicator = (ConditionIndicator)indicatorGenerator.GetObjectFromPool(indicatorTran);
+    //    conditionIndicator.SetUpIndiator(conditionData, playerCondition, ReleaseIndicator);
+    //    indicatorList.Add(conditionIndicator);
+    //}
 
     /// <summary>
     /// 終了した Condition をリストから削除

@@ -52,6 +52,8 @@ public class PlayerConditionBase// : MonoBehaviour
         conditionValue = this.conditionData.conditionValue;
         this.token = token;
 
+        // TODO 時間の処理は検討する
+
         OnEnterCondition();
 
         // コンディションの種類で SE 選択
@@ -66,7 +68,7 @@ public class PlayerConditionBase// : MonoBehaviour
     /// <returns></returns>
     protected virtual void OnEnterCondition() {
         // 残り時間の購読。ターン終了時にイベント発火
-        disposable = SymbolManager.instance.onTurnEnd.Subscribe(_ => CalcDuration());
+        //disposable = SymbolManager.instance.onTurnEnd.Subscribe(_ => CalcDuration());
     }
 
     /// <summary>

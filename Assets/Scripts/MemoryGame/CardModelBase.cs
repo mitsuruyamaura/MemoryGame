@@ -22,4 +22,12 @@ public abstract class CardModelBase {
     public virtual void ReleasePair() {
         isPair = false;
     }
+
+    public virtual void FaceUp() {
+        isFaceUp = true;
+    }
+
+    public virtual void FaceDown() {
+        isFaceUp = false;    
+    }
 }

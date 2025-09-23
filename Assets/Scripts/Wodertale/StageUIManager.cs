@@ -6,7 +6,6 @@ using Cysharp.Threading.Tasks;
 
 public class StageUIManager : MonoBehaviour {
 
-    [SerializeField] private Text txtStaminaPoint;
     [SerializeField] private Text txtHp;
     [SerializeField] private Text txtMaxHp;
     [SerializeField] private Text txtPlayerLevel;
@@ -24,7 +23,6 @@ public class StageUIManager : MonoBehaviour {
     [SerializeField] private Text txtRestartMessage;
 
     [SerializeField] private Slider sliderHp;
-    [SerializeField] private Slider sliderWalkCount;
 
     [SerializeField] private Button btnPlayerLevel;
 
@@ -48,8 +46,13 @@ public class StageUIManager : MonoBehaviour {
 
 
     public void SetupStageUIManager(int stamina, int maxHp) {
-        SetStaminaDisplay(stamina);
+
+
         SetMaxHpDisplay(maxHp);
+
+        return;
+
+
         UpdateDisplayPlayerLevel();
 
         defaultTime = BattleManager.instance.BattleDuration.Value;
@@ -126,7 +129,6 @@ public class StageUIManager : MonoBehaviour {
     }
 
     public void SetStaminaDisplay(int stamina) {
-        txtStaminaPoint.text = stamina.ToString();
         prevStamina = stamina;
     }
 
@@ -138,37 +140,6 @@ public class StageUIManager : MonoBehaviour {
 
         this.maxHp = maxHp;
     }
-
-    /// <summary>
-    /// スタミナポイントの表示更新
-    /// </summary>
-    public void UpdateDisplayStaminaPoint(int stamina) {
-        // スタミナ値の変化をアニメ演出
-        txtStaminaPoint.DOCounter(prevStamina, stamina, 1.0f).SetEase(Ease.Linear).SetLink(gameObject);
-        prevStamina = stamina;
-
-        // 上を使うのでこっちはつかわない
-        //txtStaminaPoint.text = stamina.ToString();
-
-        if (stamina <= 0) {
-            //Debug.Log("ボス戦");
-
-            // 購読停止
-            //GameData.instance.staminaPoint.Dispose();
-
-            //GameData.instance.orbs.Dispose();
-
-
-            // 移動禁止
-
-
-            // TODO ボスとのバトルシーンへ遷移
-
-
-            DebugLogger.Log("ゲーム終了");
-        }
-    }
-
 
     /// <summary>
     /// Hp表示更新
@@ -208,23 +179,6 @@ public class StageUIManager : MonoBehaviour {
     public void UpdatePlayerShieldHp(int shield) {
         txtShieldHp.text = shield.ToString();
     }
-
-
-    public void SetSliderWalkCount(int maxCount) {
-        sliderWalkCount.maxValue = maxCount;
-        sliderWalkCount.minValue = 0;
-        sliderWalkCount.value = 0;
-    }
-
-    public void ResetSliderWalkCount() {
-        sliderWalkCount.DOValue(0, 1.0f).SetEase(Ease.Linear).SetLink(gameObject);
-    }
-
-    public void UpdateWalkCount(int walkCount) {
-        walkCount = walkCount - DataBaseManager.instance.GetWaveData(GameData.instance.userData.waveNo).walkCount;
-        sliderWalkCount.DOValue(walkCount, 0.25f).SetEase(Ease.Linear).SetLink(gameObject);
-    }
-
 
     public void UpdateWaveNo(int waveNo) {
         txtWaveNo.text = waveNo.ToString();

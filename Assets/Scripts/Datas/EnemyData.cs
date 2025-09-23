@@ -1,9 +1,9 @@
 ﻿using System;
-using UnityEngine;
+using System.Collections.Generic;
+using System.Linq;
 
 [System.Serializable]
-public class EnemyData {
-
+public class EnemyData : IMasterData {
     public int enemyNo;
     public Rarity rarity;
     public string race;
@@ -24,6 +24,8 @@ public class EnemyData {
     public string undefined;
     public int shieldPower;
 
+    public int Id => enemyNo;
+
     public EnemyData(string[] datas) {
         enemyNo = int.Parse(datas[0]);
         rarity = (Rarity)Enum.Parse(typeof(Rarity), datas[1]);
@@ -40,18 +42,16 @@ public class EnemyData {
         undefined = datas[12];
         shieldPower = int.Parse(datas[13]);
     }
-}
 
-/// <summary>
-/// デバフ用のコンディションの登録用
-/// </summary>
-[System.Serializable]
-public class EnemyDebuffData {
 
-    // デバフ用のコンディションの設定
-    public ConditionType debuffConditionType;
+    public List<int> GetEquipItemNoList() {
+        int equipNum = UnityEngine.Random.Range(minEquipCount, maxEquipCount);
 
-    // デバフ用のコンディションの付与確率
-    [Range(0, 100)]
-    public int rate;
+        int[] equipItemIndexs = equipIndexStr.Split('/').ToArray().Select(data => int.Parse(data)).ToArray();
+        List<int> equipItemNoList = equipItemIndexs.OrderBy(x => Guid.NewGuid())  // シャッフル
+            .Take(equipNum)  // 指定した数だけ取り出す
+            .ToList();
+
+        return equipItemNoList;
+    }
 }

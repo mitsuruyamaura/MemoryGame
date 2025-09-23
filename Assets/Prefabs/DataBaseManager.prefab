@@ -45,20 +45,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   enemyDataSO: {fileID: 11400000, guid: ec81d48725951e04587730e0ea399cbc, type: 2}
-  conditionDataSO: {fileID: 11400000, guid: ee479803e2c4ae245b160393ebfd5499, type: 2}
-  expTableSO: {fileID: 11400000, guid: 56e379c00098b8e4a87d4fb3376afe75, type: 2}
-  stageDataSO: {fileID: 11400000, guid: cc032b19ae1577f4c80a295a2249dfa4, type: 2}
   itemDataSO: {fileID: 11400000, guid: 1584c5eb68ceaa34fb39800569032785, type: 2}
   nameDataSO: {fileID: 11400000, guid: d8b954a8db3b7e0489d8950bab6fe77a, type: 2}
-  expTableDataSO: {fileID: 11400000, guid: 5b79b0e3eb477d94fb53b661752af8a2, type: 2}
-  waveDataSO: {fileID: 11400000, guid: c7601d62f058f88459463cf26366a155, type: 2}
-  symbolRateDataSO: {fileID: 11400000, guid: ae9c012f5008d3a46857cee5590a265e, type: 2}
-  powerSpotDataSO: {fileID: 11400000, guid: fbcb2bcf27704804c921b0bb4896e37e, type: 2}
-  terrainDataSO: {fileID: 11400000, guid: 86235ec0fc223e440add518d3466ba01, type: 2}
-  enemyMoveEventDataSO: {fileID: 11400000, guid: 4336fc092ce914a43a12d2b21ced7f90, type: 2}
-  orbDataSO: {fileID: 11400000, guid: 482a589a6a036cb4a9db267a6adcc491, type: 2}
-  treasureTableSO: {fileID: 11400000, guid: f4da82ad5e176794b88042b5b1d6fd1e, type: 2}
-  abilityItemDataSOList:
-  - {fileID: 11400000, guid: 58d10d67aa371264ba5c7064f2065321, type: 2}
-  - {fileID: 11400000, guid: 58d10d67aa371264ba5c7064f2065321, type: 2}
-  dropItemDatasList: []
+  memoryStoneDataSO: {fileID: 11400000, guid: 7ba7e1b9b05c40641842c3914f71c05a, type: 2}
+  floorDataSO: {fileID: 11400000, guid: 1268c0370197e0947b3776010b52e4ca, type: 2}
+  trapDataSO: {fileID: 11400000, guid: 63b51a5ea9ccf8f4f8451d3035cf4b8f, type: 2}
+  blessingDataSO: {fileID: 11400000, guid: 2e0f25286c362df4b93c1831ff1c0cfb, type: 2}

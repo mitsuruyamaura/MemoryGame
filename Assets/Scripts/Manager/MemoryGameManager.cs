@@ -208,8 +208,11 @@ public class MemoryGameManager : MonoBehaviour {
     private async UniTask HandleCardSelectionAsync(CardView cardView) {
         CardModelBase selectedCardModel = cardModelList[cardView.cardIndex];
 
+        // 同じカードを選択した場合
         if (selectedCardModel.isFaceUp) return;
 
+        // 表向きにする
+        selectedCardModel.FaceUp();
         cardView.Flip(true);
 
         if (firstSelectedCardView == null) {
@@ -217,6 +220,9 @@ public class MemoryGameManager : MonoBehaviour {
             firstSelectedCardView = cardView;
             firstSelectedCardModel = selectedCardModel;
         } else {
+            // 階段ボタンを無効化
+            btnStairs.interactable = false;
+
             // 2枚目 → 判定
             inputLocked = true;
             await UniTask.Delay((int)(flipDuration * 2 * 1000));
@@ -241,8 +247,13 @@ public class MemoryGameManager : MonoBehaviour {
                     NextFloorAsync().Forget();
                 }
             } else {
+                // 裏向きにする
                 firstSelectedCardView.Flip(false);
                 cardView.Flip(false);
+
+                firstSelectedCardModel.FaceDown();
+                selectedCardModel.FaceDown();
+
                 await UniTask.Delay((int)(flipDuration * 1000));
 
                 // ペアにならなかったので、めくれる回数の減算
@@ -251,6 +262,11 @@ public class MemoryGameManager : MonoBehaviour {
 
             firstSelectedCardView = null;
             inputLocked = false;
+        }
+
+        // 階段フラグが立っている場合には、再度階段ボタンを有効化
+        if (GameData.instance.userData.CanUseStairs.Value == true) {
+            btnStairs.interactable = true;
         }
     }
 
