@@ -30,6 +30,14 @@ public class DataBaseManager : AbstractSingleton<DataBaseManager> {
     }
 
     /// <summary>
+    /// CardTypeMaster を ID や Enum から取得
+    /// </summary>
+    /// <param name="type"></param>
+    /// <returns></returns>
+    public CardTypeMaster GetCardType(CardEventType type) => cardTypeSO.cardTypeList.FirstOrDefault(c => c.cardEventType == type);
+
+
+    /// <summary>
     /// 現在のフロア数から FloorData を取得
     /// </summary>
     /// <param name="currentFloorCount"></param>
@@ -256,8 +264,9 @@ public class DataBaseManager : AbstractSingleton<DataBaseManager> {
     //    return powerSpotDataSO.powerSpotDataList.FirstOrDefault(data => data.no == searchId);
     //}
 
-    public NameData GetNameData(int searchNameId) {
-        return nameDataSO.nameDataList.FirstOrDefault(data => data.id == searchNameId);
+    public NameData GetRandomNameData() {
+        int index = UnityEngine.Random.Range(0, nameDataSO.nameDataList.Count);
+        return nameDataSO.nameDataList[index];
     }
 
 

@@ -78,6 +78,7 @@ public class StageLogicManager : MonoBehaviour {
 
         BattleManager.instance.SetUp(stageUIManager);
 
+        EnemyInfoDisplayManager.instance.Setup(null);
 
         // UI 初期設定
         stageUIManager?.SetupStageUIManager(GameData.instance.userData.Stamina.Value, GameData.instance.charaStatus.MaxHp.Value);
