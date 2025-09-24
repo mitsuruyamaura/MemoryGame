@@ -151,6 +151,7 @@ public static class LoginManager {
 
         return response.Result;
     }
+
     /// <summary>
     /// PlayFab から取得したデータ群をローカル(端末)にキャッシュ
     /// </summary>

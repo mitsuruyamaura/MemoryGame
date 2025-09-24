@@ -32,6 +32,7 @@ public class MemoryGameManager : MonoBehaviour {
     [SerializeField] private Image[] imgMemoryStoneIcons;
     [SerializeField] private ShinyEffectForUGUI[] shinyEffects;
     [SerializeField] private Sprite spriteMemoryStone;
+    [SerializeField] private Text txtMemoriaRank;
 
     [SerializeField] private int debugFlipPoint;
     [SerializeField] private int debugFloorClearBonusFlipPoint;
@@ -42,13 +43,20 @@ public class MemoryGameManager : MonoBehaviour {
     private int memoryStoneCount;
     private FloorData currentFloorData;
 
+    // デバッグ用
+    //private async void Start() {
+    //    SetupAsync().Forget();
+    //}
 
-    private async void Start() {
+
+
+    public async UniTask SetUpAsync() {
         cts = new ();
         cardGenerator.InitObjectPool();
 
         // フロア表示の更新
         GameData.instance.userData.FloorCount.Subscribe(count => UpdateDisplayFloorCount(count)).AddTo(this);
+        GameData.instance.userData.FloorCount.OnNext(GameData.instance.userData.FloorCount.Value);
 
         // 仮
         GameData.instance.userData.FlipPoint.Value = debugFlipPoint != 0 ? debugFlipPoint : 0;
@@ -60,6 +68,8 @@ public class MemoryGameManager : MonoBehaviour {
             .AddTo(this);
 
         GameData.instance.userData.FlipPoint.OnNext(GameData.instance.userData.FlipPoint.Value);
+
+        GameData.instance.userData.MemoriaRank.Subscribe(rank => UpdateDisplayMemoriaRank(rank)).AddTo(this);
 
         // 階段の状態の購読
         GameData.instance.userData.CanUseStairs.Subscribe(canUse => btnStairs.interactable = canUse).AddTo(this);
@@ -396,6 +406,9 @@ public class MemoryGameManager : MonoBehaviour {
 
                 await UniTask.Delay((int)(flipDuration * 1000));
 
+                // カードの種類とフロアデータから、カードのマスターデータを設定
+                selectedCardModel.cardData.masterData = CreateCardData(selectedCardModel.cardData.cardTypeMaster.cardEventType, currentFloorData);
+
                 // カードの効果を実行
                 await selectedCardModel.ExecuteCardAsync(cts.Token);
 
@@ -426,6 +439,24 @@ public class MemoryGameManager : MonoBehaviour {
         if (GameData.instance.userData.CanUseStairs.Value == true) {
             btnStairs.interactable = true;
         }
+    }
+
+    private IMasterData CreateCardData(CardEventType type, FloorData floorData) {
+        IMasterData chosenData = null;
+        switch (type) {
+            case CardEventType.Enemy:
+                chosenData = DataBaseManager.instance.GetRandomEnemyByRarity(floorData.enemyRarities, floorData.enemyRates);
+                break;
+            case CardEventType.TreasureChest:
+                chosenData = DataBaseManager.instance.GetRandomItemByChest(floorData.enemyRarities, floorData.enemyRates);
+                break;
+            case CardEventType.Trap:
+                chosenData = DataBaseManager.instance.GetRandomTrapByRarity(floorData.trapRarities, floorData.trapRates);
+                break;
+                // ... 他も同様
+        }
+
+        return chosenData;
     }
 
     /// <summary>
@@ -460,6 +491,11 @@ public class MemoryGameManager : MonoBehaviour {
         txtFloorCount.text = newFloorCount.ToString();
     }
 
+
+    private void UpdateDisplayMemoriaRank(int newMemoriaRank) {
+        txtMemoriaRank.text = newMemoriaRank.ToString();
+    }
+
     public void SetMemoryStoneIcon(int memoryStoneId) {
         // オーブを UI に表示、光らせる
         imgMemoryStoneIcons[memoryStoneCount].sprite = spriteMemoryStone;
@@ -471,6 +507,12 @@ public class MemoryGameManager : MonoBehaviour {
 
         if (memoryStoneCount == 0) {
             FlashIconsAsync().Forget();
+
+            // ランクアップ
+            GameData.instance.userData.MemoriaRank.Value++;
+
+            // 記憶を取り戻す
+
         }
     }
 

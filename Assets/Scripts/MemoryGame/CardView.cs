@@ -38,13 +38,13 @@ public class CardView : PoolBase {
                 }
 
                 rectTransform.DOScale(1.0f, flipDuration).SetEase(Ease.Linear);
-            });
+            }).SetLink(gameObject);
     }
 
     public void Hide() {
         rectTransform.DOScaleX(0, flipDuration)
             .SetEase(Ease.InQuart)
-            .OnComplete(() => Release());
+            .OnComplete(() => Release()).SetLink(gameObject);
     }
 
     public override void Release() {

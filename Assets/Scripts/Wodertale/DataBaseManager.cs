@@ -1,6 +1,7 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
+﻿using RPG_BOX;
+using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 public class DataBaseManager : AbstractSingleton<DataBaseManager> {
     public CardTypeSO cardTypeSO;
@@ -35,6 +36,122 @@ public class DataBaseManager : AbstractSingleton<DataBaseManager> {
     /// <returns></returns>
     public FloorData GetFloorDataByFloor(int currentFloorCount) {
         return floorDataSO.floorDataList.LastOrDefault(data => data.minFloorCount <= currentFloorCount);
+    }
+
+    public EnemyData GetRandomEnemyByRarity(Rarity[] enemyRarities, int[] enemyRates) {
+        if (enemyRarities == null || enemyRates == null ||
+            enemyRarities.Length != enemyRates.Length || enemyRarities.Length == 0) {
+            DebugLogger.Log("敵レアリティ抽選の入力が不正です。");
+            return null;
+        }
+
+        // 累積和によるレアリティ抽選
+        int totalWeight = enemyRates.Sum();
+        int roll = UnityEngine.Random.Range(0, totalWeight);
+
+        int cumulative = 0;
+        Rarity chosenRarity = enemyRarities[0]; // デフォルト
+        for (int i = 0; i < enemyRates.Length; i++) {
+            cumulative += enemyRates[i];
+            if (roll < cumulative) {
+                chosenRarity = enemyRarities[i];
+                break;
+            }
+        }
+
+        // 2. 選ばれたレアリティから敵を取得
+        List<EnemyData> rarityEnemyList = GetEnemyDataListFromRarity(chosenRarity);
+
+        if (rarityEnemyList == null || rarityEnemyList.Count == 0) {
+            DebugLogger.Log($"指定レアリティ {chosenRarity} の敵が存在しません。");
+            return null;
+        }
+
+        // ランダムで1つ選択
+        int index = UnityEngine.Random.Range(0, rarityEnemyList.Count);
+        return rarityEnemyList[index];
+    }
+
+    public ItemData GetRandomItemByEnemyDrop(Rarity enemyRarity) {
+        List<ItemData> rarityItemDataList = GetItemDataListByRarity(enemyRarity);
+
+        if (rarityItemDataList == null || rarityItemDataList.Count == 0) {
+            DebugLogger.Log($"指定レアリティ {enemyRarity} のアイテムが存在しません。");
+            return null;
+        }
+
+        // ランダムで1つ選択
+        int index = UnityEngine.Random.Range(0, rarityItemDataList.Count);
+        return rarityItemDataList[index];
+    }
+
+    public ItemData GetRandomItemByChest(Rarity[] rarities, int[] rates) {
+        if (rarities == null || rates == null ||
+            rarities.Length != rates.Length || rarities.Length == 0) {
+            DebugLogger.Log("アイテムレアリティ抽選の入力が不正です。");
+            return null;
+        }
+
+        // 累積和によるレアリティ抽選
+        int totalWeight = rates.Sum();
+        int roll = UnityEngine.Random.Range(0, totalWeight);
+
+        int cumulative = 0;
+        Rarity chosenRarity = rarities[0]; // デフォルト
+        for (int i = 0; i < rates.Length; i++) {
+            cumulative += rates[i];
+            if (roll < cumulative) {
+                chosenRarity = rarities[i];
+                break;
+            }
+        }
+
+        // 2. 選ばれたレアリティからアイテムを取得
+        List<ItemData> rarityItemDataList = GetItemDataListByRarity(chosenRarity);
+
+        if (rarityItemDataList == null || rarityItemDataList.Count == 0) {
+            DebugLogger.Log($"指定レアリティ {chosenRarity} のアイテムが存在しません。");
+            return null;
+        }
+
+        // ランダムで1つ選択
+        int index = UnityEngine.Random.Range(0, rarityItemDataList.Count);
+        return rarityItemDataList[index];
+    }
+
+
+    public TrapData GetRandomTrapByRarity(Rarity[] trapRarities, int[] trapRates) {
+        if (trapRarities == null || trapRates == null ||
+            trapRarities.Length != trapRates.Length || trapRarities.Length == 0) {
+            DebugLogger.Log("アイテムレアリティ抽選の入力が不正です。");
+            return null;
+        }
+
+        // 累積和によるレアリティ抽選
+        int totalWeight = trapRates.Sum();
+        int roll = UnityEngine.Random.Range(0, totalWeight);
+
+        int cumulative = 0;
+        Rarity chosenRarity = trapRarities[0]; // デフォルト
+        for (int i = 0; i < trapRates.Length; i++) {
+            cumulative += trapRates[i];
+            if (roll < cumulative) {
+                chosenRarity = trapRarities[i];
+                break;
+            }
+        }
+
+        // 2. 選ばれたレアリティからトラップを取得
+        List<TrapData> raritytrapDataList = GetTrapDataListByRarity(chosenRarity);
+
+        if (raritytrapDataList == null || raritytrapDataList.Count == 0) {
+            DebugLogger.Log($"指定レアリティ {chosenRarity} のトラップが存在しません。");
+            return null;
+        }
+
+        // ランダムで1つ選択
+        int index = UnityEngine.Random.Range(0, raritytrapDataList.Count);
+        return raritytrapDataList[index];
     }
 
     /// <summary>
@@ -85,6 +202,11 @@ public class DataBaseManager : AbstractSingleton<DataBaseManager> {
     //        }
     //    }
     //}
+
+
+    public List<TrapData> GetTrapDataListByRarity(Rarity rarity) {
+        return trapDataSO.trapDataList.Where(data => data.rarity == rarity).ToList();
+    }
 
 
     public ItemData GetItemData(int searchId) {

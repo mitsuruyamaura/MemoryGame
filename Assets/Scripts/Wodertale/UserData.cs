@@ -8,6 +8,7 @@ public class UserData {
     public SerializableReactiveProperty<int> FlipPoint = new(0);              // めくれる回数
     public SerializableReactiveProperty<int> MemoryStoneCount = new(0);       // 思い出の秘石の獲得数
     public SerializableReactiveProperty<int> FloorCount = new(1);
+    public SerializableReactiveProperty<int> MemoriaRank = new(0);
 
     public SerializableReactiveProperty<int> SoulPoint = new();
     public SerializableReactiveProperty<int> WalkCount = new();

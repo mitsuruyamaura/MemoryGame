@@ -229,7 +229,7 @@ public class GameData : AbstractSingleton<GameData>
     }
 
 
-    public ReactiveProperty<GameState> gameState = new(GameState.Prepare);
+    public SerializableReactiveProperty<GameState> CurrentGameState = new(GameState.Prepare);
 
     // ログインするゲームサーバー
     public PlayFabServer playFabServer;
@@ -239,7 +239,7 @@ public class GameData : AbstractSingleton<GameData>
     /// </summary>
     /// <param name="nextState"></param>
     public void ChangeGameState(GameState nextState) {
-        gameState.Value = nextState;
+        CurrentGameState.Value = nextState;
     }
 
     /// <summary>
