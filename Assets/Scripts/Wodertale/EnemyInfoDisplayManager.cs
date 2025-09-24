@@ -18,6 +18,7 @@ public class EnemyInfoDisplayManager : AbstractSingleton<EnemyInfoDisplayManager
     //[SerializeField] private List<Image> imgEquipItemImageList = new();
     private Transform enemyBackPackItemTran;
     [SerializeField] List<BackPackInItem> enemyBackPackItemList = new();
+    //[SerializeField] private float targetHeight = 300f; // 目標の高さ
 
     private float sliderAnimeDuration = 0.5f;
 
@@ -44,12 +45,27 @@ public class EnemyInfoDisplayManager : AbstractSingleton<EnemyInfoDisplayManager
 
         // 引数で、敵の情報(Hp、バフ、デバフ、装備品)をもらって設定する
 
-        txtName.text = name;
+        // 名前設定
+        NameData nameData = DataBaseManager.instance.GetRandomNameData();
+        txtName.text = nameData.name;
 
         // アイコン画像の設定
         Sprite enemyIcon = DataBaseManager.instance.GetEnemyIcon(enemyData.enemyNo);
         if (enemyIcon != null) {
             imgEnemyIcon.sprite = enemyIcon;
+            imgEnemyIcon.SetNativeSize();
+
+            // 今回は使わない
+            //{
+                //// 足元基準にしたいので Pivot を下中央に設定
+                //imgEnemyIcon.rectTransform.pivot = new Vector2(0.5f, 0f);
+
+                //// スプライトの縦横比を計算
+                //float aspect = (float)enemyIcon.rect.width / enemyIcon.rect.height;
+
+                //// 高さを targetHeight に固定し、幅を比率で算出
+                //imgEnemyIcon.rectTransform.sizeDelta = new Vector2(targetHeight * aspect, targetHeight);
+            //}
         }
 
         // 倒したことのある敵の場合
@@ -59,6 +75,7 @@ public class EnemyInfoDisplayManager : AbstractSingleton<EnemyInfoDisplayManager
         } else {
             // まだ倒したことのない敵の場合、シルエット表示
             imgShadeIcon.sprite = enemyIcon;
+            imgShadeIcon.SetNativeSize();
             imgShadeIcon.enabled = true;
             txtRace.text = $"?{enemyData.undefined}";
         }

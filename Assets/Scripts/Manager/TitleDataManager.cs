@@ -143,4 +143,9 @@ public class TitleDataManager : AbstractSingleton<TitleDataManager> {
 
         return boxed as M;
     }
+
+
+    public CardTypeMaster GetCardTypeMaster(int id) {
+        return FindById<CardTypeMaster>(id);
+    }
 }

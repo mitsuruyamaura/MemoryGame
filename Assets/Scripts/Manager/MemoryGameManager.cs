@@ -7,7 +7,6 @@ using R3.Triggers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -233,7 +232,7 @@ public class MemoryGameManager : MonoBehaviour {
         // 1枚以上ある種類のカードタイプを順番に登録
         foreach (var kvp in typeCounts) {
             if (kvp.Value > 0) {
-                CardTypeMaster cardTypeMaster = GetCardType(kvp.Key);
+                CardTypeMaster cardTypeMaster = DataBaseManager.instance.GetCardType(kvp.Key);
                 cardTypeMasterList.AddRange(Enumerable.Repeat(cardTypeMaster, kvp.Value));
             }
         }
@@ -276,7 +275,7 @@ public class MemoryGameManager : MonoBehaviour {
                 // 抽選した場合
                 if(randomValue < cumulative) {
                     // ランダムなカードタイプを追加
-                    CardTypeMaster cardTypeMaster = GetCardType(kvp.Key);
+                    CardTypeMaster cardTypeMaster = DataBaseManager.instance.GetCardType(kvp.Key);
                     cardTypeMasterList.Add(cardTypeMaster);
 
                     // foreach を抜ける
@@ -318,19 +317,7 @@ public class MemoryGameManager : MonoBehaviour {
 
         return cardTypeMasterList;
     }
-
-    /// <summary>
-    /// CardTypeMaster を ID や Enum から取得
-    /// </summary>
-    /// <param name="type"></param>
-    /// <returns></returns>
-    CardTypeMaster GetCardType(CardEventType type) => DataBaseManager.instance.cardTypeSO.cardTypeList.FirstOrDefault(c => c.cardEventType == type);
-
-
-    private CardTypeMaster GetCardTypeMaster(int id) {
-        return TitleDataManager.FindById<CardTypeMaster>(id);
-    }
-
+    
     /// <summary>
     /// CardData を元にカードモデルを作成して List に追加
     /// </summary>
@@ -441,7 +428,7 @@ public class MemoryGameManager : MonoBehaviour {
         }
     }
 
-    private IMasterData CreateCardData(CardEventType type, FloorData floorData) {
+    public IMasterData CreateCardData(CardEventType type, FloorData floorData) {
         IMasterData chosenData = null;
         switch (type) {
             case CardEventType.Enemy:
