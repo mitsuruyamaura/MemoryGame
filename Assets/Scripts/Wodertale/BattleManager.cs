@@ -147,7 +147,7 @@ public class BattleManager : AbstractSingleton<BattleManager> {
     /// <param name="enemySymbol"></param>
     /// <returns></returns>
     public async UniTask<BattleResultType> StartBattle(EnemyData enemyData, TurnState turnState) {
-        GameData.instance.gameState.Value = GameData.GameState.Battle;
+        GameData.instance.CurrentGameState.Value = GameData.GameState.Battle;
 
         // バトル時間設定
         if(turnState == TurnState.Boss) {

@@ -4,6 +4,8 @@ using System.Linq;
 using Cysharp.Threading.Tasks;
 using System.Threading;
 using DG.Tweening;
+using System;
+
 
 public class ItemInfoDisplayManager : AbstractSingleton<ItemInfoDisplayManager> {
 
@@ -16,6 +18,9 @@ public class ItemInfoDisplayManager : AbstractSingleton<ItemInfoDisplayManager> 
     [SerializeField] private Transform enemyItemTran;
     [SerializeField] private Transform defaultItemTran;
     [SerializeField] private Transform itemInfoSet;
+    [SerializeField] private Button btnFilter;
+    [SerializeField] private CanvasGroup cgFilter;
+    private IDisposable disposable;
 
     [SerializeField] private Image imgBagIcon;
     //[SerializeField] private Transform bagMoveEndTran;
@@ -273,7 +278,16 @@ public class ItemInfoDisplayManager : AbstractSingleton<ItemInfoDisplayManager> 
 
         itemInfoCanvas.alpha = 1.0f;
 
-        await UniTask.WaitUntil(() => Input.GetMouseButtonDown(0), cancellationToken: token);
+        // 画面タップするまで待機(ほかの UI には触らないようにする)
+        bool isTouch = false;
+        cgFilter.blocksRaycasts = true;
+        disposable = btnFilter.OnClickExt(() => isTouch = true, this);
+
+        await UniTask.WaitUntil(() => isTouch == true, cancellationToken: token);
+
+        disposable.Dispose();
+        cgFilter.blocksRaycasts = false;
+
         isTreasureShow = false;
         HideItemInfo();
     }

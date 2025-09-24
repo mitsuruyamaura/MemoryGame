@@ -12,7 +12,7 @@ public class ItemHoverUI : MonoBehaviour
 
     // Image の場合、RaycastTarget は不要だが、Collider2D は必要
     public void OnMouseEnter() {
-        if (GameData.instance.gameState.Value != GameData.GameState.Play) {
+        if (GameData.instance.CurrentGameState.Value != GameData.GameState.Play) {
             return;
         }
         if (ItemInfoDisplayManager.instance.isTreasureShow) {

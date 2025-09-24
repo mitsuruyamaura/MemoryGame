@@ -1,14 +1,9 @@
 ﻿using Cysharp.Threading.Tasks;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class SceneStateManager : MonoBehaviour {
-
-    public static SceneStateManager instance;
-
-    public Stage stage;
+public class SceneStateManager : AbstractSingleton<SceneStateManager> {
 
     [SerializeField]
     private Fade fade;
@@ -16,18 +11,6 @@ public class SceneStateManager : MonoBehaviour {
     [SerializeField, Header("フェードの時間")]
     private float fadeDuration = 1.0f;
 
-    [SerializeField]
-    private UnityEngine.UI.Image imgMask;
-
-
-    void Awake() {
-        if (instance == null) {
-            instance = this;
-            DontDestroyOnLoad(gameObject);
-        } else {
-            Destroy(gameObject);
-        }
-    }
 
     public async UniTask FadeIn() {
         fade.FadeIn(fadeDuration, () => FadeOut());
@@ -37,48 +20,6 @@ public class SceneStateManager : MonoBehaviour {
 
     public void FadeOut() {
         fade.FadeOut(fadeDuration);
-    }
-
-    /// <summary>
-    /// Stage シーンへ遷移
-    /// </summary>
-    /// <returns></returns>
-    private void ActiveStageScene() {
-
-        string oldSceneName = SceneManager.GetActiveScene().name;
-
-        //Scene scene = SceneManager.GetSceneByName(nextLoadSceneName.ToString());
-
-        //while (!scene.isLoaded) {
-        //    yield return null;
-        //}
-
-        //SceneManager.SetActiveScene(scene);
-
-        //stage.gameObject.SetActive(true);
-
-        fade.FadeOut(fadeDuration);
-
-        //SceneManager.UnloadSceneAsync(oldSceneName);
-    }
-
-    /// <summary>
-    /// Battle シーンへの遷移
-    /// </summary>
-    /// <returns></returns>
-    private IEnumerator LoadBattleScene() {
-
-        SceneManager.LoadScene(SceneName.Battle.ToString(), LoadSceneMode.Additive);
-
-        Scene scene = SceneManager.GetSceneByName(SceneName.Battle.ToString());
-
-        yield return new WaitUntil(() => scene.isLoaded);
-
-        stage.gameObject.SetActive(false);
-
-        fade.FadeOut(fadeDuration);
-
-        SceneManager.SetActiveScene(scene);
     }
 
     /// <summary>

@@ -46,14 +46,9 @@ public class StageUIManager : MonoBehaviour {
 
 
     public void SetupStageUIManager(int stamina, int maxHp) {
-
-
         SetMaxHpDisplay(maxHp);
 
-        return;
-
-
-        UpdateDisplayPlayerLevel();
+        //UpdateDisplayPlayerLevel();
 
         defaultTime = BattleManager.instance.BattleDuration.Value;
 
@@ -70,13 +65,13 @@ public class StageUIManager : MonoBehaviour {
             ShowBattleState(resultType);
         }).AddTo(this);
 
-        SetUpActionResultDisplays();
+        //SetUpActionResultDisplays();
 
         HideTimeCanvas();
         HideBattleState(null);
 
-        txtWaveInfo.DOFade(0, 0);
-        txtInventoryMaxInfo.DOFade(0, 0);
+        //txtWaveInfo.DOFade(0, 0).SetLink(gameObject);
+        txtInventoryMaxInfo.DOFade(0, 0).SetLink(gameObject);
 
         GameData.instance.userData.SoulPoint
             .Zip(GameData.instance.userData.SoulPoint.Skip(1), (prevPoint, nextPoint) => (prevPoint, nextPoint))

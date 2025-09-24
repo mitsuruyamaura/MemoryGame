@@ -129,13 +129,13 @@ public class BackPackInItem : PoolBase {
 
         // 使用停止ボタンの設定
         disuseButtonSubscribe = btnDisuse.OnClickAsObservable()
-            .Where(_ => GameData.instance.gameState.Value == GameData.GameState.Play)
+            .Where(_ => GameData.instance.CurrentGameState.Value == GameData.GameState.Play)
             .ThrottleFirst(TimeSpan.FromSeconds(0.5f))
             .Subscribe(_ => ChangeDisuseshade());
 
         // リリースボタンの設定
         releaseButtonSubscribe = btnRelease.OnClickAsObservable()
-            .Where(_ => GameData.instance.gameState.Value == GameData.GameState.Play)
+            .Where(_ => GameData.instance.CurrentGameState.Value == GameData.GameState.Play)
             .ThrottleFirst(TimeSpan.FromSeconds(1.0f))
             .Subscribe(_ => {
                 AddPriceToMoney(ReleaseType.SelfRelease);
@@ -167,7 +167,7 @@ public class BackPackInItem : PoolBase {
     private void ChangeDisuseshade() {
         isDisuse = !isDisuse;
         canvasGroupShade.gameObject.SetActive(isDisuse);
-        DebugLogger.Log(isDisuse);
+        //DebugLogger.Log(isDisuse);
     }
 
     /// <summary>

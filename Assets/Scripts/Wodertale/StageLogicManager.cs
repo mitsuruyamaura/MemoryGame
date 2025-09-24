@@ -30,6 +30,7 @@ public class StageLogicManager : MonoBehaviour {
     //[SerializeField] private Transform overlayCanvasTran;
     //[SerializeField] private MoveTimeScaleController moveTimeScaleController;
 
+    [SerializeField] private MemoryGameManager memoryGameManager; 
 
 
     //[SerializeField] private PlayerMovement playerMovement;
@@ -54,6 +55,8 @@ public class StageLogicManager : MonoBehaviour {
 
 
     private void Start() {
+        // 自動的に FadOut する
+        SceneStateManager.instance.FadeIn().Forget();
         SetupGameLogic().Forget();
     }
 
@@ -70,31 +73,11 @@ public class StageLogicManager : MonoBehaviour {
         await gssReceiver.PrepareGSSLoadStartAsync();
 
 
+        //await memoryGameManager.SetUpAsync();
+
+
         BattleManager.instance.SetUp(stageUIManager);
 
-        // SO のデータを取得するまで待機
-        //await UniTask.WaitUntil(() => GSSReceiver.IsLoading);
-
-        // デバッグ用。Title が追加されたら使わない
-        //SceneStateManager.instance.PreparateStageSceneAsync();
-
-        // ステージのランダム作成(StageData 作成後は StageData に登録されている StageType を渡す)
-        //stageGenerator.GenerateStageFromRandomTiles(GameData.instance.currentStageData.stageType);
-
-        // 通常のシンボルのランダム作成して List に追加
-        //SymbolManager.instance.AllClearSymbolsList();
-
-        //symbolGenerator.SetUp();
-        //SymbolManager.instance.SymbolsList = symbolGenerator.GenerateSymbols(-1, stageGenerator.TilemapColision, stageGenerator.TilemapWalk, stageGenerator.terrainInfoDic);
-
-        // 特殊シンボルのランダム作成して List に追加
-        //SymbolManager.instance.SymbolsList.AddRange(stageGenerator.GenerateSpecialSymbols(GameData.instance.currentStageData.orbTypes));
-
-        // 全シンボルの設定
-        //SymbolManager.instance.SetUpAllSymbols();
-
-        // スタミナの値をステージごとの初期値に設定(StageData 作成後)
-        //GameData.instance.userData.Stamina.Value = GameData.instance.currentStageData.initStamina;
 
         // UI 初期設定
         stageUIManager?.SetupStageUIManager(GameData.instance.userData.Stamina.Value, GameData.instance.charaStatus.MaxHp.Value);
@@ -138,12 +121,6 @@ public class StageLogicManager : MonoBehaviour {
         // ドロップするトレジャーの情報を準備
         //DataBaseManager.instance.CreateDropItemDatasList(GameData.instance.currentStageData.dropTreasureLevel);
 
-        //playerMovement.SetUp();
-        //playerMovement.MovePlayerProc();
-        //playerMovement.SetTerrainInfo(stageGenerator.terrainInfoDic);
-
-        //playerMovement.OnPlayerMooveComplete.Subscribe(_ => ExecuteEnemyTurnAsync().Forget());
-
         FloatingViewGenerator.instance?.SetUp(gameObject);
 
         //BattleManager.instance.UpdatePlayerHp(GameData.instance.debugMaxHp, false);
@@ -165,89 +142,13 @@ public class StageLogicManager : MonoBehaviour {
         //        //BattleManager.instance.CheckEndCondition();
         //    });
 
+
         // BackPackInItem のオブジェクトプールの初期化、List の購読などを設定
         PlayerInventoryManager.instance.Setup(stageUIManager.playerBackPackItemTran);
 
-        //EnemyInfoDisplayManager.instance.Setup(stageUIManager.enemyBackPackItemTran);
+        GameData.instance.CurrentGameState.Value = GameData.GameState.Play;
 
-        //GameData.instance.userData.WalkCount.Subscribe(walkCount => 
-        //{
-        //    int waveNo = DataBaseManager.instance.GetWaveCount(walkCount, GameData.instance.userData.waveCount);
-        //    if(waveNo > GameData.instance.userData.waveCount) {
-        //        GameData.instance.userData.waveCount = waveNo;
-
-        //        // シンボルの削除と再作成
-
-        //    }
-        //}).AddTo(this);
-
-        //stageUIManager.SetSliderWalkCount(ConstData.WAVE_WALK_COUNT);  // GameData.instance.GetMaxWaveCount(GameData.instance.userData.waveNo)
-
-        // 歩数の購読１。歩数表示更新
-        //GameData.instance.userData.WalkCount
-        //    .Where(_ => GameData.instance.userData.waveNo < 10)
-        //    .Subscribe(walkCount => {
-        //        stageUIManager.UpdateWalkCount(walkCount);
-
-        //        // 次の Wave まで残り5歩(45/95/145/195..)になったら表示(バトルのエフェクトと重なる場合、こちらを優先)
-        //        int offsetCount = (DataBaseManager.instance.GetWaveNo(walkCount, GameData.instance.userData.waveNo) - 1) * ConstData.WAVE_WALK_COUNT;
-        //        if (walkCount != 0 && walkCount % (ConstData.WAVE_INFO_COUNT + offsetCount) == 0) {
-        //            stageUIManager.NextWaveInfo();
-        //        }
-        //    }).AddTo(this);
-
-        //// 歩数の購読２。歩数による WaveNo の更新と次の Wave 用のステージ、シンボルの作成
-        //GameData.instance.userData.WalkCount
-        //    .Select(walkCount => {
-        //        int waveNo = DataBaseManager.instance.GetWaveNo(walkCount, GameData.instance.userData.waveNo);
-        //        return new { walkCount, waveNo };
-        //    })
-        //    .Where(result => result.waveNo > GameData.instance.userData.waveNo)
-        //    .Subscribe(async result => {
-
-        //        //GameData.instance.gameState.Value = GameData.GameState.Battle;
-        //        //await ExecuteEnemyTurnAsync();
-        //        //await UniTask.WaitUntil(() => GameData.instance.gameState.Value == GameData.GameState.Play);
-        //        GameData.instance.gameState.Value = GameData.GameState.Prepare;
-
-        //        DebugLogger.Log($"WaveNo 更新 : { result.waveNo}");
-        //        GameData.instance.userData.waveNo = result.waveNo;
-        //        stageUIManager.UpdateWaveNo(GameData.instance.userData.waveNo);
-
-        //        SceneStateManager.instance.FadeIn().Forget();
-        //        await UniTask.Delay(1000, cancellationToken:token);
-
-        //        // Wave のデータをもらう
-        //        WaveData waveData = DataBaseManager.instance.GetWaveData(GameData.instance.userData.waveNo);
-        //        stageGenerator.SetTilemapData(waveData);
-
-        //        // タイル削除して新しく生成
-        //        stageGenerator.GenerateStageFromRandomTiles(GameData.instance.currentStageData.stageType);
-
-        //        // ランダムな SymbolRate と Wave のデータをもらう
-
-        //        // シンボルの削除と再作成処理
-        //        SymbolManager.instance.AllClearSymbolsList();
-        //        SymbolManager.instance.SymbolsList = symbolGenerator.GenerateSymbols(-1, stageGenerator.TilemapColision, stageGenerator.TilemapWalk, stageGenerator.terrainInfoDic);
-        //        SymbolManager.instance.SetUpAllSymbols();
-
-        //        stageUIManager.ResetSliderWalkCount();
-        //        stageUIManager.SetSliderWalkCount(ConstData.WAVE_WALK_COUNT);  // GameData.instance.GetMaxWaveCount(GameData.instance.userData.waveNo)
-
-        //        // Player の移動用データ更新
-        //        playerMovement.SetTerrainInfo(stageGenerator.terrainInfoDic);
-
-        //        await UniTask.Delay(1500, cancellationToken: token);
-        //        SymbolManager.instance.ResetEvent();
-        //        //SceneStateManager.instance.FadeOut();
-        //        GameData.instance.gameState.Value = GameData.GameState.Play;
-        //    })
-        //    .AddTo(this);
-
-        //// ボスの設定
-        //bossSymbol.OnEnterSymbol();
-
-        GameData.instance.gameState.Value = GameData.GameState.Play;
+        await memoryGameManager.SetUpAsync();
     }
 
     //public async UniTask ExecuteEnemyTurnAsync() {
