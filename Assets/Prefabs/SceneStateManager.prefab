@@ -221,8 +221,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 515c7b8c9758c0b47a799c01dafebd70, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  stage: {fileID: 0}
-  battle: {fileID: 0}
   fade: {fileID: 1129700310219512903}
   fadeDuration: 1
-  imgMask: {fileID: 7296758899107788683}

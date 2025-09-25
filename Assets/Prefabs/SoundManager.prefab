@@ -55,9 +55,9 @@ MonoBehaviour:
   - {fileID: 452793627706687824}
   - {fileID: 455259261743510901}
   BGM:
-  - clip: {fileID: 8300000, guid: e401f0e36e5fa0b448bf3055a9620beb, type: 3}
-    loopTime: 0
-    endTime: 0
+  - clip: {fileID: 8300000, guid: 4c9a02efe7f65814484c1035bcf9797e, type: 3}
+    loopTime: 9.5
+    endTime: 138
   - clip: {fileID: 8300000, guid: bc207977f9e5bf14e922e98683a3da67, type: 3}
     loopTime: 0
     endTime: 0
@@ -110,6 +110,7 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: -106064835657716243, guid: ec10a476a07e6144db8c70a940015615, type: 2}
   m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 0}
   m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
@@ -206,6 +207,7 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: -106064835657716243, guid: ec10a476a07e6144db8c70a940015615, type: 2}
   m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 0}
   m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
