@@ -15,6 +15,12 @@ public class EnemyCard : CardModelBase {
 
 
             if (battleResultType == BattleResultType.Win) {
+                // 討伐した敵を登録
+                GameData.instance.AddDefeatEnemyList(enemyData.enemyNo);
+                
+                // 経験値獲得
+                GameData.instance.userData.SoulPoint.Value += enemyData.exp;
+
                 // 敵のレアリティから同レアリティのアイテムテータを抽選
                 ItemData itemData = DataBaseManager.instance.GetRandomItemByEnemyDrop(enemyData.rarity);
 
@@ -25,13 +31,19 @@ public class EnemyCard : CardModelBase {
                 };
 
                 // 宝箱カードの生成、カードの効果を実行
-                TreasureChestCard treasureChestCard = new(cardData);
+                TreasureChestCard treasureChestCard = new(cardData, true);
                 await treasureChestCard.ExecuteCardAsync(token);
 
                 GameData.instance.CurrentGameState.Value = GameData.GameState.Play;
             } else if (battleResultType == BattleResultType.Lose) {
                 DebugLogger.Log($"Game Over");
                 GameData.instance.CurrentGameState.Value = GameData.GameState.GameUp;
+
+                SoundManager.instance.PlayVoice(VOICE_TYPE.Loose);
+                //stageUIManager.ShowRestartMessage();
+
+                await UniTask.WaitUntil(() => UnityEngine.Input.GetMouseButtonDown(0), cancellationToken: token);
+                SceneStateManager.instance.PrepareteNextScene(SceneName.Title);
             } else if (battleResultType == BattleResultType.Timeout) {
                 DebugLogger.Log($"Timeout");
                 GameData.instance.CurrentGameState.Value = GameData.GameState.Play;

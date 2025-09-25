@@ -69,6 +69,8 @@ public class GameData : AbstractSingleton<GameData>
     public CharaStatus charaStatus;
     public UserData userData;
 
+    public int limitInventorySize = 20;                // 上限値
+
     public CombatData playerCombatData;
     public CombatData enemyCombatData;
 

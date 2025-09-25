@@ -164,8 +164,8 @@ public class BattleManager : AbstractSingleton<BattleManager> {
         // 敵の装備情報を取得
         List<int> equipItemNoList = enemyData.GetEquipItemNoList();
 
+        // 敵の情報表示。未討伐の場合にはシェードをかけたり、名前を不確定名にする
         EnemyInfoDisplayManager.instance.ShowEnemyInfo(enemyData, equipItemNoList, GameData.GameState.Battle);
-        EnemyInfoDisplayManager.instance.NoShadeEnemy();
 
         enemyMaxHp = enemyData.hp;
 

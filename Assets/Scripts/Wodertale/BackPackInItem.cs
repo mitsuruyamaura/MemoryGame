@@ -100,18 +100,21 @@ public class BackPackInItem : PoolBase {
 
                 // プレイヤーの際、バトルで1回も消費していない場合、あるいはパッシブの場合には耐久値を1回分だけ減らす
                 // 必ず this で、新しく作成した ItemData を参照する
-                if (entityType == EntityType.Player &&
-                    (prevDurability == this.itemData.durability || this.itemData.effectType == EffectType.Passive)) {
-                    this.itemData.durability--;
-                    if (this.itemData.durability <= 0) {
-                        UpdateDurabilityDisplay(0);
-                        AddPriceToMoney(ReleaseType.Destroy);  // 0 だが一応
-                        Release();
-                    } else {
-                        UpdateDurabilityDisplay(this.itemData.durability);
-                    }
-                    DebugLogger.Log(this.itemData.durability);
-                }
+                //if (entityType == EntityType.Player &&
+                //    (prevDurability == this.itemData.durability || this.itemData.effectType == EffectType.Passive)) {
+                //    this.itemData.durability--;
+                //    if (this.itemData.durability <= 0) {
+                //        UpdateDurabilityDisplay(0);
+                //        AddPriceToMoney(ReleaseType.Destroy);  // 0 だが一応
+                //        Release();
+                //    } else {
+                //        UpdateDurabilityDisplay(this.itemData.durability);
+                //    }
+                //    DebugLogger.Log(this.itemData.durability);
+                //}
+
+                // 穢れのコンディションの場合に、1回ずつ減らす
+
 
                 tweener?.Kill();
                 int attackInterval = Mathf.CeilToInt(currentCoolTime * 1000); // 1000 でスケールして切り上げ
@@ -121,7 +124,7 @@ public class BackPackInItem : PoolBase {
 
         // 耐久値表示更新
         if (entityType == EntityType.Player) {
-            UpdateDurabilityDisplay(this.itemData.durability);
+            UpdateDurabilityDisplay(-1);
         }
 
         // 使用停止のシェードの設定
@@ -131,7 +134,7 @@ public class BackPackInItem : PoolBase {
         // 使用停止ボタンの設定
         disuseButtonSubscribe = btnDisuse.OnClickAsObservable()
             .Where(_ => GameData.instance.CurrentGameState.Value == GameData.GameState.Play)
-            .ThrottleFirst(TimeSpan.FromSeconds(0.5f))
+            .ThrottleFirst(TimeSpan.FromSeconds(0.25f))
             .Subscribe(_ => ChangeDisuseshade());
 
         // リリースボタンの設定
@@ -225,7 +228,7 @@ public class BackPackInItem : PoolBase {
                 ExecuteBackPackItem(itemData, cts.Token, entityType, resultType).Forget();
             });
 
-        UpdateDurabilityDisplay(itemData.durability);
+        //UpdateDurabilityDisplay(itemData.durability);
         DebugLogger.Log("強化");
     }
 
@@ -369,18 +372,18 @@ public class BackPackInItem : PoolBase {
                             break;
                     }
                     // 耐久値を減算
-                    if (entityType == EntityType.Player) {
-                        itemData.durability--;
-                        if (itemData.durability <= 0) {
-                            UpdateDurabilityDisplay(0);
-                            AddPriceToMoney(ReleaseType.Destroy);  // 0 だが一応
-                            Release();
-                            break;
-                        } else {
-                            UpdateDurabilityDisplay(itemData.durability);
-                            //Debug.Log(itemData.durability);
-                        }
-                    }
+                    //if (entityType == EntityType.Player) {
+                    //    itemData.durability--;
+                    //    if (itemData.durability <= 0) {
+                    //        UpdateDurabilityDisplay(0);
+                    //        AddPriceToMoney(ReleaseType.Destroy);  // 0 だが一応
+                    //        Release();
+                    //        break;
+                    //    } else {
+                    //        UpdateDurabilityDisplay(itemData.durability);
+                    //        //Debug.Log(itemData.durability);
+                    //    }
+                    //}
 
                     // for 文なのでフレーム跨がせる。そうしないと、ここですべて処理しようとして処理が一時止まる
                     await UniTask.Yield(cancellationToken: token);
