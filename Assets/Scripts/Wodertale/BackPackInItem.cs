@@ -18,6 +18,7 @@ public class BackPackInItem : PoolBase {
     public Image imgItemIcon;
     public Image imgIconGauge;
     [SerializeField] private Image imgEnhanceFrame;
+    [SerializeField] private Image imgReleaseIcon;
     [SerializeField] private Text txtEnhanceLevel;
     [SerializeField] private Text txtDurability;
     [SerializeField] private Button btnDisuse;       // 使用停止
@@ -141,6 +142,9 @@ public class BackPackInItem : PoolBase {
                 AddPriceToMoney(ReleaseType.SelfRelease);
                 Release();
             });
+
+        // 画像の透明部分はタップ感知しない設定にする
+        imgReleaseIcon.alphaHitTestMinimumThreshold = 1;
 
         // 交渉成功時
         //successSettlementDisposable = SymbolManager.instance.onSuccessSettlement
