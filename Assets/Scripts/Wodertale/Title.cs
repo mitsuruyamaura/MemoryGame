@@ -25,6 +25,8 @@ public class Title : MonoBehaviour {
         btnResetDatas.interactable = false;
 
         InitGameData().Forget();
+
+        // TODO 一旦なし
         InitLeaderBoard();
     }
 
@@ -51,7 +53,9 @@ public class Title : MonoBehaviour {
         volumeSlider.gameObject.SetActive(false);
 
         // SO のデータを取得するまで待機
-        await UniTask.WaitUntil(() => GSSReceiver.IsLoading, cancellationToken: token);
+        //await UniTask.WaitUntil(() => GSSReceiver.IsLoading, cancellationToken: token);
+
+        await GSSReceiver.PrepareGSSLoadStartAsync();
 
         //// シーンの非同期読み込み
         //var sceneLoadTask = UniTask.Create(async () => {

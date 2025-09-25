@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &7047451247623266575
+--- !u!1 &6862144718862645949
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,9 +8,9 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 3829330734923758760}
-  - component: {fileID: 5422886915216709908}
-  - component: {fileID: 9155426995677239277}
+  - component: {fileID: 8204181930709238638}
+  - component: {fileID: 1316648244105173245}
+  - component: {fileID: 984664759744698505}
   m_Layer: 0
   m_Name: GSSConveter
   m_TagString: Untagged
@@ -18,52 +18,51 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &3829330734923758760
+--- !u!4 &8204181930709238638
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7047451247623266575}
+  m_GameObject: {fileID: 6862144718862645949}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 1
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &5422886915216709908
+--- !u!114 &1316648244105173245
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7047451247623266575}
+  m_GameObject: {fileID: 6862144718862645949}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 858157d0cc9ad5245ad41de073b7bde5, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier: Assembly-CSharp::GSSReader
   SheetID: 1M9ESQ3lwGjANRT1fmsMnwRVd8G0Zdgo6KxzfA02jYgA
   sheetDatas:
   - SheetName: 2
   - SheetName: 4
   - SheetName: 6
-  - SheetName: 7
-  - SheetName: 8
-  - SheetName: 9
-  - SheetName: 5
-  - SheetName: 10
---- !u!114 &9155426995677239277
+  - SheetName: 11
+  - SheetName: 14
+  - SheetName: 12
+  - SheetName: 13
+--- !u!114 &984664759744698505
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7047451247623266575}
+  m_GameObject: {fileID: 6862144718862645949}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: dd6645e1e8ee22b4a9270f66fc807097, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier: Assembly-CSharp::GSSReceiver

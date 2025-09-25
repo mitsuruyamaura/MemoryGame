@@ -20,7 +20,7 @@ public enum TurnState {
 
 public class StageLogicManager : MonoBehaviour {
 
-    [SerializeField] private GSSReceiver gssReceiver;
+    //[SerializeField] private GSSReceiver gssReceiver;
     //[SerializeField] private StageGenerator stageGenerator;
     //[SerializeField] private SymbolGenerator symbolGenerator;
 
@@ -70,7 +70,7 @@ public class StageLogicManager : MonoBehaviour {
         // TODO Player の Hp 設定
 
 
-        await gssReceiver.PrepareGSSLoadStartAsync();
+        //await gssReceiver.PrepareGSSLoadStartAsync();
 
 
         //await memoryGameManager.SetUpAsync();
