@@ -43,6 +43,9 @@ public class EnemyInfoDisplayManager : AbstractSingleton<EnemyInfoDisplayManager
             return;
         }
 
+        // 一旦シェードかける
+        imgShadeIcon.enabled = true;
+
         // 引数で、敵の情報(Hp、バフ、デバフ、装備品)をもらって設定する
 
         // 名前設定

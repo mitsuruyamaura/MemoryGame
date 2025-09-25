@@ -79,12 +79,14 @@ public class MemoryGameManager : MonoBehaviour {
 
         // カード選択イベントを購読。選択したカードをめくる
         onCardSelected
+            .Where(_ => GameData.instance.CurrentGameState.Value == GameData.GameState.Play)
             .Where(_ => !inputLocked) // ロック中は無視
             .Subscribe(cardView => HandleCardSelectionAsync(cardView).Forget())
             .AddTo(this);
 
         // 階段ボタンの購読
-        btnStairs.OnClickExt(() => NextFloorAsync().Forget(), this);
+        btnStairs
+            .OnClickExt(() => NextFloorAsync().Forget(), this);
 
         // めくれる回数の残り回数を確認し、ゲーム終了処理へつなげる
         GameData.instance.userData.FlipPoint
@@ -337,7 +339,7 @@ public class MemoryGameManager : MonoBehaviour {
     private CardModelBase CreateCardModel(CardData cardData) {
         return cardData.cardTypeMaster.cardEventType switch {
             CardEventType.MemoryFragments => new MemoryFragmentsCard(cardData),
-            CardEventType.TreasureChest => new TreasureChestCard(cardData),
+            CardEventType.TreasureChest => new TreasureChestCard(cardData, false),
             CardEventType.Blessing => new BlessingCard(cardData),
             CardEventType.Enemy => new EnemyCard(cardData),
             CardEventType.Stairs => new StairsCard(cardData),
@@ -451,6 +453,10 @@ public class MemoryGameManager : MonoBehaviour {
     /// </summary>
     /// <returns></returns>
     private async UniTask NextFloorAsync() {
+        if (GameData.instance.CurrentGameState.Value != GameData.GameState.Play) {
+            return;
+        }
+
         //SceneManager.LoadScene("Main");
 
         // TODO 最終フロアか確認
@@ -500,9 +506,13 @@ public class MemoryGameManager : MonoBehaviour {
 
             // 記憶を取り戻す
 
+            // インベントリの上限を超えていないなら
+            if (GameData.instance.playerCombatData.MaxInventorySize.Value < GameData.instance.limitInventorySize) {
+                // インベントリのサイズアップ
+                GameData.instance.playerCombatData.MaxInventorySize.Value++;
+            }            
         }
     }
-
 
     private async UniTask FlashIconsAsync() {
         await UniTask.Delay(1000);

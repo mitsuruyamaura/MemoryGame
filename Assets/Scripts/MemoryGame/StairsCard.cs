@@ -1,4 +1,4 @@
-using Cysharp.Threading.Tasks;
+ï»¿using Cysharp.Threading.Tasks;
 using System.Threading;
 
 [System.Serializable]
@@ -9,8 +9,10 @@ public class StairsCard : CardModelBase {
         DebugLogger.Log("Stairs");
 
         await UniTask.Yield(token);
+        
+        SoundManager.instance.PlaySE(SE_TYPE.Magic_1);
 
-        // ŠK’ig—p‰Â”\‚É‚·‚é
+        // éšæ®µä½¿ç”¨å¯èƒ½ã«ã™ã‚‹
         GameData.instance.userData.CanUseStairs.Value = true;
     }
 }

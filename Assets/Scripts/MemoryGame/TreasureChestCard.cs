@@ -3,15 +3,28 @@ using System.Threading;
 
 [System.Serializable]
 public class TreasureChestCard : CardModelBase {
-    public TreasureChestCard(CardData cardData) : base(cardData) {}
+    public bool isEnemyDrop;
+
+    public TreasureChestCard(CardData cardData, bool isEnemyDrop) : base(cardData) {
+        this.isEnemyDrop = isEnemyDrop;
+    }
 
     public override async UniTask ExecuteCardAsync(CancellationToken token) {
         DebugLogger.Log("TreasureChest");
 
-        if(cardData.masterData is ItemData itemData) {
-            // 宝箱のアニメ
-            ItemInfoDisplayManager.instance.ShowTreasureBoxIcon(itemData.rarity);
-            await UniTask.Delay(300);
+        if (cardData.masterData is ItemData itemData) {
+            // 回収方法で演出分岐
+            if (isEnemyDrop) {
+                // 袋アイコン表示
+                ItemInfoDisplayManager.instance.ShowBagIcon();
+                SoundManager.instance.PlaySE(SE_TYPE.Drop);
+            } else {
+                // 宝箱のアニメ
+                ItemInfoDisplayManager.instance.ShowTreasureBoxIcon(itemData.rarity);
+                SoundManager.instance.PlaySE(SE_TYPE.OpenTreasure);
+            }
+
+            await UniTask.Delay(300, cancellationToken: token);
 
             // 入手したアイテムの情報表示
             await ItemInfoDisplayManager.instance.ShowTreasureItemInfoAsync(itemData, token);
