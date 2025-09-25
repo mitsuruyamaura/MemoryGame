@@ -346,7 +346,9 @@ public class BattleManager : AbstractSingleton<BattleManager> {
         if (!isfloatViewOn) return;
 
         FloatingView floatingView = (FloatingView)FloatingViewGenerator.instance.GetObjectFromPool(playerFloatingViewTran);
-        FloatingViewType floatingViewType = isCritical == true ? FloatingViewType.critical : effectType == EffectType.Heal ? FloatingViewType.heal : FloatingViewType.normalDamage;
+        FloatingViewType floatingViewType = isCritical == true ? FloatingViewType.critical
+                                          : effectType == EffectType.Heal ? FloatingViewType.heal
+                                          : effectType == EffectType.Passive ? FloatingViewType.reaction : FloatingViewType.normalDamage;
         floatingView.SetColor(floatingViewType);
         floatingView.SetViewFontSize(floatingViewType);
         floatingView.UpdateText(amount.ToString()).Forget();
