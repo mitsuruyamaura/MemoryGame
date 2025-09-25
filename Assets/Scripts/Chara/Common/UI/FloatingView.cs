@@ -137,7 +137,6 @@ public class FloatingView : TextViewBase, IPoolable {
         // フェードアウトした後に初期値に戻す
         canvasGroupTextView.alpha = 1.0f;
         transform.localScale = Vector3.one * defaultScale;
-        transform.localPosition = Vector3.zero;
         floatingViewType = FloatingViewType.normalDamage;
 
         //Debug.Log(objectPool);
@@ -145,6 +144,12 @@ public class FloatingView : TextViewBase, IPoolable {
     }
 
     private void Bounce() {
+        // リセット
+        transform.localPosition = Vector3.zero;
+
+        // World Space Canvas なので Transform.position を使う
+        Vector3 startPos = transform.position;
+
         // プレイヤーの位置を中心にランダムな角度を生成
         float randomAngle = Random.Range(minAngle, maxangle);
 
@@ -154,21 +159,30 @@ public class FloatingView : TextViewBase, IPoolable {
         Sequence sequence = DOTween.Sequence();
 
         // UI の移動先の設定(放物線になるように順番にセット)
-        Vector3[] path = {
-            new(transform.position.x, transform.position.y, 0),  // スタート地点
-            transform.position + launchDirection * launchForce,  // 発射方向と最大地点
-            new(transform.position.x + (launchForce * launchDirection.x) * 2, transform.position.y - (launchForce * launchDirection.y), 0)  // 落下地点
-        };
+        // 放物線のピークと終点を計算
+        Vector3 peakPos = startPos + launchDirection * launchForce;
+        Vector3 endPos = new Vector3(
+            startPos.x + (launchForce * launchDirection.x) * 2,
+            startPos.y - (launchForce * launchDirection.y),
+            startPos.z
+        );
 
-        // UI の放物線移動
-        sequence.Append(transform.DOPath(path, fallTime)).SetLink(gameObject);
+        // 放物線移動
+        sequence.Append(transform.DOMove(peakPos, fallTime * 0.5f).SetEase(Ease.OutQuad));
+        sequence.Append(transform.DOMove(endPos, fallTime * 0.5f).SetEase(Ease.InQuad));
 
-        // 落下後の移動とサイズ
-        sequence.Append(transform.DOJump(
-                     new Vector3(transform.position.x + (bounceWidth * launchDirection.x) * 1.25f, transform.position.y - fallHeight, 0),
-                     bouncePower, numBounces, duration))
-                .SetLink(gameObject);
+        // 落下後のバウンド
+        Vector3 bouncePos = new Vector3(
+            startPos.x + (bounceWidth * launchDirection.x),
+            startPos.y - fallHeight,
+            startPos.z
+        );
 
-        sequence.Join(transform.DOScale(Vector3.zero, duration)).SetLink(gameObject);
+        sequence.Append(transform.DOJump(bouncePos, bouncePower, numBounces, duration));
+
+        // フェードアウト用
+        sequence.Join(transform.DOScale(Vector3.zero, duration));
+
+        sequence.SetLink(gameObject);
     }
 }
