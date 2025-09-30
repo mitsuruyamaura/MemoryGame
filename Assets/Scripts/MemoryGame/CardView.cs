@@ -50,6 +50,8 @@ public class CardView : PoolBase {
     public override void Release() {
         base.Release();
 
+        if (this == null || transform == null) return;
+
         transform.SetParent(GameData.instance.transform);
         rectTransform.localScale = Vector3.one;
         rectTransform.localPosition = Vector3.zero;

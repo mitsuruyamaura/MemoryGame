@@ -422,6 +422,10 @@ public class PlayerInventoryManager : AbstractSingleton<PlayerInventoryManager> 
         txtSettle.text = (itemTotalSettleRate + bonusSettleRate).ToString("F2");
     }
 
+    private void OnDestory() {
+        disposables?.Clear();
+    }
+
     // 他のインベントリ関連のメソッドを追加
 
 }

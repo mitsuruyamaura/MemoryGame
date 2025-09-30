@@ -2231,6 +2231,10 @@ PrefabInstance:
       value: 19
       objectReference: {fileID: 0}
     - target: {fileID: 2323247000860799173, guid: c356020638cee7b46acab21e1c4454e0, type: 3}
+      propertyPath: isDontDestroy
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2323247000860799173, guid: c356020638cee7b46acab21e1c4454e0, type: 3}
       propertyPath: 'SE.Array.data[16]'
       value: 
       objectReference: {fileID: 8300000, guid: e891c3f9a7b0eb847b045ca72dd1704c, type: 3}
@@ -5285,6 +5289,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7125656954279440095, guid: 9399b890523a5c24ca68b4e7de53fdc0, type: 3}
+      propertyPath: isDontDestroy
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -7691,6 +7699,10 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 237094297761315668, guid: b444b0974ae37b04bbc6fbbfb1744e12, type: 3}
       propertyPath: fadeDuration
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 237094297761315668, guid: b444b0974ae37b04bbc6fbbfb1744e12, type: 3}
+      propertyPath: isDontDestroy
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1634721240851707581, guid: b444b0974ae37b04bbc6fbbfb1744e12, type: 3}

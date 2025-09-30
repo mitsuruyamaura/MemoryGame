@@ -15,7 +15,7 @@ public enum FloatingViewType {
 /// <summary>
 /// フロート表示用
 /// </summary>
-public class FloatingView : TextViewBase, IPoolable {
+public class FloatingView : TextViewBase {
 
     [SerializeField] private bool isAnimOn;
 
@@ -131,10 +131,15 @@ public class FloatingView : TextViewBase, IPoolable {
     /// オブジェクトプールへ戻す
     /// </summary>
     public override void Release() {
+        if (isReleased) {
+            return;
+        }
+
         // 文字の色を白に戻す
         SetDefaultColorAndFontSize();
 
         // フェードアウトした後に初期値に戻す
+        if (this == null || canvasGroupTextView == null) return;
         canvasGroupTextView.alpha = 1.0f;
         transform.localScale = Vector3.one * defaultScale;
         floatingViewType = FloatingViewType.normalDamage;

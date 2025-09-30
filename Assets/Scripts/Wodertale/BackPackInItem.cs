@@ -77,6 +77,7 @@ public class BackPackInItem : PoolBase {
 
         //Debug.Log("SetupBackPackItem");
         float scale = transform.localScale.x;
+        UpdateEnhanceLevelDisplay(0);
 
         transform.localPosition = new(transform.localPosition.x, transform.localPosition.y, 0);
         transform.localScale = Vector3.zero;
@@ -92,6 +93,7 @@ public class BackPackInItem : PoolBase {
                 ExecuteBackPackItem(this.itemData, cts.Token, entityType, resultType).Forget();
             });
 
+        EnhanceLevel.Value = 0;
         enhanceLevelDispose = EnhanceLevel.Subscribe(level => UpdateEnhanceLevelDisplay(level));
 
         battleEndDisposable = BattleManager.instance.OnBattleEnd
@@ -100,31 +102,34 @@ public class BackPackInItem : PoolBase {
 
                 // プレイヤーの際、バトルで1回も消費していない場合、あるいはパッシブの場合には耐久値を1回分だけ減らす
                 // 必ず this で、新しく作成した ItemData を参照する
-                //if (entityType == EntityType.Player &&
-                //    (prevDurability == this.itemData.durability || this.itemData.effectType == EffectType.Passive)) {
-                //    this.itemData.durability--;
-                //    if (this.itemData.durability <= 0) {
-                //        UpdateDurabilityDisplay(0);
-                //        AddPriceToMoney(ReleaseType.Destroy);  // 0 だが一応
-                //        Release();
-                //    } else {
-                //        UpdateDurabilityDisplay(this.itemData.durability);
-                //    }
-                //    DebugLogger.Log(this.itemData.durability);
-                //}
+                if (entityType == EntityType.Player &&
+                    (prevDurability == this.itemData.durability || this.itemData.effectType == EffectType.Passive)) {
+                    this.itemData.durability--;
+                    if (this.itemData.durability <= 0) {
+                        UpdateDurabilityDisplay(0);
+                        AddPriceToMoney(ReleaseType.Destroy);  // 0 だが一応
+                        Release();
+                    } else {
+                        UpdateDurabilityDisplay(this.itemData.durability);
+                    }
+                    DebugLogger.Log(this.itemData.durability);
+                }
 
                 // 穢れのコンディションの場合に、1回ずつ減らす
 
 
                 tweener?.Kill();
                 int attackInterval = Mathf.CeilToInt(currentCoolTime * 1000); // 1000 でスケールして切り上げ
-                await UniTask.Delay(attackInterval);
+                await UniTask.Delay(attackInterval, cancellationToken: token).SuppressCancellationThrow();
+
+                if (this == null || imgIconGauge == null) return;
                 tweener = imgIconGauge.DOFillAmount(1.0f, 0.2f).SetEase(Ease.Linear).SetLink(gameObject);
             });
 
         // 耐久値表示更新
         if (entityType == EntityType.Player) {
-            UpdateDurabilityDisplay(-1);
+            UpdateDurabilityDisplay(this.itemData.durability);
+            //UpdateDurabilityDisplay(-1);  // 耐久力を減算しない場合はこちらにする
         }
 
         // 使用停止のシェードの設定
@@ -150,22 +155,22 @@ public class BackPackInItem : PoolBase {
         imgReleaseIcon.alphaHitTestMinimumThreshold = 1;
 
         // 交渉成功時
-        //successSettlementDisposable = SymbolManager.instance.onSuccessSettlement
-        //    .Subscribe(_ => {
-        //        // パッシブの場合には耐久値を1回分だけ減らす
-        //        // 必ず this で、新しく作成した ItemData を参照する
-        //        if (entityType == EntityType.Player && this.itemData.effectType == EffectType.Passive) {
-        //            this.itemData.durability--;
-        //            if (this.itemData.durability <= 0) {
-        //                UpdateDurabilityDisplay(0);
-        //                AddPriceToMoney(ReleaseType.Destroy);  // 0 だが一応
-        //                Release();
-        //            } else {
-        //                UpdateDurabilityDisplay(this.itemData.durability);
-        //            }
-        //            DebugLogger.Log(this.itemData.durability);
-        //        }
-        //    });
+        successSettlementDisposable = BattleManager.instance.OnSuccessSettlement
+            .Subscribe(_ => {
+                // パッシブの場合には耐久値を1回分だけ減らす
+                // 必ず this で、新しく作成した ItemData を参照する
+                if (entityType == EntityType.Player && this.itemData.effectType == EffectType.Passive) {
+                    this.itemData.durability--;
+                    if (this.itemData.durability <= 0) {
+                        UpdateDurabilityDisplay(0);
+                        AddPriceToMoney(ReleaseType.Destroy);  // 0 だが一応
+                        Release();
+                    } else {
+                        UpdateDurabilityDisplay(this.itemData.durability);
+                    }
+                    DebugLogger.Log(this.itemData.durability);
+                }
+            });
     }
 
     /// <summary>
@@ -216,7 +221,7 @@ public class BackPackInItem : PoolBase {
         //    Debug.Log($"hpBonus : {enhanceItemData.hpBonus}");
         //}
 
-        // 強化回数を加算
+        // 強化回数を加算 = 表示更新の購読処理が動く
         EnhanceLevel.Value += enhanceCount;
 
         battleStartDisposable?.Dispose();
@@ -228,7 +233,7 @@ public class BackPackInItem : PoolBase {
                 ExecuteBackPackItem(itemData, cts.Token, entityType, resultType).Forget();
             });
 
-        //UpdateDurabilityDisplay(itemData.durability);
+        UpdateDurabilityDisplay(itemData.durability);
         DebugLogger.Log("強化");
     }
 
@@ -249,6 +254,7 @@ public class BackPackInItem : PoolBase {
             txtDurability.text = string.Empty;
         }
         else {
+            if (this == null || txtDurability == null) return;
             txtDurability.text = durability.ToString();
         }        
     }
@@ -323,6 +329,7 @@ public class BackPackInItem : PoolBase {
 
                 // 例えば、特定の行動回数のときだけ処理変わる、など (count == 0 なら fillAmount = 0.5f スタートなど。)
 
+                if (this == null || imgIconGauge == null) return;
                 imgIconGauge.fillAmount = 1.0f;
 
                 // バフ、デバフを適用して現在値を算出
@@ -372,18 +379,18 @@ public class BackPackInItem : PoolBase {
                             break;
                     }
                     // 耐久値を減算
-                    //if (entityType == EntityType.Player) {
-                    //    itemData.durability--;
-                    //    if (itemData.durability <= 0) {
-                    //        UpdateDurabilityDisplay(0);
-                    //        AddPriceToMoney(ReleaseType.Destroy);  // 0 だが一応
-                    //        Release();
-                    //        break;
-                    //    } else {
-                    //        UpdateDurabilityDisplay(itemData.durability);
-                    //        //Debug.Log(itemData.durability);
-                    //    }
-                    //}
+                    if (entityType == EntityType.Player) {
+                        itemData.durability--;
+                        if (itemData.durability <= 0) {
+                            UpdateDurabilityDisplay(0);
+                            AddPriceToMoney(ReleaseType.Destroy);  // 0 だが一応
+                            Release();
+                            break;
+                        } else {
+                            UpdateDurabilityDisplay(itemData.durability);
+                            //Debug.Log(itemData.durability);
+                        }
+                    }
 
                     // for 文なのでフレーム跨がせる。そうしないと、ここですべて処理しようとして処理が一時止まる
                     await UniTask.Yield(cancellationToken: token);
@@ -768,5 +775,9 @@ public class BackPackInItem : PoolBase {
         canvasGroupShade.gameObject.SetActive(isDisuse);
 
         UpdateEnhanceLevelDisplay(level);
+    }
+
+    private void OnDestroy() {
+        Release();
     }
 }

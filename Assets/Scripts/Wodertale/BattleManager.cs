@@ -1,11 +1,11 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
-using Cysharp.Threading.Tasks;
-using System.Threading;
+﻿using Cysharp.Threading.Tasks;
 using R3;
-using System;
-using Unity.Cinemachine;
 using R3.Triggers;
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using Unity.Cinemachine;
+using UnityEngine;
 
 public enum EntityType {
     Player,
@@ -66,6 +66,8 @@ public class BattleManager : AbstractSingleton<BattleManager> {
     public StageUIManager stageUIManager;
 
     private int enemyMaxHp = 0;
+
+    public Subject<Unit> OnSuccessSettlement = new();  // 交渉成功時の購読用
 
 
     protected override void Awake() {
@@ -146,99 +148,134 @@ public class BattleManager : AbstractSingleton<BattleManager> {
     /// </summary>
     /// <param name="enemySymbol"></param>
     /// <returns></returns>
-    public async UniTask<BattleResultType> StartBattle(EnemyData enemyData, TurnState turnState) {
+    public async UniTask StartBattleAsync(EnemyData enemyData, TurnState turnState) {
         GameData.instance.CurrentGameState.Value = GameData.GameState.Battle;
-
-        // バトル時間設定
-        if(turnState == TurnState.Boss) {
-            BattleDuration.Value = bossBattleTime;
-        } else {
-            BattleDuration.Value = defaultBattleTime;
-        }
-
-        // 新しいトークンソースを生成
-        // 初期化しないと Cancel 状態のままのトークンを利用してしまうため、BackPackItem の処理がスキップされてしまう
-        cts = new CancellationTokenSource();
-        enemyDisposables = new();
-
-        // 敵の装備情報を取得
-        List<int> equipItemNoList = enemyData.GetEquipItemNoList();
-
-        // 敵の情報表示。未討伐の場合にはシェードをかけたり、名前を不確定名にする
-        EnemyInfoDisplayManager.instance.ShowEnemyInfo(enemyData, equipItemNoList, GameData.GameState.Battle);
-
-        enemyMaxHp = enemyData.hp;
-
-        // 敵の Hp 表示更新
-        EnemyHP.Value = enemyData.hp;
-
-        EnemyHP
-            .Zip(EnemyHP.Skip(1), (oldValue, newValue) => (oldValue, newValue))
-            .Subscribe(hp => {
-                EnemyInfoDisplayManager.instance.UpdateDisplayEnemyHp(hp.oldValue, hp.newValue);
-                CheckEndCondition();
-            }).AddTo(enemyDisposables);
-
-        // 敵のシールド 表示更新
-        EnemyShieldHP.Value = enemyData.shieldPower;
-
-        EnemyShieldHP
-            .Subscribe(shield => {
-                // UI 更新
-                EnemyInfoDisplayManager.instance.UpdateEnemyShieldHp(shield);
-             }).AddTo(enemyDisposables);
-
         battleResultType = BattleResultType.Battle;
 
-        // 都度 cts を渡さないと外部では連動して停止しない
-        OnBattleStart.OnNext((cts, battleResultType));
-        //Debug.Log("StartBattle");
+        // ボス以外は交渉の判定
+        if (turnState != TurnState.Boss) {
+            float settlementRate = PlayerInventoryManager.instance.GetSettlementRate();
+            DebugLogger.Log($"settlementRate : {settlementRate}");
 
-        // バトルエフェクトの表示と再生
-        battleEffectSetObj.SetActive(true);
-        StartBattleShake(amplitude, frequency);
+            float settlementBonus = GameData.instance.charaStatus.GetReactionBonusRate(StatusType.Charm);
+            DebugLogger.Log($"settlementBonus : {settlementBonus}");
 
-        // バトル制限時間を管理するタスクを開始
-        ManageBattleDuration((int)BattleDuration.Value, cts.Token).Forget();
+            float randomSettlementValue = UnityEngine.Random.Range(0, 100.00f);
+            DebugLogger.Log($"settlement randomValue : {randomSettlementValue}");
 
-        float interval = 0.2f; // SEを再生する間隔（秒）
-        float timer = 0; ;
+            // 合計
+            settlementRate += settlementBonus;
 
-        // バトル時間の計測開始
-        IDisposable updateSubscribe = this.UpdateAsObservable()
-            .Where(_ => !cts.IsCancellationRequested)
-            .Where(_ => BattleDuration.Value > 0)
-            .Subscribe(_ => {
-                BattleDuration.Value -= Time.deltaTime;
-                timer += Time.deltaTime;
+            // 交渉成功時にはバトルなし
+            if (randomSettlementValue <= settlementRate) {
+                battleResultType = BattleResultType.Win;
 
-                if (timer >= interval) {
-                    timer = 0;
+                // 耐久力減少(Backpack 側で購読)
+                OnSuccessSettlement.OnNext(Unit.Default);
 
-                    int seIndex = UnityEngine.Random.Range(0, 5);
-                    // SEを再生
-                    SoundManager.instance.PlaySE((SE_TYPE)seIndex);
-                    DebugLogger.Log("SE");
-                }
-            });
+                // 交渉成功のメッセージ表示
+                stageUIManager.SuccessSettlementInfo();
+            }
+        }
 
-        channel = Channel.CreateSingleConsumerUnbounded<BattleResultType>();
-        battleResultType = await channel.Reader.ReadAsync();
+        // 交渉に成功してない敵、あるいはボスの場合
+        if (battleResultType == BattleResultType.Battle) {
 
-        channel.Writer.TryComplete();
-        updateSubscribe?.Dispose();
+            // バトル時間設定
+            if (turnState == TurnState.Boss) {
+                BattleDuration.Value = bossBattleTime;
+            } else {
+                BattleDuration.Value = defaultBattleTime;
+            }
 
-        await UniTask.Delay(1000);
+            // 新しいトークンソースを生成
+            // 初期化しないと Cancel 状態のままのトークンを利用してしまうため、BackPackItem の処理がスキップされてしまう
+            cts = new CancellationTokenSource();
+            enemyDisposables = new();
 
-        EnemyInfoDisplayManager.instance.HideEnemyInfo();
+            // 敵の装備情報を取得
+            List<int> equipItemNoList = enemyData.GetEquipItemNoList();
 
-        PlayerShieldHP.Value = 0;
-        EnemyShieldHP.Value = 0;
+            // 敵の情報表示。未討伐の場合にはシェードをかけたり、名前を不確定名にする
+            EnemyInfoDisplayManager.instance.ShowEnemyInfo(enemyData, equipItemNoList, GameData.GameState.Battle);
 
-        //updateSubscribe?.Dispose();
+            enemyMaxHp = enemyData.hp;
 
-        //GameData.instance.gameState.Value = GameData.GameState.Play;
-        return battleResultType;
+            // 敵の Hp 表示更新
+            EnemyHP.Value = enemyData.hp;
+
+            EnemyHP
+                .Zip(EnemyHP.Skip(1), (oldValue, newValue) => (oldValue, newValue))
+                .Subscribe(hp => {
+                    EnemyInfoDisplayManager.instance.UpdateDisplayEnemyHp(hp.oldValue, hp.newValue);
+                    CheckEndCondition();
+                }).AddTo(enemyDisposables);
+
+            // 敵のシールド 表示更新
+            EnemyShieldHP.Value = enemyData.shieldPower;
+
+            EnemyShieldHP
+                .Subscribe(shield => {
+                    // UI 更新
+                    EnemyInfoDisplayManager.instance.UpdateEnemyShieldHp(shield);
+                }).AddTo(enemyDisposables);
+
+            battleResultType = BattleResultType.Battle;
+
+            // 都度 cts を渡さないと外部では連動して停止しない
+            OnBattleStart.OnNext((cts, battleResultType));
+            //Debug.Log("StartBattle");
+
+            // バトルエフェクトの表示と再生
+            battleEffectSetObj.SetActive(true);
+            StartBattleShake(amplitude, frequency);
+
+            // バトル制限時間を管理するタスクを開始
+            ManageBattleDuration((int)BattleDuration.Value, cts.Token).Forget();
+
+            float interval = 0.2f; // SEを再生する間隔（秒）
+            float timer = 0; ;
+
+            // バトル時間の計測開始
+            IDisposable updateSubscribe = this.UpdateAsObservable()
+                .Where(_ => !cts.IsCancellationRequested)
+                .Where(_ => BattleDuration.Value > 0)
+                .Subscribe(_ => {
+                    BattleDuration.Value -= Time.deltaTime;
+                    timer += Time.deltaTime;
+
+                    if (timer >= interval) {
+                        timer = 0;
+
+                        int seIndex = UnityEngine.Random.Range(0, 5);
+                        // SEを再生
+                        SoundManager.instance.PlaySE((SE_TYPE)seIndex);
+                        DebugLogger.Log("SE");
+                    }
+                });
+
+            channel = Channel.CreateSingleConsumerUnbounded<BattleResultType>();
+            battleResultType = await channel.Reader.ReadAsync();
+
+            channel.Writer.TryComplete();
+            updateSubscribe?.Dispose();
+
+            DebugLogger.Log($"battleResultType : {battleResultType}");
+
+            await UniTask.Delay(1000);
+
+            EnemyInfoDisplayManager.instance.HideEnemyInfo();
+
+            PlayerShieldHP.Value = 0;
+            EnemyShieldHP.Value = 0;
+
+            //updateSubscribe?.Dispose();
+
+            //GameData.instance.gameState.Value = GameData.GameState.Play;
+
+        }
+
+        await BattleResultAsync(enemyData);
     }
 
     /// <summary>
@@ -262,10 +299,57 @@ public class BattleManager : AbstractSingleton<BattleManager> {
         // カメラとマスクの制御　元に戻す
         StopBattleShake();
 
+        if (this == null || battleEffectSetObj == null) return;
+
         // バトルエフェクト非表示
         battleEffectSetObj.SetActive(false);
 
         channel.Writer.TryWrite(battleResultType);
+    }
+
+    private async UniTask BattleResultAsync(EnemyData enemyData) {
+
+        // バトル結果が勝利の場合
+        if (battleResultType == BattleResultType.Win) {
+            // 討伐した敵を登録
+            GameData.instance.AddDefeatEnemyList(enemyData.enemyNo);
+
+            // 経験値獲得
+            GameData.instance.userData.SoulPoint.Value += enemyData.exp;
+
+            // 敵のレアリティから同レアリティのアイテムテータを抽選
+            ItemData itemData = DataBaseManager.instance.GetRandomItemByEnemyDrop(enemyData.rarity);
+
+            // カードの種類とマスターデータを設定
+            CardData cardData = new() {
+                cardTypeMaster = DataBaseManager.instance.GetCardType(CardEventType.TreasureChest),
+                masterData = itemData
+            };
+
+            // 不要なアイテムを破棄できるようにステートを戻しておく
+            GameData.instance.CurrentGameState.Value = GameData.GameState.Play;
+
+            // 宝箱カードの生成、カードの効果を実行
+            TreasureChestCard treasureChestCard = new(cardData, true);
+
+            if (cts.IsCancellationRequested) {
+                return;
+            }
+            
+            await treasureChestCard.ExecuteCardAsync(cts.Token);
+        } else if (battleResultType == BattleResultType.Lose) {
+            DebugLogger.Log($"Game Over");
+            GameData.instance.CurrentGameState.Value = GameData.GameState.GameUp;
+
+            SoundManager.instance.PlayVoice(VOICE_TYPE.Loose);
+            //stageUIManager.ShowRestartMessage();
+
+            await UniTask.WaitUntil(() => UnityEngine.Input.GetMouseButtonDown(0), cancellationToken: cts.Token);
+            SceneStateManager.instance.PrepareteNextScene(SceneName.Title);
+        } else if (battleResultType == BattleResultType.Timeout) {
+            DebugLogger.Log($"Timeout");
+            GameData.instance.CurrentGameState.Value = GameData.GameState.Play;
+        }
     }
 
 

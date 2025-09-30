@@ -21,6 +21,7 @@ public class StageUIManager : MonoBehaviour {
     [SerializeField] private Text txtWaveInfo;
     [SerializeField] private Text txtInventoryMaxInfo;
     [SerializeField] private Text txtRestartMessage;
+    [SerializeField] private Text txtSettlementInfo;    // 画面優先順位の関係上、Canvas_ItemInfo オブジェクト内にあるオブジェクトを使う
 
     [SerializeField] private Slider sliderHp;
 
@@ -35,6 +36,10 @@ public class StageUIManager : MonoBehaviour {
     [SerializeField] private Sprite[] stateSprites;    // Win,Loose,Timeout の順番
     [SerializeField] private Image inventoryFilter;
 
+    [SerializeField] private Color releaseMessageColor;
+    [SerializeField] private CircleOutline circleOutline;
+
+    private string SuccessSettlementMessage = "平和的解決に成功しました!!";
     private float defaultTime;
 
     public Transform playerBackPackItemTran;
@@ -245,6 +250,20 @@ public class StageUIManager : MonoBehaviour {
         sequence.SetLink(gameObject);
         sequence.Append(txtInventoryMaxInfo.DOFade(1.0f, 1.0f).SetEase(Ease.Linear)).SetLoops(2, LoopType.Yoyo);
         sequence.Append(txtInventoryMaxInfo.DOFade(0f, 0.5f).SetEase(Ease.Linear)).OnComplete(() => txtInventoryMaxInfo.DOFade(0f, 0f));  // 消えないことがあるので念のため
+    }
+
+    /// <summary>
+    /// 交渉に成功したときのメッセージ表示
+    /// </summary>
+    public void SuccessSettlementInfo() {
+        circleOutline.SetEffectColor(releaseMessageColor);
+        txtSettlementInfo.text = SuccessSettlementMessage;
+
+        // 点滅させて表示
+        Sequence sequence = DOTween.Sequence();
+        sequence.SetLink(gameObject);
+        sequence.Append(txtSettlementInfo.DOFade(1.0f, 1.0f).SetEase(Ease.Linear)).SetLoops(2, LoopType.Yoyo);
+        sequence.Append(txtSettlementInfo.DOFade(0f, 0.5f).SetEase(Ease.Linear)).OnComplete(() => txtSettlementInfo.DOFade(0f, 0f));  // 消えないことがあるので念のため
     }
 
     /// <summary>
