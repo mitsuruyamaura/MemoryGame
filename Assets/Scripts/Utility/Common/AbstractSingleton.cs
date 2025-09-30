@@ -7,11 +7,14 @@
 public abstract class AbstractSingleton<T> : MonoBehaviour where T : Component {
 
     public static T instance;
+    public bool isDontDestroy;
 
     protected virtual void Awake() {
         if (instance == null) {
             instance = this as T;
-            DontDestroyOnLoad(gameObject);
+            if (isDontDestroy) {
+                DontDestroyOnLoad(gameObject);
+            }
         } else {
             Destroy(gameObject);
         }

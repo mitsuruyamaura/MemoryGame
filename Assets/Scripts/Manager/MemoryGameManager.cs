@@ -24,6 +24,7 @@ public class MemoryGameManager : MonoBehaviour {
     [SerializeField] private float flipDuration = 0.3f;
 
     [SerializeField] private Button btnStairs;
+    [SerializeField] private Button btnRetry;
     [SerializeField] private CanvasGroup cgSlotSet;
     [SerializeField] private Text txtFlipPoint;
     [SerializeField] private Text txtFloorCount;
@@ -85,8 +86,18 @@ public class MemoryGameManager : MonoBehaviour {
             .AddTo(this);
 
         // 階段ボタンの購読
+        if (this == null || btnStairs == null) return;
         btnStairs
             .OnClickExt(() => NextFloorAsync().Forget(), this);
+
+        // リトライボタンの購読
+        if (this == null || btnRetry == null) return;
+        btnRetry
+            .OnClickExt(() => {
+                if (GameData.instance.CurrentGameState.Value != GameData.GameState.Play) {
+                    return;
+                }
+                GameEndAsync().Forget(); }, this);
 
         // めくれる回数の残り回数を確認し、ゲーム終了処理へつなげる
         GameData.instance.userData.FlipPoint
@@ -139,6 +150,7 @@ public class MemoryGameManager : MonoBehaviour {
         // カードの情報準備と生成
         await SetupCardsAsync();
 
+        if (this == null || cgSlotSet == null) return;
         cgSlotSet.blocksRaycasts = true;
     }
 
@@ -172,6 +184,8 @@ public class MemoryGameManager : MonoBehaviour {
         for (int i = 0; i < selectedCardDataList.Count; i++) {
             int index = i;
             await UniTask.Delay(200);
+
+            if (this == null || cardGenerator == null || slotList == null) return;
             CardView card = (CardView)cardGenerator.GetObjectFromPool(slotList[i].transform);
             card.Setup(index, OnCardSelected, flipDuration, selectedCardDataList[i].cardTypeMaster.spriteCardType);
             cardViewList.Add(card);
@@ -399,6 +413,7 @@ public class MemoryGameManager : MonoBehaviour {
                 selectedCardModel.cardData.masterData = CreateCardData(selectedCardModel.cardData.cardTypeMaster.cardEventType, currentFloorData);
 
                 // カードの効果を実行
+                if (this == null || selectedCardModel == null || cts == null) return;
                 await selectedCardModel.ExecuteCardAsync(cts.Token);
 
                 // すべてのカードを引き終わっているか確認
@@ -537,12 +552,22 @@ public class MemoryGameManager : MonoBehaviour {
 
     private async UniTask GameEndAsync() {
         cgSlotSet.blocksRaycasts = false;
+        btnRetry.interactable = false;
+        btnStairs.interactable = false;
+
+        if (cts != null) {
+            cts.Cancel();  // すべての Hoge メソッドの実行をキャンセルする
+            cts.Dispose(); // 古いトークンソースを破棄
+            cts = null;    // 参照をクリア
+            DebugLogger.Log("Cancel");
+        }
 
         await UniTask.Delay(500);
         DebugLogger.Log($"ゲーム終了");
 
 #if UNITY_EDITOR
-        UnityEditor.EditorApplication.isPlaying = false;  // エディター再生を停止
+        SceneStateManager.instance.PrepareteNextScene(SceneName.Stage);
+        //UnityEditor.EditorApplication.isPlaying = false;  // エディター再生を停止
 #else
     Application.Quit();  // ビルド後はアプリ終了
 #endif

@@ -49,8 +49,9 @@ public class EnemyInfoDisplayManager : AbstractSingleton<EnemyInfoDisplayManager
         // 引数で、敵の情報(Hp、バフ、デバフ、装備品)をもらって設定する
 
         // 名前設定
-        NameData nameData = DataBaseManager.instance.GetRandomNameData();
-        txtName.text = nameData.name;
+        //NameData nameData = DataBaseManager.instance.GetRandomNameData();
+        //txtName.text = nameData.name;
+        txtName.text = "";
 
         // アイコン画像の設定
         Sprite enemyIcon = DataBaseManager.instance.GetEnemyIcon(enemyData.enemyNo);

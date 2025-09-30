@@ -33,10 +33,12 @@ public class ItemInfoDisplayManager : AbstractSingleton<ItemInfoDisplayManager> 
     public bool isTreasureShow;
 
 
-    //void Start() {
-    //    // 最初からインスペクターでアルファ 0 にしておく
-    //    HideItemInfo();
-    //}
+    protected override void Awake() {
+        base.Awake();
+        HideItemInfo();
+        cgFilter.blocksRaycasts = false;
+        cgFilter.alpha = 0f;
+    }
 
     /// <summary>
     /// ホバーしたアイテムの情報表示
@@ -132,16 +134,21 @@ public class ItemInfoDisplayManager : AbstractSingleton<ItemInfoDisplayManager> 
             itemInfoSet.localPosition = enemyItemTran.localPosition;
         }
 
-        if (itemInfoCanvas != null) {
-            itemInfoCanvas.alpha = 1.0f;
-        }
+        ShowItemInfo();
     }
 
+    public void ShowItemInfo() {
+        if (this == null || itemInfoCanvas == null) {
+            return;
+        }
+        itemInfoCanvas.alpha = 1.0f;
+    }
 
     public void HideItemInfo() {
-        if (itemInfoCanvas != null) {
-            itemInfoCanvas.alpha = 0;
+        if (this == null || itemInfoCanvas == null) {
+            return;
         }
+        itemInfoCanvas.alpha = 0;
     }
 
     /// <summary>
@@ -276,17 +283,19 @@ public class ItemInfoDisplayManager : AbstractSingleton<ItemInfoDisplayManager> 
 
         await UniTask.Delay(1000);
 
-        itemInfoCanvas.alpha = 1.0f;
+        ShowItemInfo();
 
         // 画面タップするまで待機(ほかの UI には触らないようにする)
         bool isTouch = false;
         cgFilter.blocksRaycasts = true;
+        cgFilter.alpha = 1.0f;
         disposable = btnFilter.OnClickExt(() => isTouch = true, this);
 
         await UniTask.WaitUntil(() => isTouch == true, cancellationToken: token);
 
         disposable.Dispose();
         cgFilter.blocksRaycasts = false;
+        cgFilter.alpha = 0f;
 
         isTreasureShow = false;
         HideItemInfo();

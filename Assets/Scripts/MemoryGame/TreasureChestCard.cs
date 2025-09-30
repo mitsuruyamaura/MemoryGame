@@ -24,7 +24,7 @@ public class TreasureChestCard : CardModelBase {
                 SoundManager.instance.PlaySE(SE_TYPE.OpenTreasure);
             }
 
-            await UniTask.Delay(300, cancellationToken: token);
+            await UniTask.Delay(300, cancellationToken: token).SuppressCancellationThrow();
 
             // 入手したアイテムの情報表示
             await ItemInfoDisplayManager.instance.ShowTreasureItemInfoAsync(itemData, token);

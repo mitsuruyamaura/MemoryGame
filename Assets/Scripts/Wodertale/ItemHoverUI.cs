@@ -24,7 +24,7 @@ public class ItemHoverUI : MonoBehaviour
         //    return;
         //}
 
-        if(backPackInItem == null || backPackInItem.itemData == null) {
+        if (backPackInItem == null || backPackInItem.itemData == null) {
             return;
         }
         
