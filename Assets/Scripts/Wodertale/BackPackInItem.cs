@@ -223,6 +223,7 @@ public class BackPackInItem : PoolBase {
 
         // 強化回数を加算 = 表示更新の購読処理が動く
         EnhanceLevel.Value += enhanceCount;
+        DebugLogger.Log($"enhance level : {EnhanceLevel.Value} / durability : {itemData.durability} / enhance count : {enhanceCount}");
 
         battleStartDisposable?.Dispose();
 

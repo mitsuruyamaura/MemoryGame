@@ -6,11 +6,11 @@ using R3;
 [System.Serializable]
 public class StatusValue {
     public StatusType statusType;
-    public ReactiveProperty<int> statusValue = new();
+    public SerializableReactiveProperty<int> statusValue = new();
 
     public StatusValue(StatusType statusType, int value) {
         this.statusType = statusType;
-        this.statusValue.Value = value;
+        statusValue.Value = value;
     }
 
     public override string ToString() {
@@ -22,13 +22,13 @@ public class StatusValue {
 public class CharaStatus {
     public int level;
     public long exp;
-    public ReactiveProperty<int> MaxHp = new();
+    public SerializableReactiveProperty<int> MaxHp = new();
     public List<StatusValue> statusValueList = new();
 
     public CharaStatus(int maxHp) {
         level = 1;
         exp = 0;
-        this.MaxHp.Value = maxHp;
+        MaxHp.Value = maxHp;
 
         statusValueList = new() {
             new(StatusType.Strength, 0),

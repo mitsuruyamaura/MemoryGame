@@ -152,53 +152,44 @@ public class BattleManager : AbstractSingleton<BattleManager> {
         GameData.instance.CurrentGameState.Value = GameData.GameState.Battle;
         battleResultType = BattleResultType.Battle;
 
-        // ボス以外は交渉の判定
-        if (turnState != TurnState.Boss) {
-            float settlementRate = PlayerInventoryManager.instance.GetSettlementRate();
-            DebugLogger.Log($"settlementRate : {settlementRate}");
-
-            float settlementBonus = GameData.instance.charaStatus.GetReactionBonusRate(StatusType.Charm);
-            DebugLogger.Log($"settlementBonus : {settlementBonus}");
-
-            float randomSettlementValue = UnityEngine.Random.Range(0, 100.00f);
-            DebugLogger.Log($"settlement randomValue : {randomSettlementValue}");
-
-            // 合計
-            settlementRate += settlementBonus;
-
-            // 交渉成功時にはバトルなし
-            if (randomSettlementValue <= settlementRate) {
-                battleResultType = BattleResultType.Win;
-
-                // 耐久力減少(Backpack 側で購読)
-                OnSuccessSettlement.OnNext(Unit.Default);
-
-                // 交渉成功のメッセージ表示
-                stageUIManager.SuccessSettlementInfo();
-            }
+        // バトル時間設定
+        if (turnState == TurnState.Boss) {
+            BattleDuration.Value = bossBattleTime;
+        } else {
+            BattleDuration.Value = defaultBattleTime;
         }
 
-        // 交渉に成功してない敵、あるいはボスの場合
-        if (battleResultType == BattleResultType.Battle) {
+        // 新しいトークンソースを生成
+        // 初期化しないと Cancel 状態のままのトークンを利用してしまうため、BackPackItem の処理がスキップされてしまう
+        cts = new CancellationTokenSource();
+        enemyDisposables = new();
 
-            // バトル時間設定
-            if (turnState == TurnState.Boss) {
-                BattleDuration.Value = bossBattleTime;
-            } else {
-                BattleDuration.Value = defaultBattleTime;
-            }
+        // 敵の装備情報を取得
+        List<int> equipItemNoList = enemyData.GetEquipItemNoList();
 
-            // 新しいトークンソースを生成
-            // 初期化しないと Cancel 状態のままのトークンを利用してしまうため、BackPackItem の処理がスキップされてしまう
-            cts = new CancellationTokenSource();
-            enemyDisposables = new();
+        // 敵の情報表示。未討伐の場合にはシェードをかけたり、名前を不確定名にする
+        EnemyInfoDisplayManager.instance.ShowEnemyInfo(enemyData, equipItemNoList, GameData.GameState.Battle);
 
-            // 敵の装備情報を取得
-            List<int> equipItemNoList = enemyData.GetEquipItemNoList();
+        // ボス以外は交渉の判定
+        if (turnState != TurnState.Boss) {
+            // 交渉判定。成功したら Win になる。失敗したら Battle のまま
+            battleResultType = JudgeSettlementEnemy();
+        }
 
-            // 敵の情報表示。未討伐の場合にはシェードをかけたり、名前を不確定名にする
-            EnemyInfoDisplayManager.instance.ShowEnemyInfo(enemyData, equipItemNoList, GameData.GameState.Battle);
+        // 交渉に成功している場合にはバトル終了
+        if (battleResultType == BattleResultType.Win) {
+            // 耐久力減少(Backpack 側で購読)
+            OnSuccessSettlement.OnNext(Unit.Default);
 
+            // 交渉成功のメッセージ表示
+            stageUIManager.SuccessSettlementInfo();
+
+            await UniTask.Delay(1000);
+
+            // 敵を非表示
+            EnemyInfoDisplayManager.instance.HideEnemyInfo();
+        } else {
+            // 交渉に失敗している場合にはバトル開始
             enemyMaxHp = enemyData.hp;
 
             // 敵の Hp 表示更新
@@ -268,14 +259,35 @@ public class BattleManager : AbstractSingleton<BattleManager> {
 
             PlayerShieldHP.Value = 0;
             EnemyShieldHP.Value = 0;
-
-            //updateSubscribe?.Dispose();
-
-            //GameData.instance.gameState.Value = GameData.GameState.Play;
-
         }
 
         await BattleResultAsync(enemyData);
+    }
+
+    /// <summary>
+    /// 交渉成否判定
+    /// </summary>
+    /// <returns></returns>
+    private BattleResultType JudgeSettlementEnemy() {
+        float settlementRate = PlayerInventoryManager.instance.GetSettlementRate();
+        //DebugLogger.Log($"settlementRate : {settlementRate}");
+
+        float settlementBonus = GameData.instance.charaStatus.GetReactionBonusRate(StatusType.Charm);
+        //DebugLogger.Log($"settlementBonus : {settlementBonus}");
+
+        float randomSettlementValue = UnityEngine.Random.Range(0, 100.00f);
+        //DebugLogger.Log($"settlement randomValue : {randomSettlementValue}");
+
+        // 合計
+        settlementRate += settlementBonus;
+
+        // 交渉成功時にはバトルなし
+        if (randomSettlementValue <= settlementRate) {
+            return BattleResultType.Win;
+        }
+
+        // 交渉失敗
+        return BattleResultType.Battle;
     }
 
     /// <summary>
