@@ -262,8 +262,8 @@ public class StageUIManager : MonoBehaviour {
         // 点滅させて表示
         Sequence sequence = DOTween.Sequence();
         sequence.SetLink(gameObject);
-        sequence.Append(txtSettlementInfo.DOFade(1.0f, 1.0f).SetEase(Ease.Linear)).SetLoops(2, LoopType.Yoyo);
-        sequence.Append(txtSettlementInfo.DOFade(0f, 0.5f).SetEase(Ease.Linear)).OnComplete(() => txtSettlementInfo.DOFade(0f, 0f));  // 消えないことがあるので念のため
+        sequence.Append(txtSettlementInfo.DOFade(1.0f, 0.8f).SetEase(Ease.Linear)).SetLoops(2, LoopType.Yoyo);
+        sequence.Append(txtSettlementInfo.DOFade(0f, 0f).SetEase(Ease.Linear)).OnComplete(() => txtSettlementInfo.DOFade(0f, 0f));  // 消えないことがあるので念のため
     }
 
     /// <summary>
