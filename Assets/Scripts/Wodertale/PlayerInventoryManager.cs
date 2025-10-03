@@ -29,6 +29,13 @@ public class PlayerInventoryManager : AbstractSingleton<PlayerInventoryManager> 
     [SerializeField] private Text txtReflect;
     [SerializeField] private Text txtSettle;
 
+    [SerializeField] private Text txtNextSize;                         // 現在のインベントリサイズと次のサイズを表示
+    [SerializeField] private Text txtSizeInfo;                         // 拡張ボタンの上に表示するメッセージ。XP 値か、不足と出す
+    [SerializeField] private Button btnShowExpandInventoryPop;         // バックパックのサイズ部分のボタン。インベントリ拡張ポップを開く
+    [SerializeField] private Button btnSubmitExpandInventorySize;      // インベントリ拡張ボタン
+    [SerializeField] private Button btnCloseExpandInventoryPop;        // インベントリ拡張ポップを閉じるボタン
+    [SerializeField] private CanvasGroup cgExpandInventorySizePop;     // インベントリ拡張ポップの CanvasGroup
+
     [SerializeField] private int[] enhanceRates;
 
     private int orbCount;
@@ -126,6 +133,13 @@ public class PlayerInventoryManager : AbstractSingleton<PlayerInventoryManager> 
 
 
         //GameData.instance.EnchantPoint.Subscribe(point => txtEnchantPoint.text = $"{point:N0}").AddTo(this);
+
+        // インベントリ拡張関連のボタン
+        btnShowExpandInventoryPop.OnClickExt(() => ShowExpandInventorySizePop(), this);
+        btnSubmitExpandInventorySize.OnClickExt(() => ExpandInventorySize(), this);
+        btnCloseExpandInventoryPop.OnClickExt(() => HideExpandInventorySizePop(), this);
+
+        HideExpandInventorySizePop();
     }
 
     /// <summary>
@@ -420,6 +434,71 @@ public class PlayerInventoryManager : AbstractSingleton<PlayerInventoryManager> 
         float itemTotalSettleRate = GetSettlementRate();
         float bonusSettleRate = GameData.instance.charaStatus.GetReactionBonusRate(StatusType.Charm);
         txtSettle.text = (itemTotalSettleRate + bonusSettleRate).ToString("F2");
+    }
+
+    /// <summary>
+    /// インベントリ拡張ポップの表示(表示更新にも使う)
+    /// </summary>
+    public void ShowExpandInventorySizePop() {
+        if (GameData.instance.CurrentGameState.Value != GameData.GameState.Play) {
+            return;
+        }
+
+        cgExpandInventorySizePop.alpha = 1.0f;
+        cgExpandInventorySizePop.blocksRaycasts = true;
+
+        // バックの最大数まで達しているなら
+        if (GameData.instance.playerCombatData.MaxInventorySize.Value >= GameData.instance.limitInventorySize) {
+            txtNextSize.text = $"最大です";
+            txtSizeInfo.color = Color.red;
+            btnSubmitExpandInventorySize.interactable = false;
+            return;
+        }
+        txtNextSize.text = $"{GameData.instance.playerCombatData.MaxInventorySize.Value} >>> {GameData.instance.playerCombatData.MaxInventorySize.Value + 1}";
+
+        // ポイントが足りていないなら
+        int expandRequiredPoint = GameData.instance.expandRequiredXP + (GameData.instance.expandRequiredXP * GameData.instance.userData.expandInventoryCount / 2);
+        if (expandRequiredPoint > GameData.instance.userData.SoulPoint.Value) {
+            txtSizeInfo.text = $"XP 不足";
+            txtSizeInfo.color = Color.red;
+            btnSubmitExpandInventorySize.interactable = false;
+        } else {
+            txtSizeInfo.text = $"{expandRequiredPoint}";
+            txtSizeInfo.color = new(1, 1, 1, 1);
+            btnSubmitExpandInventorySize.interactable = true;
+        }
+    }
+
+    /// <summary>
+    /// インベントリ拡張ポップの非表示
+    /// </summary>
+    public void HideExpandInventorySizePop() {
+        cgExpandInventorySizePop.alpha = 0f;
+        cgExpandInventorySizePop.blocksRaycasts = false;
+    }
+
+    /// <summary>
+    /// インベントリの拡張
+    /// </summary>
+    public void ExpandInventorySize() {
+        // インベントリの上限を超えていないなら
+        if (GameData.instance.playerCombatData.MaxInventorySize.Value < GameData.instance.limitInventorySize) {
+            // インベントリのサイズアップ
+            GameData.instance.playerCombatData.MaxInventorySize.Value++;
+
+            // 消費ポイント計算
+            int expandRequiredPoint = GameData.instance.expandRequiredXP + (GameData.instance.expandRequiredXP * GameData.instance.userData.expandInventoryCount / 2);
+            DebugLogger.Log($"expandRequiredPoint : {expandRequiredPoint}");
+
+            // ポイント消費
+            GameData.instance.userData.SoulPoint.Value -= expandRequiredPoint;
+
+            // 拡張した回数をカウントアップ
+            GameData.instance.userData.expandInventoryCount++;
+
+            // ポップ表示内容更新
+            ShowExpandInventorySizePop();
+        }
     }
 
     private void OnDestory() {

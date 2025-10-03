@@ -17,6 +17,7 @@ public class StageUIManager : MonoBehaviour {
     [SerializeField] private Text txtUncurseCount;
     [SerializeField] private Text txtSoulPoint;
     [SerializeField] private Image imgSoulIcon;
+    [SerializeField] private Text txtComboPairCount;
 
     [SerializeField] private Text txtWaveInfo;
     [SerializeField] private Text txtInventoryMaxInfo;
@@ -82,6 +83,9 @@ public class StageUIManager : MonoBehaviour {
             .Zip(GameData.instance.userData.SoulPoint.Skip(1), (prevPoint, nextPoint) => (prevPoint, nextPoint))
             .Subscribe(soulPoint => UpdateSoulPoint(soulPoint.prevPoint, soulPoint.nextPoint))
             .AddTo(this);
+
+        // ペアのコンボ回数の購読
+        GameData.instance.ComboPairCount.Subscribe(comboCount => UpdateDisplayComboPairCount(comboCount)).AddTo(this);
     }
 
     /// <summary>
@@ -207,6 +211,14 @@ public class StageUIManager : MonoBehaviour {
 
     private void UpdateDisplayUncurseCount(int count) {
         txtUncurseCount.text = count.ToString();
+    }
+
+    private void UpdateDisplayComboPairCount(int count) {
+        // 現在はデバッグ用の画面右上に出す
+        txtComboPairCount.text = count.ToString();
+
+        // TODO コンボしたときだけ、演出を出す
+
     }
 
     private void UpdateSoulPoint(int prevPoint, int nextPoint) {

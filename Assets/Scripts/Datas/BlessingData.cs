@@ -1,5 +1,4 @@
-using RPG_BOX;
-using System;
+﻿using System;
 
 [System.Serializable]
 public class BlessingData : IMasterData {
@@ -9,6 +8,7 @@ public class BlessingData : IMasterData {
     public Rarity rarity;
     public int weight;
     public int exp;
+    public int stack;
 
     public int Id => id;
 
@@ -19,5 +19,6 @@ public class BlessingData : IMasterData {
         rarity = (Rarity)Enum.Parse(typeof(Rarity), datas[3]);
         weight = int.Parse(datas[4]);
         exp = int.Parse(datas[5]);
+        stack = int.Parse(datas[6]);
     }
 }
