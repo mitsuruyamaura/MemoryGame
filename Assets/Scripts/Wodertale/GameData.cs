@@ -70,6 +70,7 @@ public class GameData : AbstractSingleton<GameData>
     public UserData userData;
 
     public int limitInventorySize = 20;                // 上限値
+    public int expandRequiredXP = 200;                 // インベントリの拡張に必要な基礎値
 
     public CombatData playerCombatData;
     public CombatData enemyCombatData;
@@ -85,8 +86,10 @@ public class GameData : AbstractSingleton<GameData>
     [SerializeField]
     private Transform conditionEffectTran;
 
-    public ReactiveProperty<int> EnchantPoint = new(0);
+    public SerializableReactiveProperty<int> EnchantPoint = new(0);
     public int consumeEnchantPoint;
+
+    public SerializableReactiveProperty<int> ComboPairCount = new(0);
 
 
     //protected override void Awake() {

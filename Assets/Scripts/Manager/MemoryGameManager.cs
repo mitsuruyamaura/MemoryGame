@@ -36,6 +36,7 @@ public class MemoryGameManager : MonoBehaviour {
 
     [SerializeField] private int debugFlipPoint;
     [SerializeField] private int debugFloorClearBonusFlipPoint;
+    [SerializeField] private int debugComboBonusRate;
 
     private readonly Subject<CardView> onCardSelected = new(); // カード選択イベント
     private List<GameObject> slotList = new();                 // スロットを保持
@@ -108,6 +109,8 @@ public class MemoryGameManager : MonoBehaviour {
         // 思い出の秘石獲得時の購読処理
         GameData.instance.userData.MemoryStoneSlotList.ObserveAdd()
             .Subscribe(memoryStoneId => SetMemoryStoneIcon(memoryStoneId.Value)).AddTo(this);
+
+        GameData.instance.ComboPairCount.Subscribe(comboCount => CheckComboEffect(comboCount)).AddTo(this);
 
         // デバッグ用リセット機能
         this.UpdateAsObservable()
@@ -416,6 +419,8 @@ public class MemoryGameManager : MonoBehaviour {
                 if (this == null || selectedCardModel == null || cts == null) return;
                 await selectedCardModel.ExecuteCardAsync(cts.Token);
 
+                GameData.instance.ComboPairCount.Value++;
+
                 // すべてのカードを引き終わっているか確認
                 if (cardModelList.All(model => model.isPair)) {
                     // 次のフロアへ
@@ -433,6 +438,8 @@ public class MemoryGameManager : MonoBehaviour {
 
                 // ペアにならなかったので、めくれる回数の減算
                 GameData.instance.userData.FlipPoint.Value--;
+
+                GameData.instance.ComboPairCount.Value = 0;
             }
 
             firstSelectedCardView = null;
@@ -519,13 +526,17 @@ public class MemoryGameManager : MonoBehaviour {
             // ランクアップ
             GameData.instance.userData.MemoriaRank.Value++;
 
-            // 記憶を取り戻す
+            // TODO 記憶を取り戻す
 
-            // インベントリの上限を超えていないなら
-            if (GameData.instance.playerCombatData.MaxInventorySize.Value < GameData.instance.limitInventorySize) {
-                // インベントリのサイズアップ
-                GameData.instance.playerCombatData.MaxInventorySize.Value++;
-            }            
+
+
+            //// インベントリの上限を超えていないなら
+            //if (GameData.instance.playerCombatData.MaxInventorySize.Value < GameData.instance.limitInventorySize) {
+            //    // インベントリのサイズアップ
+            //    GameData.instance.playerCombatData.MaxInventorySize.Value++;
+            //}
+
+
         }
     }
 
@@ -549,6 +560,27 @@ public class MemoryGameManager : MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// コンボ時のソウルポイントのボーナス
+    /// </summary>
+    /// <param name="comboCount"></param>
+    private void CheckComboEffect(int comboCount) {
+        if (comboCount == 0) {
+            return;
+        }
+
+        // フロアの階層分のボーナス
+        float floorBonusRate = 0.9f + (float)(GameData.instance.userData.FloorCount.Value * 0.1f);
+        //DebugLogger.Log($"floorBonusRate : {floorBonusRate}");
+
+        int comboBonusPoint = (int)((comboCount - 1) * (debugComboBonusRate * floorBonusRate));
+        if (comboBonusPoint == 0) {
+            return;
+        }
+        //DebugLogger.Log($"comboBonusPoint : {comboBonusPoint}");
+
+        GameData.instance.userData.SoulPoint.Value += comboBonusPoint;
+    }
 
     private async UniTask GameEndAsync() {
         cgSlotSet.blocksRaycasts = false;

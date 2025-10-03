@@ -51,7 +51,12 @@ public class ItemInfoDisplayManager : AbstractSingleton<ItemInfoDisplayManager> 
         //    return;
         //}
 
-        txtName.text = backPackInItem.itemData.itemName;
+        if (backPackInItem.EnhanceLevel.Value > 0) {
+            txtName.text = $"{backPackInItem.itemData.itemName} +{backPackInItem.EnhanceLevel.Value}";
+        } else {
+            txtName.text = $"{backPackInItem.itemData.itemName}";
+        }
+
 
         //txtDesc.text = backPackInItem.currentCoolTime.ToString() + "\n";
         //txtDesc.text += backPackInItem.currentAccuracy.ToString() + "\n";
@@ -109,14 +114,14 @@ public class ItemInfoDisplayManager : AbstractSingleton<ItemInfoDisplayManager> 
         txtDescs[2].text = $"ItemType : {backPackInItem.itemData.itemType}\n\n";
         // Passive のみ HpBonus 表示
         if (backPackInItem.itemData.effectType == EffectType.Passive) {
-            txtDescs[2].text += valueName + " + " + backPackInItem.itemData.hpBonus.ToString() + "\n";            
+            txtDescs[2].text += valueName + " + " + backPackInItem.itemData.hpBonus.ToString() + "\n";
         }
 
         // 各ステータス値
         for (int i = 0; i < backPackInItem.itemData.statusTypes.Length; i++) {
             txtDescs[2].text += backPackInItem.itemData.statusTypes[i].ToString() + " + " + backPackInItem.itemData.requiredValues[i].ToString() + "\n";
         }
-        
+
         //txtDescs[3].text = "Rarity : " + backPackInItem.itemData.rarity.ToString();
         //txtDescs[0].text += backPackInItem.ItemData.Value.description;
 

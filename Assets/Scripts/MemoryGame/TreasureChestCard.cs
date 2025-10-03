@@ -45,7 +45,12 @@ public class TreasureChestCard : CardModelBase {
             }
 
             // インベントリにアイテムを追加
-            PlayerInventoryManager.instance.AddItemDataConvertBackPackInItem(itemData, false);
+            if (isEnemyDrop) {
+                // 敵の場合には、1回分の強化を確定
+                PlayerInventoryManager.instance.AddItemDataConvertBackPackInItem(itemData, true);
+            } else {                
+                PlayerInventoryManager.instance.AddItemDataConvertBackPackInItem(itemData, false);
+            }
         }        
 
         await UniTask.Yield(token);

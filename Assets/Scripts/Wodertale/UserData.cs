@@ -10,6 +10,8 @@ public class UserData {
     public SerializableReactiveProperty<int> FloorCount = new(1);
     public SerializableReactiveProperty<int> MemoriaRank = new(0);
 
+    public int expandInventoryCount;                                          // インベントリを拡張した回数
+
     public SerializableReactiveProperty<int> SoulPoint = new();
     public SerializableReactiveProperty<int> WalkCount = new();
     public int stageCount;
