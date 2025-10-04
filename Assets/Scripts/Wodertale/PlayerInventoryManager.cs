@@ -135,7 +135,14 @@ public class PlayerInventoryManager : AbstractSingleton<PlayerInventoryManager> 
         //GameData.instance.EnchantPoint.Subscribe(point => txtEnchantPoint.text = $"{point:N0}").AddTo(this);
 
         // インベントリ拡張関連のボタン
-        btnShowExpandInventoryPop.OnClickExt(() => ShowExpandInventorySizePop(), this);
+        btnShowExpandInventoryPop
+            .OnClickExt(() => {
+                if (cgExpandInventorySizePop.blocksRaycasts == false) {
+                    ShowExpandInventorySizePop();
+                } else {
+                    HideExpandInventorySizePop();
+                }
+            }, this, TimeSpan.FromMilliseconds(500));
         btnSubmitExpandInventorySize.OnClickExt(() => ExpandInventorySize(), this);
         btnCloseExpandInventoryPop.OnClickExt(() => HideExpandInventorySizePop(), this);
 
@@ -459,7 +466,6 @@ public class PlayerInventoryManager : AbstractSingleton<PlayerInventoryManager> 
         // ポイントが足りていないなら
         int expandRequiredPoint = GameData.instance.expandRequiredXP + (GameData.instance.expandRequiredXP * GameData.instance.userData.expandInventoryCount / 2);
         if (expandRequiredPoint > GameData.instance.userData.SoulPoint.Value) {
-            txtSizeInfo.text = $"XP 不足";
             txtSizeInfo.color = Color.red;
             btnSubmitExpandInventorySize.interactable = false;
         } else {

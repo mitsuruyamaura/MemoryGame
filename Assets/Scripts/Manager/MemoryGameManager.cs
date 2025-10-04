@@ -382,6 +382,9 @@ public class MemoryGameManager : MonoBehaviour {
     private async UniTask HandleCardSelectionAsync(CardView cardView) {
         CardModelBase selectedCardModel = cardModelList[cardView.cardIndex];
 
+        // インベントリの拡張が開いていたら閉じる
+        PlayerInventoryManager.instance.HideExpandInventorySizePop();
+
         // 同じカードを選択した場合
         if (selectedCardModel.isFaceUp) return;
 

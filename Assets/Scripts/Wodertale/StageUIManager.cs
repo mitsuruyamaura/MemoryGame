@@ -40,6 +40,10 @@ public class StageUIManager : MonoBehaviour {
     [SerializeField] private Color releaseMessageColor;
     [SerializeField] private CircleOutline circleOutline;
 
+    [SerializeField] private RectTransform playerLifeDefaultTran;
+    [SerializeField] private RectTransform playerLifeBattleTran;
+    [SerializeField] private RectTransform playerLifeSetTran;
+
     private string SuccessSettlementMessage = "平和的解決に成功しました!!";
     private float defaultTime;
 
@@ -96,6 +100,9 @@ public class StageUIManager : MonoBehaviour {
         imgBattleState.sprite = stateSprites[(int)battleResultType];
         imgBattleState.gameObject.SetActive(true);
 
+        playerLifeSetTran.SetParent(playerLifeDefaultTran);
+        playerLifeSetTran.transform.localPosition = Vector3.zero;
+
         Sequence sequence = DOTween.Sequence();
         sequence.SetLink(gameObject);
         sequence.AppendInterval(0.25f);
@@ -115,12 +122,14 @@ public class StageUIManager : MonoBehaviour {
         inventoryFilter.gameObject.SetActive(false);
     }
 
-
     private void ShowTimeCanvas() {
         imgTime.fillAmount = 1.0f;
         timeObj.SetActive(true);
 
         inventoryFilter.gameObject.SetActive(true);
+
+        playerLifeSetTran.SetParent(playerLifeBattleTran);
+        playerLifeSetTran.transform.localPosition = Vector3.zero;
     }
 
 
