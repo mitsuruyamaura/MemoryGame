@@ -23,6 +23,7 @@ public class UserData {
 
     public SerializableReactiveProperty<int> DefeatedEnemyCount = new(0);
     public SerializableReactiveProperty<int> FindTreasureCount = new(0);
+
     public SerializableReactiveProperty<int> ExploreCount = new(0);
     public SerializableReactiveProperty<int> UncurseCount = new(0);
 

@@ -1,0 +1,21 @@
+﻿public enum BlessingType {
+    None,
+    Heal,
+    HealAll,
+    EnhanceResist,
+    EnhanceAllResists,
+    EnhanceItem,
+    EnhanceRandomItems,
+    DestroyCard,
+    DestroyCardsByType,
+    Look,
+    Reload,
+    GainXp,
+    Untouchable,
+    ChangeCardsByType,
+    GradeUpByType,
+    GetAllTreasures,
+    GetAllClass,
+    ClassRankUp,
+    InventorySizeUp
+}
