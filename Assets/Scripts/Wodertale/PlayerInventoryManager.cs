@@ -1,11 +1,12 @@
-﻿using UnityEngine;
-using R3;
+﻿using Cysharp.Threading.Tasks;
 using ObservableCollections;
-using System.Threading;
-using Cysharp.Threading.Tasks;
-using System.Linq;
-using UnityEngine.UI;
+using R3;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerInventoryManager : AbstractSingleton<PlayerInventoryManager> {
 
@@ -506,6 +507,93 @@ public class PlayerInventoryManager : AbstractSingleton<PlayerInventoryManager> 
             ShowExpandInventorySizePop();
         }
     }
+
+    /// <summary>
+    /// アイテム強化
+    /// </summary>
+    /// <param name="blessingData"></param>
+    public void EnhanceItem(BlessingData blessingData) {
+        if (PlayerBackPackItemList.Count == 0) {
+            DebugLogger.Log($"インベントリが空です");
+            return;
+        }
+
+        // アイテム1つを強化する場合
+        if (blessingData.valueType == BlessingValueType.One) {
+            // インベントリリストをランダムにシャッフルする
+            List<BackPackInItem> shuffledList = PlayerBackPackItemList.OrderBy(x => Guid.NewGuid()).ToList();
+
+            // シャッフルされたリストから最初の要素を取得
+            BackPackInItem backPackInItem = shuffledList[0];
+
+            // TODO アイテムのデバフ解除(サビ、呪い、穢れ、凍結など) BackPack にメソッド追加する
+
+
+            // 強化できない場合には何もしない
+            if (backPackInItem.EnhanceLevel.Value >= 200) {
+                DebugLogger.Log("強化できません");
+                return;
+            }
+
+            // 強化値を算出して強化
+            (ItemData enhanceItemData, int enhanceCount) = CaluEnhanceItemData(backPackInItem.itemData, (int)blessingData.value);
+            if (enhanceItemData != null) {
+                DebugLogger.Log($"強化 : {enhanceItemData} / {enhanceCount}");
+                backPackInItem.UpdateBackPackItem(enhanceItemData, enhanceCount, BattleManager.instance.Cts.Token);
+
+                // リアクション表示更新
+                instance.UpdateDisplayReactionsParam();
+            }
+        }
+
+        // TODO 2つ、3つといった固定値での強化の場合には、分岐を追加する
+
+    }
+
+    /// <summary>
+    /// ランダムな数のアイテム強化(同じアイテムも複数回の対象とする)
+    /// </summary>
+    /// <param name="blessingData"></param>
+    public void EnhanceRandomItems(BlessingData blessingData) {
+        if (PlayerBackPackItemList.Count == 0) {
+            DebugLogger.Log($"インベントリが空です");
+            return;
+        }
+
+        // ランダムな複数のアイテムを強化する場合
+        System.Random random = new();
+        int randomValue = random.Next(0, 5);
+
+        // 同じアイテムも強化対象とする
+        for (int i = 0; i < randomValue; i++) {
+            // インベントリリストをランダムにシャッフルする
+            List<BackPackInItem> shuffledList = PlayerBackPackItemList.OrderBy(x => Guid.NewGuid()).ToList();
+
+            // シャッフルされたリストから最初の要素を取得
+            BackPackInItem backPackInItem = shuffledList[0];
+
+
+            // TODO アイテムのデバフ解除(サビ、呪い、穢れ、凍結など) BackPack にメソッド追加する
+
+
+            // 強化できない場合には何もしない
+            if (backPackInItem.EnhanceLevel.Value >= 200) {
+                DebugLogger.Log("強化できません");
+                return;
+            }
+
+            // ランダムな強化値を算出して強化
+            (ItemData enhanceItemData, int enhanceCount) = CaluEnhanceItemData(backPackInItem.itemData, -1);
+            if (enhanceItemData != null) {
+                DebugLogger.Log($"強化 : {enhanceItemData} / {enhanceCount}");
+                backPackInItem.UpdateBackPackItem(enhanceItemData, enhanceCount, BattleManager.instance.Cts.Token);
+
+                // リアクション表示更新
+                instance.UpdateDisplayReactionsParam();
+            }
+        }
+    }
+
 
     private void OnDestory() {
         disposables?.Clear();

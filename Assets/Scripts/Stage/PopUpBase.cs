@@ -19,16 +19,20 @@ public class PopUpBase : MonoBehaviour
         // 閉じるボタンの設定
         btnClose.OnClickAsObservable()
             .ThrottleFirst(System.TimeSpan.FromSeconds(0.5f))
-            .Subscribe(async _ => await ClosePopUp(token))
+            .Subscribe(async _ => await ClosePopUpAsync(token))
             .AddTo(this);
     }
 
 
-    public virtual async UniTask OpenPopUp(CancellationToken token) {
+    public virtual async UniTask OpenPopUpAsync(CancellationToken token) {
+        canvasGroup.alpha = 1.0f;
+        canvasGroup.blocksRaycasts = true;
         await UniTask.Yield(token);
     }
 
-    public virtual async UniTask ClosePopUp(CancellationToken token) {
+    public virtual async UniTask ClosePopUpAsync(CancellationToken token) {
+        canvasGroup.alpha = 0;
+        canvasGroup.blocksRaycasts = false;
         await UniTask.Yield(token);
     }
 }

@@ -6,8 +6,11 @@ public class BlessingCard : CardModelBase {
     public BlessingCard(CardData cardData) : base(cardData) {}
 
     public override async UniTask ExecuteCardAsync(CancellationToken token) {
-        DebugLogger.Log("blessing");
+        //DebugLogger.Log("blessing");
 
-        await UniTask.Yield(token);
+        if (cardData.masterData is BlessingData blessingData) {
+            EventExecutor eventExecutor = new();
+            await eventExecutor.ExecuteEventAsync(blessingData, token);
+        }
     }
 }

@@ -1,6 +1,7 @@
 ﻿public enum BlessingValueType {
     None,
     One,
+    Random,
     Trap,
     Enemy,
     Memory,

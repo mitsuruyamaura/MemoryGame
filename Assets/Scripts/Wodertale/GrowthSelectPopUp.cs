@@ -23,7 +23,7 @@ public class GrowthSelectPopUp : PopUpBase {
         // 開くときにスロット生成
         GenerateGrowthSlots(statusValueList);
 
-        OpenPopUp(token).Forget();
+        OpenPopUpAsync(token).Forget();
     }
 
 
@@ -35,10 +35,10 @@ public class GrowthSelectPopUp : PopUpBase {
     }
 
 
-    public override UniTask OpenPopUp(CancellationToken token) {
+    public override UniTask OpenPopUpAsync(CancellationToken token) {
 
 
 
-        return base.OpenPopUp(token);
+        return base.OpenPopUpAsync(token);
     }
 }
