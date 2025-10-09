@@ -120,7 +120,7 @@ namespace Fungus
                 return;
             }
             
-            EventSystem eventSystem = GameObject.FindObjectOfType<EventSystem>();
+            EventSystem eventSystem = FindFirstObjectByType<EventSystem>();
             if (eventSystem == null)
             {
                 // Auto spawn an Event System from the prefab
@@ -307,7 +307,7 @@ namespace Fungus
         /// </summary>
         public static void BroadcastFungusMessage(string messageName)
         {
-            var eventHandlers = UnityEngine.Object.FindObjectsOfType<MessageReceived>();
+            var eventHandlers = FindObjectsByType<MessageReceived>(FindObjectsSortMode.None);
             for (int i = 0; i < eventHandlers.Length; i++)
             {
                 var eventHandler = eventHandlers[i];
@@ -1218,7 +1218,9 @@ namespace Fungus
         /// <summary>
         /// Reset the commands and variables in the Flowchart.
         /// </summary>
+#pragma warning disable UNT0006 // Incorrect message signature
         public virtual void Reset(bool resetCommands, bool resetVariables)
+#pragma warning restore UNT0006 // Incorrect message signature
         {
             if (resetCommands)
             {

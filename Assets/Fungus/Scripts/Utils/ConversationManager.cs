@@ -373,7 +373,7 @@ namespace Fungus
         public virtual void PopulateCharacterCache()
         {
             // cache characters for faster lookup
-            characters = UnityEngine.Object.FindObjectsOfType<Character>();
+            characters = UnityEngine.Object.FindObjectsByType<Character>(FindObjectsSortMode.None);
         }
 
         /// <summary>
