@@ -3,6 +3,7 @@ using R3;
 using UnityEngine.UI;
 using DG.Tweening;
 using Cysharp.Threading.Tasks;
+using System.Threading;
 
 public class StageUIManager : MonoBehaviour {
 
@@ -27,6 +28,9 @@ public class StageUIManager : MonoBehaviour {
     [SerializeField] private Slider sliderHp;
 
     [SerializeField] private Button btnPlayerLevel;
+
+    [SerializeField] private Button btnMemoria;
+    [SerializeField] private PlayerInfoListPopup playerInfoListPopup;
 
     [SerializeField] private Transform canvasTran;
     [SerializeField] private Image enemyIcon;
@@ -53,9 +57,12 @@ public class StageUIManager : MonoBehaviour {
     private float sliderAnimeDuration = 0.5f;
     private int prevStamina;
     private int maxHp;
+    private CancellationTokenSource cts;
 
 
     public void SetupStageUIManager(int stamina, int maxHp) {
+        cts = new();
+
         SetMaxHpDisplay(maxHp);
 
         //UpdateDisplayPlayerLevel();
@@ -87,6 +94,12 @@ public class StageUIManager : MonoBehaviour {
             .Zip(GameData.instance.userData.SoulPoint.Skip(1), (prevPoint, nextPoint) => (prevPoint, nextPoint))
             .Subscribe(soulPoint => UpdateSoulPoint(soulPoint.prevPoint, soulPoint.nextPoint))
             .AddTo(this);
+
+        // クラス一覧、スキル一覧ポップアップ表示
+        playerInfoListPopup.InitializePopUp();
+        btnMemoria.OnClickExt(() => ShowPlayerInfoListPop(), this);
+
+        HidePlayerInfoListPop();
 
         // ペアのコンボ回数の購読
         GameData.instance.ComboPairCount.Subscribe(comboCount => UpdateDisplayComboPairCount(comboCount)).AddTo(this);
@@ -191,6 +204,7 @@ public class StageUIManager : MonoBehaviour {
 
     public void UpdatePlayerShieldHp(int shield) {
         txtShieldHp.text = shield.ToString();
+        DebugLogger.Log($"shield : {shield}");
     }
 
     public void UpdateWaveNo(int waveNo) {
@@ -292,5 +306,19 @@ public class StageUIManager : MonoBehaviour {
     /// </summary>
     public void ShowRestartMessage() {
         txtRestartMessage.gameObject.SetActive(true);
+    }
+
+    public void ShowPlayerInfoListPop() {
+        if (GameData.instance.CurrentGameState.Value != GameData.GameState.Play) {
+            return;
+        }
+
+        playerInfoListPopup.OpenPopUpAsync(cts.Token).Forget();
+
+
+    }
+
+    private void HidePlayerInfoListPop() {
+        playerInfoListPopup.ClosePopUpAsync(cts.Token).Forget();
     }
 }

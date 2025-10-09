@@ -5,6 +5,7 @@
     EnhanceResist,
     EnhanceAllResists,
     EnhanceItem,
+    EnhanceAllItems,
     EnhanceRandomItems,
     DestroyCard,
     DestroyCardsByType,

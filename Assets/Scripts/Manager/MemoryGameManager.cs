@@ -4,6 +4,7 @@ using DG.Tweening;
 using ObservableCollections;
 using R3;
 using R3.Triggers;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -12,7 +13,7 @@ using UnityEngine.UI;
 
 public class MemoryGameManager : MonoBehaviour {
     [SerializeField] private Transform slotParent;
-    [SerializeField] private GameObject slotPrefab;
+    [SerializeField] private GameObject slotPrefab;           // カード配置用のスロット
     [SerializeField] private CardGenerator cardGenerator;
     [SerializeField] private int pairCount = 3;
 
@@ -33,10 +34,14 @@ public class MemoryGameManager : MonoBehaviour {
     [SerializeField] private ShinyEffectForUGUI[] shinyEffects;
     [SerializeField] private Sprite spriteMemoryStone;
     [SerializeField] private Text txtMemoriaRank;
+    [SerializeField] private Transform blessingIconViewTran;
+    [SerializeField] private BlessingIconGenerator blessingIconGenerator;
+    [SerializeField] private List<BlessingIconView> blessingIconViewList = new();
 
     [SerializeField] private int debugFlipPoint;
     [SerializeField] private int debugFloorClearBonusFlipPoint;
     [SerializeField] private int debugComboBonusRate;
+    [SerializeField] private int debugBlessingID;              // デバッグ用 BlessingData ID 番号
 
     private readonly Subject<CardView> onCardSelected = new(); // カード選択イベント
     private List<GameObject> slotList = new();                 // スロットを保持
@@ -44,16 +49,40 @@ public class MemoryGameManager : MonoBehaviour {
     private int memoryStoneCount;
     private FloorData currentFloorData;
 
+    public SerializableReactiveProperty<int> EnemyLookCount = new(0);
+    public SerializableReactiveProperty<int> TrapLookCount = new(0);
+    public SerializableReactiveProperty<int> MemoriaLookCount = new(0);
+    public SerializableReactiveProperty<int> BlessingLookCount = new(0);
+    public SerializableReactiveProperty<int> KeyLookCount = new(0);
+    public SerializableReactiveProperty<int> TreasureChestLookCount = new(0);
+
+    private CompositeDisposable enemyLookDisposables;         // 灰色だが使っている
+    private CompositeDisposable trapLookDisposables;
+    private CompositeDisposable memoriaLookDisposables;
+    private CompositeDisposable blessingLookDisposables;
+    private CompositeDisposable keyLookDisposables;
+    private CompositeDisposable treasureChestLookDisposables;
+
+    private Dictionary<BlessingValueType, (SerializableReactiveProperty<int>, CompositeDisposable)> lookCountMap;
+
+    private Subject<Unit> onNextFloor = new();
+    private IDisposable floorCountDisposable;
+
     // デバッグ用
     //private async void Start() {
     //    SetupAsync().Forget();
     //}
 
 
-
+    /// <summary>
+    /// ステージ初期設定
+    /// </summary>
+    /// <returns></returns>
     public async UniTask SetUpAsync() {
-        cts = new ();
+        // 各初期化処理
+        cts = new();
         cardGenerator.InitObjectPool();
+        blessingIconGenerator.InitObjectPool();
 
         // フロア表示の更新
         GameData.instance.userData.FloorCount.Subscribe(count => UpdateDisplayFloorCount(count)).AddTo(this);
@@ -112,6 +141,27 @@ public class MemoryGameManager : MonoBehaviour {
 
         GameData.instance.ComboPairCount.Subscribe(comboCount => CheckComboEffect(comboCount)).AddTo(this);
 
+        // マッピング
+        lookCountMap = new() {
+            { BlessingValueType.Enemy, (EnemyLookCount, enemyLookDisposables = new()) },
+            { BlessingValueType.Trap, (TrapLookCount, trapLookDisposables = new()) },
+            { BlessingValueType.Memory, (MemoriaLookCount, memoriaLookDisposables = new()) },
+            { BlessingValueType.Event, (BlessingLookCount, blessingLookDisposables = new()) },
+            { BlessingValueType.Key, (KeyLookCount, keyLookDisposables = new()) },
+            { BlessingValueType.TreasureChest, (TreasureChestLookCount, treasureChestLookDisposables = new()) }
+        };
+
+        // フロアが進んだときの購読処理
+        floorCountDisposable = onNextFloor.Subscribe(count => {
+                // 効果時間が残っているなら、時間を減算して、カードに効果適用
+                if (EnemyLookCount.Value > 0) EnemyLookCount.Value--;                
+                if (TrapLookCount.Value > 0) TrapLookCount.Value--;
+                if (MemoriaLookCount.Value > 0) MemoriaLookCount.Value--;
+                if (BlessingLookCount.Value > 0) BlessingLookCount.Value--;
+                if (KeyLookCount.Value > 0) KeyLookCount.Value--;
+                if (TreasureChestLookCount.Value > 0) TreasureChestLookCount.Value--;
+            }).AddTo(this);
+
         // デバッグ用リセット機能
         this.UpdateAsObservable()
             .Where(_ => Input.GetKeyDown(KeyCode.A))
@@ -154,6 +204,14 @@ public class MemoryGameManager : MonoBehaviour {
         await SetupCardsAsync();
 
         if (this == null || cgSlotSet == null) return;
+
+        // 最後のカードが裏返るまで待つ
+        await UniTask.Delay(500, cancellationToken: cts.Token);
+
+        // 透視カードの残り時間減算。0 になっていないなら効果適用
+        onNextFloor.OnNext(default);
+
+        // カードを触れる状態にする
         cgSlotSet.blocksRaycasts = true;
     }
 
@@ -179,7 +237,7 @@ public class MemoryGameManager : MonoBehaviour {
     private async UniTask SetupCardsAsync() {
         // 各カードをペアで作成し、シャッフルされた状態でもらう
         List<CardData> selectedCardDataList = CreateCardPairsAndShuffle(pairCount);
-        
+
         // カードデータを元に CardModel を作成して List に保持
         CreateCardModelList(selectedCardDataList);
 
@@ -190,7 +248,7 @@ public class MemoryGameManager : MonoBehaviour {
 
             if (this == null || cardGenerator == null || slotList == null) return;
             CardView card = (CardView)cardGenerator.GetObjectFromPool(slotList[i].transform);
-            card.Setup(index, OnCardSelected, flipDuration, selectedCardDataList[i].cardTypeMaster.spriteCardType);
+            card.Setup(index, OnCardSelected, flipDuration, selectedCardDataList[i].cardTypeMaster.spriteCardType, selectedCardDataList[i].cardTypeMaster.cardEventType);
             cardViewList.Add(card);
         }
     }
@@ -209,6 +267,7 @@ public class MemoryGameManager : MonoBehaviour {
         // カードの種類ごとにペアを作成
         for (int i = 0; i < cardTypeMasterList.Count; i++) {
             CardData cardData = new() {
+                cardIndex = i,
                 cardTypeMaster = cardTypeMasterList[i],
                 masterData = null
             };
@@ -228,14 +287,14 @@ public class MemoryGameManager : MonoBehaviour {
         //}
 
         // カード配置をランダム化するためにシャッフル
-        return selectedCardDataList.OrderBy(_ => Random.value).ToList();
+        return selectedCardDataList.OrderBy(_ => Guid.NewGuid()).ToList();
     }
 
     /// <summary>
     /// フロアのデータに基づいて出現するカードの種類を必要数作成
     /// </summary>
     /// <returns></returns>
-    private List<CardTypeMaster> CreateCardTypeList() {        
+    private List<CardTypeMaster> CreateCardTypeList() {
         List<CardTypeMaster> cardTypeMasterList = new();
 
         // FloorData のフィールドを Dictionary にまとめる
@@ -275,7 +334,7 @@ public class MemoryGameManager : MonoBehaviour {
         if (totalWeight == 0) {
             return cardTypeMasterList;
         }
-        
+
         System.Random random = new();
 
         // ランダムなカードタイプの抽出        
@@ -292,7 +351,7 @@ public class MemoryGameManager : MonoBehaviour {
                 cumulative += kvp.Value;
 
                 // 抽選した場合
-                if(randomValue < cumulative) {
+                if (randomValue < cumulative) {
                     // ランダムなカードタイプを追加
                     CardTypeMaster cardTypeMaster = DataBaseManager.instance.GetCardType(kvp.Key);
                     cardTypeMasterList.Add(cardTypeMaster);
@@ -336,7 +395,7 @@ public class MemoryGameManager : MonoBehaviour {
 
         return cardTypeMasterList;
     }
-    
+
     /// <summary>
     /// CardData を元にカードモデルを作成して List に追加
     /// </summary>
@@ -417,10 +476,13 @@ public class MemoryGameManager : MonoBehaviour {
 
                 // カードの種類とフロアデータから、カードのマスターデータを設定
                 selectedCardModel.cardData.masterData = CreateCardData(selectedCardModel.cardData.cardTypeMaster.cardEventType, currentFloorData);
+                //DebugLogger.Log($"selectedCardModel : {selectedCardModel}");
+                //DebugLogger.Log($"selectedCardModel.cardData.masterData : {selectedCardModel.cardData.masterData}");
 
                 // カードの効果を実行
                 if (this == null || selectedCardModel == null || cts == null) return;
                 await selectedCardModel.ExecuteCardAsync(cts.Token);
+                //DebugLogger.Log("カード実行");
 
                 GameData.instance.ComboPairCount.Value++;
 
@@ -467,6 +529,17 @@ public class MemoryGameManager : MonoBehaviour {
             case CardEventType.Trap:
                 chosenData = DataBaseManager.instance.GetRandomTrapByRarity(floorData.trapRarities, floorData.trapRates);
                 break;
+                
+            // 正式
+            //case CardEventType.Blessing:
+            //    chosenData = DataBaseManager.instance.GetRandomBlessingByRarity(floorData.blessingRarities, floorData.blessingRate);
+            //    break;
+
+            // デバッグ用
+            case CardEventType.Blessing:
+                chosenData = DataBaseManager.instance.blessingDataSO.blessingDataList.FirstOrDefault(data => data.id == debugBlessingID);
+                break;
+
                 // ... 他も同様
         }
 
@@ -583,6 +656,197 @@ public class MemoryGameManager : MonoBehaviour {
         //DebugLogger.Log($"comboBonusPoint : {comboBonusPoint}");
 
         GameData.instance.userData.SoulPoint.Value += comboBonusPoint;
+    }
+
+    /// <summary>
+    /// 指定された種類のカードを見えるようにする
+    /// </summary>
+    /// <param name="blessingData"></param>
+    /// <returns></returns>
+    public async UniTask FaceUpCardsByTargetTypeAsync(BlessingData blessingData) {
+        CardEventType targetCardEventType = ConvertCardEventTypeByBlessingValueType(blessingData.valueType);
+        List<CardModelBase> targetCardModelList = cardModelList.Where(card => card.isPair == false && card.cardData.cardTypeMaster.cardEventType == targetCardEventType).ToList();
+        if (targetCardModelList.Count == 0) {
+            DebugLogger.Log($"該当する種類のカードなし");
+            //return;
+        }
+
+        List<CardView> targetCardViewList = cardViewList.Where(view => targetCardModelList.Exists(model => model.cardData.cardTypeMaster.cardEventType == view.cardEventType)).ToList();
+
+        // 指定された種類のカードを見える状態にする
+        targetCardViewList.ForEach(cardView => cardView?.FaceUpCard());
+        DebugLogger.Log($"blessingData.valueType : {blessingData.valueType}");
+
+        // マッピングしてある情報と照合
+        if (lookCountMap.TryGetValue(blessingData.valueType, out (SerializableReactiveProperty<int> lookCount, CompositeDisposable disposables) lookTarget)) {
+            // 該当する種類のカードの効果時間を加算
+            lookTarget.lookCount.Value += (int)blessingData.value;
+
+            // 未購読時のみ購読登録とアイコン表示(購読処理が動いているなら、同じ効果の時間加算による重複を防止したいのでやらない)
+            if (lookTarget.disposables.Count == 0) {
+                // 0 になったときにカードを伏せる購読処理
+                lookTarget.lookCount
+                    .Where(lookCount => lookCount == 0)
+                    .Take(1)
+                    .Subscribe(lookCount => FaceDownCardsByTargetType(blessingData.valueType, lookTarget.disposables))
+                    .AddTo(lookTarget.disposables);
+
+                // 0 以外(効果中)のときにカードを可視にする購読
+                lookTarget.lookCount
+                    .Where(lookCount => lookCount > 0)
+                    .Subscribe(lookCount => {
+                        CardEventType targetEventType = ConvertCardEventTypeByBlessingValueType(blessingData.valueType);
+                        DebugLogger.Log($"blessingData.valueType : {blessingData.valueType}");
+                        List<CardModelBase> targetModelList = cardModelList.Where(card => card.isPair == false && card.cardData.cardTypeMaster.cardEventType == targetEventType).ToList();
+                        if (targetModelList.Count == 0) {
+                            DebugLogger.Log($"該当する種類のカードなし");
+                            return;
+                        }
+
+                        List<CardView> targetViewList = cardViewList.Where(view => targetModelList.Exists(model => model.cardData.cardTypeMaster.cardEventType == view.cardEventType)).ToList();
+
+                        targetViewList.ForEach(cardView => cardView?.FaceUpCard());
+                    })
+                    .AddTo(lookTarget.disposables);
+
+                // アイコン表示
+                BlessingIconView blessingIconView = (BlessingIconView)blessingIconGenerator.GetObjectFromPool(blessingIconViewTran);
+                blessingIconView.Setup(blessingData);
+                blessingIconViewList.Add(blessingIconView);
+            }
+        }
+
+        await UniTask.Yield();
+    }
+
+    /// <summary>
+    /// BlessingValueType を CardEventType に変換
+    /// </summary>
+    /// <param name="blessingValueType"></param>
+    /// <returns></returns>
+    private CardEventType ConvertCardEventTypeByBlessingValueType(BlessingValueType blessingValueType) {
+        return blessingValueType switch {
+            BlessingValueType.Trap => CardEventType.Trap,
+            BlessingValueType.Enemy => CardEventType.Enemy,
+            BlessingValueType.Memory => CardEventType.MemoryFragments,
+            BlessingValueType.TreasureChest => CardEventType.TreasureChest,
+            BlessingValueType.Event => CardEventType.Blessing,
+            BlessingValueType.Key => CardEventType.Stairs,
+            _ => CardEventType.Stairs
+        };
+    }
+
+    /// <summary>
+    /// 残り時間 0 になったら実行される
+    /// </summary>
+    /// <param name="blessingData"></param>
+    public void FaceDownCardsByTargetType(BlessingValueType blessingValueType, CompositeDisposable disposables) {
+        CardEventType targetCardEventType = ConvertCardEventTypeByBlessingValueType(blessingValueType);
+        List<CardModelBase> targetCardModelList = cardModelList.Where(card => card.isPair == false && card.cardData.cardTypeMaster.cardEventType == targetCardEventType).ToList();
+        if (targetCardModelList.Count == 0) {
+            DebugLogger.Log($"該当する種類のカードなし");
+            return;
+        }
+
+        List<CardView> targetCardViewList = cardViewList.Where(view => targetCardModelList.Exists(model => model.cardData.cardTypeMaster.cardEventType == view.cardEventType)).ToList();
+
+        targetCardViewList.ForEach(cardView => cardView.FaceDownCard());
+        disposables.Clear();
+        disposables = new();  // null にせず、Count 0 として判定させるため
+
+        // 該当するアイコン削除
+        blessingIconViewList.ForEach(view => view?.CheckEndBlessing(BlessingType.Look, blessingValueType));
+
+        DebugLogger.Log($"効果時間終了 : {blessingValueType}");
+    }
+
+    /// <summary>
+    /// 敵かトラップのカードのいずれかを選択して破壊処理へつなげる
+    /// </summary>
+    /// <param name="blessingData"></param>
+    /// <returns></returns>
+    public async UniTask ChooseDestroyEnemyOrTrapCardAsync(BlessingData blessingData) {
+        bool isRestEnemy = true;
+        bool isRestTrap = true;
+
+        // 敵とトラップのみを抽出したリストを作る
+        List<CardModelBase> restEnemyCardModelList = cardModelList.Where(card => card.isPair == false && card.cardData.cardTypeMaster.cardEventType == CardEventType.Enemy).ToList();
+        isRestEnemy = restEnemyCardModelList.Count > 0 ? true : false;
+        List<CardView> restEnemyCardViewList = new();
+        if (isRestEnemy) {
+            restEnemyCardViewList = cardViewList.Where(view => restEnemyCardModelList.Exists(model => model.cardData.cardTypeMaster.cardEventType == view.cardEventType)).ToList();
+        }
+
+        List<CardModelBase> restTrapCardModelList = cardModelList.Where(card => card.isPair == false && card.cardData.cardTypeMaster.cardEventType == CardEventType.Trap).ToList();
+        isRestTrap = restTrapCardModelList.Count > 0 ? true : false;
+        List<CardView> restTrapCardViewList = new();
+        if (isRestTrap) {
+            restTrapCardViewList = cardViewList.Where(view => restTrapCardModelList.Exists(model => model.cardData.cardTypeMaster.cardEventType == view.cardEventType)).ToList();
+        }
+
+        // 敵やトラップが残っていない場合
+        if(isRestEnemy == false && isRestTrap == false) {
+            return;
+        }
+
+        // どちらを対象にするか
+        if (isRestEnemy && isRestTrap) {
+            // 両方存在する場合
+            int randomValue = UnityEngine.Random.Range(0, 2);
+            if (randomValue == 0) {
+                // 対象のカードのペアを破壊
+                await DestroyTargetPairCard(restEnemyCardModelList[0], restEnemyCardViewList[0], restEnemyCardModelList[1], restEnemyCardViewList[1]);
+            } else {
+                await DestroyTargetPairCard(restTrapCardModelList[0], restTrapCardViewList[0], restTrapCardModelList[1], restTrapCardViewList[1]);
+            }
+        } else if (!isRestEnemy && isRestTrap) {
+            // 敵がいない場合、トラップを破壊
+            await DestroyTargetPairCard(restTrapCardModelList[0], restTrapCardViewList[0], restTrapCardModelList[1], restTrapCardViewList[1]);
+        } else if (isRestEnemy && !isRestTrap) {
+            // トラップがない場合、敵を破壊
+            await DestroyTargetPairCard(restEnemyCardModelList[0], restEnemyCardViewList[0], restEnemyCardModelList[1], restEnemyCardViewList[1]);
+        }
+    }
+
+    /// <summary>
+    /// 対象のカードのペアを破壊
+    /// </summary>
+    /// <param name="firstCardModel"></param>
+    /// <param name="firstCardView"></param>
+    /// <param name="secoundCardModel"></param>
+    /// <param name="secoundCardView"></param>
+    /// <returns></returns>
+    private async UniTask DestroyTargetPairCard(CardModelBase firstCardModel, CardView firstCardView, CardModelBase secoundCardModel, CardView secoundCardView) {
+        firstCardView.Hide();
+        secoundCardView.Hide();
+
+        firstCardModel.SetPair();
+        secoundCardModel.SetPair();
+
+        await UniTask.Delay((int)(flipDuration * 1000));
+
+        // カードの種類とフロアデータから、カードのマスターデータを設定
+        //secoundCardModel.cardData.masterData = CreateCardData(secoundCardModel.cardData.cardTypeMaster.cardEventType, currentFloorData);
+        //DebugLogger.Log($"secoundCardModel : {secoundCardModel}");
+        //DebugLogger.Log($"secoundCardModel.cardData.masterData : {secoundCardModel.cardData.masterData}");
+
+        // カードの効果を実行
+        if (this == null || secoundCardModel == null || cts == null) return;
+        //await secoundCardModel.ExecuteCardAsync(cts.Token);
+        DebugLogger.Log("カード実行");
+    }
+
+
+    public void ChangeCardsByType(BlessingData blessingData) {
+
+    }
+
+
+    private void OnDestroy() {
+        foreach (var entry in lookCountMap.Values) {
+            // 動いているものだけ購読解除
+            entry.Item2?.Dispose();
+        }
     }
 
     private async UniTask GameEndAsync() {

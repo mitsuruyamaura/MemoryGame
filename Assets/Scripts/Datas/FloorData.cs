@@ -24,6 +24,8 @@ public class FloorData : IMasterData {
     public int enemyWeight;
     public int trapWeight;
     public int memoryStoneWeight;
+    public Rarity[] blessingRarities;
+    public int[] blessingRate;
 
     public int Id => id;
 
@@ -56,5 +58,8 @@ public class FloorData : IMasterData {
         enemyWeight = int.Parse(datas[18]);
         trapWeight = int.Parse(datas[19]);
         memoryStoneWeight = int.Parse(datas[20]);
+
+        blessingRarities = datas[21].Split('/').Select(type => (Rarity)Enum.Parse(typeof(Rarity), type)).ToArray();
+        blessingRate = datas[22].Split('/').Select(int.Parse).ToArray();
     }
 }

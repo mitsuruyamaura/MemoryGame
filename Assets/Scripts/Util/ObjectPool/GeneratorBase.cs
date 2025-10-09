@@ -70,7 +70,7 @@ public abstract class GeneratorBase : MonoBehaviour {
 
         if (pooledObject == null || pooledObject.Equals(null)) {
             DebugLogger.Log("Poolから無効なオブジェクトを取得しました");
-            return null;
+            pooledObject = Create();
         }
 
         pooledObject.transform.position = position;
@@ -90,7 +90,7 @@ public abstract class GeneratorBase : MonoBehaviour {
 
         if (pooledObject == null || pooledObject.Equals(null)) {
             DebugLogger.Log("Poolから無効なオブジェクトを取得しました");
-            return null;
+            pooledObject = Create();
         }
 
         pooledObject.transform.SetParent(parentTran, false);

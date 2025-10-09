@@ -1,5 +1,4 @@
-﻿using RPG_BOX;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -163,6 +162,47 @@ public class DataBaseManager : AbstractSingleton<DataBaseManager> {
     }
 
     /// <summary>
+    /// レアリティの重み付けを利用したイベントの抽選
+    /// </summary>
+    /// <param name="blessingRarities"></param>
+    /// <param name="blessingRates"></param>
+    /// <returns></returns>
+    public BlessingData GetRandomBlessingByRarity(Rarity[] blessingRarities, int[] blessingRates) {
+        if (blessingRarities == null || blessingRates == null ||
+            blessingRarities.Length != blessingRates.Length || blessingRarities.Length == 0) {
+            DebugLogger.Log("イベントレアリティ抽選の入力が不正です。");
+            return null;
+        }
+
+        // 累積和によるレアリティ抽選
+        int totalWeight = blessingRates.Sum();
+        int roll = UnityEngine.Random.Range(0, totalWeight);
+
+        int cumulative = 0;
+        Rarity chosenRarity = blessingRarities[0]; // デフォルト
+        for (int i = 0; i < blessingRates.Length; i++) {
+            cumulative += blessingRates[i];
+            if (roll < cumulative) {
+                chosenRarity = blessingRarities[i];
+                break;
+            }
+        }
+
+        // 2. 選ばれたレアリティからイベントを取得
+        List<BlessingData> rarityBlessingDataList = GetBlessingDataListByRarity(chosenRarity);
+
+        if (rarityBlessingDataList == null || rarityBlessingDataList.Count == 0) {
+            DebugLogger.Log($"指定レアリティ {chosenRarity} のイベントが存在しません。");
+            return null;
+        }
+
+        // ランダムで1つ選択
+        int index = UnityEngine.Random.Range(0, rarityBlessingDataList.Count);
+        return rarityBlessingDataList[index];
+    }
+
+
+    /// <summary>
     /// 次のレベルアップに必要な経験値を計算して取得
     /// </summary>
     /// <param name="level"></param>
@@ -210,6 +250,11 @@ public class DataBaseManager : AbstractSingleton<DataBaseManager> {
     //        }
     //    }
     //}
+
+
+    public List<BlessingData> GetBlessingDataListByRarity(Rarity rarity) {
+        return blessingDataSO.blessingDataList.Where(data => data.rarity == rarity).ToList();
+    }
 
 
     public List<TrapData> GetTrapDataListByRarity(Rarity rarity) {
