@@ -1,7 +1,8 @@
 ﻿using System;
+using UnityEngine;
 
 [System.Serializable]
-public class BlessingData : IMasterData {
+public class BlessingData : IMasterData, IInfoView, IHasIcon {
     public int id;
     public string name;
     public BlessingType type;
@@ -14,6 +15,15 @@ public class BlessingData : IMasterData {
     public int stack;
 
     public int Id => id;
+
+    public Rarity Rarity => rarity;
+
+    public string Name => name;
+
+    public string Description => desc;
+    public Sprite GetIcon() {
+        return Resources.Load<Sprite>("Blessing/" + Id);
+    }
 
     public BlessingData(string[] datas) {
         id = int.Parse(datas[0]);

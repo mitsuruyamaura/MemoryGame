@@ -14,7 +14,7 @@ public interface IMasterData {
 /// アイコンID を利用したい各マスターに実装する
 /// </summary>
 public interface IHasIcon {
-    string IconId { get; }
+    Sprite GetIcon();
 }
 
 /// <summary>
@@ -26,8 +26,15 @@ public interface IMasterTable {
 
     // ボックス化した形で取得(object を返す)
     object GetDataBoxed(int id);
-
+    
     int Count { get; }
+}
+
+
+public interface IInfoView {
+    Rarity Rarity { get; }
+    string Name { get; }
+    string Description { get; }
 }
 
 /// <summary>

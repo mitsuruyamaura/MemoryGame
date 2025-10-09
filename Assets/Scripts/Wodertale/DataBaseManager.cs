@@ -276,6 +276,10 @@ public class DataBaseManager : AbstractSingleton<DataBaseManager> {
         return Resources.Load<Sprite>("Item/" + searchItemId);
     }
 
+    public Sprite GetBlessingImage(int searchBlessingId) {
+        return Resources.Load<Sprite>("Blessing/" + searchBlessingId);
+    }
+
 
     public Sprite GetEnemyIcon(int enemyId) {
         return Resources.Load<Sprite>("Enemy/" + enemyId);

@@ -237,11 +237,11 @@ public class BattleManager : AbstractSingleton<BattleManager> {
 
                     if (timer >= interval) {
                         timer = 0;
-
+                        
                         int seIndex = UnityEngine.Random.Range(0, 5);
                         // SEを再生
                         SoundManager.instance.PlaySE((SE_TYPE)seIndex);
-                        DebugLogger.Log("SE");
+                        //DebugLogger.Log("SE");
                     }
                 });
 
