@@ -54,7 +54,7 @@ namespace Fungus
             }
             else
             {
-                receivers = GameObject.FindObjectsOfType<MessageReceived>();
+                receivers = FindObjectsByType<MessageReceived>(FindObjectsSortMode.None);
             }
 
             if (receivers != null)

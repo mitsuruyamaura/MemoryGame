@@ -1,4 +1,4 @@
-// This code is part of the Fungus library (https://github.com/snozbot/fungus)
+﻿// This code is part of the Fungus library (https://github.com/snozbot/fungus)
 // It is released for free under the MIT open source license (https://github.com/snozbot/fungus/blob/master/LICENSE)
 
 ﻿using UnityEngine;
@@ -156,7 +156,7 @@ namespace Fungus
         /// </summary>
         protected virtual void InitBindings()
         {
-            LuaBindingsBase[] bindings = GameObject.FindObjectsOfType<LuaBindingsBase>();
+            LuaBindingsBase[] bindings = FindObjectsByType<LuaBindingsBase>(FindObjectsSortMode.None);
             foreach (LuaBindingsBase binding in bindings)
             {
                 binding.AddBindings(luaEnvironment);

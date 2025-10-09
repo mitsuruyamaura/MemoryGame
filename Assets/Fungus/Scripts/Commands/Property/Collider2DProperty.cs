@@ -42,7 +42,10 @@ namespace Fungus
                           typeof(IntegerVariable))]
         protected Variable inOutVar;
 
+        [System.Obsolete]
+#pragma warning disable CS0809 // 旧形式のメンバーが、旧形式でないメンバーをオーバーライドします
         public override void OnEnter()
+#pragma warning restore CS0809 // 旧形式のメンバーが、旧形式でないメンバーをオーバーライドします
         {
             var iof = inOutVar as FloatVariable;
             var iob = inOutVar as BooleanVariable;

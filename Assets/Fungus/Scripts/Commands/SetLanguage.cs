@@ -25,7 +25,7 @@ namespace Fungus
 
         public override void OnEnter()
         {
-            Localization localization = GameObject.FindObjectOfType<Localization>();
+            Localization localization = FindFirstObjectByType<Localization>();
             if (localization != null)
             {
                 localization.SetActiveLanguage(_languageCode.Value, true);

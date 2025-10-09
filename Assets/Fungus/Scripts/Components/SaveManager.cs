@@ -87,7 +87,7 @@ namespace Fungus
             SavePointLoaded.NotifyEventHandlers(savePointKey);
 
             // Execute any block containing a SavePoint command matching the save key, with Resume On Load enabled
-            var savePoints = UnityEngine.Object.FindObjectsOfType<SavePoint>();
+            var savePoints = FindObjectsByType<SavePoint>(FindObjectsSortMode.None);
             for (int i = 0; i < savePoints.Length; i++)
             {
                 var savePoint = savePoints[i];
@@ -113,7 +113,7 @@ namespace Fungus
             // Each scene should have one Save Point with the IsStartPoint property enabled.
             // We automatically start execution from this command whenever the scene starts 'normally' (i.e. first play, restart or scene load via the Load Scene command or SceneManager.LoadScene).
 
-            var savePoints = UnityEngine.Object.FindObjectsOfType<SavePoint>();
+            var savePoints = FindObjectsByType<SavePoint>(FindObjectsSortMode.None);
             for (int i = 0; i < savePoints.Length; i++)
             {
                 var savePoint = savePoints[i];
