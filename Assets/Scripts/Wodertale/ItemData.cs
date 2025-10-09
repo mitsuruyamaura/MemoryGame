@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 public enum Rarity {
     Common,
@@ -84,7 +85,7 @@ public enum BuffDebuffType {
 }
 
 [System.Serializable]
-public class ItemData : IMasterData {
+public class ItemData : IMasterData, IInfoView, IHasIcon {
     public int id;
     public string itemName;
     public Rarity rarity;
@@ -121,6 +122,14 @@ public class ItemData : IMasterData {
     public float criticalDamageRate;       // クリティカルの倍率ボーナス
 
     public int Id => id;
+    public Rarity Rarity => rarity;
+    public string Name => itemName;
+
+    public string Description => description;
+
+    public Sprite GetIcon() {
+        return Resources.Load<Sprite>("Item/" + Id);
+    }
 
     // サイズ(ウェイト)
 

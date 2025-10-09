@@ -1,8 +1,8 @@
-using System;
+﻿using System;
 using UnityEngine;
 
 [System.Serializable]
-public class TrapData : IMasterData {
+public class TrapData : IMasterData, IInfoView, IHasIcon {
     public int id;
     public string name;
     public string desc;
@@ -11,6 +11,13 @@ public class TrapData : IMasterData {
     public int exp;
 
     public int Id => id;
+    public Rarity Rarity => rarity;
+    public string Name => name;
+
+    public string Description => desc;
+    public Sprite GetIcon() {
+        return Resources.Load<Sprite>("Trap/" + Id);
+    }
 
     public TrapData(string[] datas) {
         id = int.Parse(datas[0]);

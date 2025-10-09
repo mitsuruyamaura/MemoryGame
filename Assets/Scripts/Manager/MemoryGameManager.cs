@@ -712,6 +712,10 @@ public class MemoryGameManager : MonoBehaviour {
                 // アイコン表示
                 BlessingIconView blessingIconView = (BlessingIconView)blessingIconGenerator.GetObjectFromPool(blessingIconViewTran);
                 blessingIconView.Setup(blessingData);
+
+                // 残り時間表示更新処理の購読
+                lookTarget.lookCount.Subscribe(lookCount => blessingIconView.UpdateDisplayDuration(lookCount)).AddTo(lookTarget.disposables);
+
                 blessingIconViewList.Add(blessingIconView);
             }
         }

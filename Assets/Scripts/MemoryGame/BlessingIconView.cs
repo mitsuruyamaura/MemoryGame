@@ -3,6 +3,7 @@ using UnityEngine.UI;
 
 public class BlessingIconView : PoolBase {
     [SerializeField] private Image imgIcon;
+    [SerializeField] private Text txtDuration;
     [SerializeField] private BlessingData blessingData;
 
     public void Setup(BlessingData blessingData) {
@@ -10,8 +11,14 @@ public class BlessingIconView : PoolBase {
 
         this.blessingData = blessingData;
 
+        UpdateDisplayDuration((int)blessingData.value);
+
         // TODO アイコン画像設定
 
+    }
+
+    public void UpdateDisplayDuration(int duration) {
+        txtDuration.text = duration.ToString();
     }
 
     /// <summary>

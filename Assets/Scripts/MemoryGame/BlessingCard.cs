@@ -9,6 +9,9 @@ public class BlessingCard : CardModelBase {
         //DebugLogger.Log("blessing");
 
         if (cardData.masterData is BlessingData blessingData) {
+            // 画面表示
+            await ItemInfoDisplayManager.instance.ShowBlessingInfoAsync(blessingData, token);
+
             EventExecutor eventExecutor = new();
             await eventExecutor.ExecuteEventAsync(blessingData, token);
         }

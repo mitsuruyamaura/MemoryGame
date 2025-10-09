@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 [System.Serializable]
-public class EnemyData : IMasterData {
+public class EnemyData : IMasterData, IInfoView, IHasIcon {
     public int enemyNo;
     public Rarity rarity;
     public string race;
@@ -25,6 +26,14 @@ public class EnemyData : IMasterData {
     public int shieldPower;
 
     public int Id => enemyNo;
+    public Rarity Rarity => rarity;
+    public string Name => race;
+
+    public string Description => "";
+
+    public Sprite GetIcon() {
+        return Resources.Load<Sprite>("Enemy/" + Id);
+    }
 
     public EnemyData(string[] datas) {
         enemyNo = int.Parse(datas[0]);

@@ -1,10 +1,10 @@
-﻿using UnityEngine;
-using UnityEngine.UI;
-using System.Linq;
-using Cysharp.Threading.Tasks;
-using System.Threading;
+﻿using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using System;
+using System.Linq;
+using System.Threading;
+using UnityEngine;
+using UnityEngine.UI;
 
 
 public class ItemInfoDisplayManager : AbstractSingleton<ItemInfoDisplayManager> {
@@ -32,12 +32,17 @@ public class ItemInfoDisplayManager : AbstractSingleton<ItemInfoDisplayManager> 
 
     public bool isTreasureShow;
 
+    [SerializeField] private InfoViewGenerator blessingInfoViewGenerator;
+    [SerializeField] private Transform blessingInfoViewTran;
+
 
     protected override void Awake() {
         base.Awake();
         HideItemInfo();
         cgFilter.blocksRaycasts = false;
         cgFilter.alpha = 0f;
+
+        blessingInfoViewGenerator.InitObjectPool();
     }
 
     /// <summary>
@@ -303,6 +308,33 @@ public class ItemInfoDisplayManager : AbstractSingleton<ItemInfoDisplayManager> 
         cgFilter.alpha = 0f;
 
         isTreasureShow = false;
+        HideItemInfo();
+    }
+
+    /// <summary>
+    /// イベントカード獲得時の画面表示
+    /// </summary>
+    /// <param name="blessingData"></param>
+    /// <param name="token"></param>
+    /// <returns></returns>
+    public async UniTask ShowBlessingInfoAsync(BlessingData blessingData, CancellationToken token) {
+        BlessingInfoView blessingInfoView = (BlessingInfoView)blessingInfoViewGenerator.GetObjectFromPool(blessingInfoViewTran);
+        blessingInfoView.SetUp(blessingData);
+
+        // 画面タップするまで待機(ほかの UI には触らないようにする)
+        bool isTouch = false;
+        cgFilter.blocksRaycasts = true;
+        cgFilter.alpha = 1.0f;
+
+        disposable = btnFilter.OnClickExt(() => isTouch = true, this);
+
+        await UniTask.WaitUntil(() => isTouch == true, cancellationToken: token);
+
+        blessingInfoView.Release();
+        disposable.Dispose();
+        cgFilter.blocksRaycasts = false;
+        cgFilter.alpha = 0f;
+
         HideItemInfo();
     }
 }
