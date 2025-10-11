@@ -9,6 +9,8 @@ public class ItemInfoView : InfoViewBase {
     /// </summary>
     /// <param name="backPackInItem"></param>
     public void ShowBackPackItemInfo(BackPackInItem backPackInItem) {
+        isReleased = false;
+
         if (backPackInItem.EnhanceLevel.Value > 0) {
             txtName.text = $"{backPackInItem.itemData.itemName} +{backPackInItem.EnhanceLevel.Value}";
         } else {
@@ -95,6 +97,7 @@ public class ItemInfoView : InfoViewBase {
     /// </summary>
     /// <param name="itemData"></param>
     public void ShowTeasureChestInfo(ItemData itemData) {
+        isReleased = false;
 
         // 表示内容の設定
         txtName.text = itemData.itemName;

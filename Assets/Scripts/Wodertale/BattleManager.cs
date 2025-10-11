@@ -319,7 +319,7 @@ public class BattleManager : AbstractSingleton<BattleManager> {
         channel.Writer.TryWrite(battleResultType);
     }
 
-    private async UniTask BattleResultAsync(EnemyData enemyData) {
+    public async UniTask BattleResultAsync(EnemyData enemyData) {
 
         // バトル結果が勝利の場合
         if (battleResultType == BattleResultType.Win) {
@@ -523,5 +523,9 @@ public class BattleManager : AbstractSingleton<BattleManager> {
             virtualCameraNoise.AmplitudeGain = 0f;
             virtualCameraNoise.FrequencyGain = 0f;
         }
+    }
+
+    public void SetBattleResultType(BattleResultType newBattleResultType) {
+        battleResultType = newBattleResultType;
     }
 }

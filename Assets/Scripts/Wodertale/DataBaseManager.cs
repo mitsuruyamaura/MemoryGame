@@ -253,12 +253,14 @@ public class DataBaseManager : AbstractSingleton<DataBaseManager> {
 
 
     public List<BlessingData> GetBlessingDataListByRarity(Rarity rarity) {
-        return blessingDataSO.blessingDataList.Where(data => data.rarity == rarity).ToList();
+        // 実装済のイベントのみ対象
+        return blessingDataSO.blessingDataList.Where(data => data.implemented == 1 && data.rarity == rarity).ToList();
     }
 
 
     public List<TrapData> GetTrapDataListByRarity(Rarity rarity) {
-        return trapDataSO.trapDataList.Where(data => data.rarity == rarity).ToList();
+        // 実装済のトラップのみ対象
+        return trapDataSO.trapDataList.Where(data => data.implemented == 1 && data.rarity == rarity).ToList();
     }
 
 

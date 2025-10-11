@@ -13,6 +13,7 @@ public class BlessingData : IMasterData, IInfoView, IHasIcon {
     public int weight;
     public int exp;
     public int stack;
+    public int implemented;   // 1 が実装済でランダム選択の対象
 
     public int Id => id;
 
@@ -36,6 +37,7 @@ public class BlessingData : IMasterData, IInfoView, IHasIcon {
         weight = int.Parse(datas[7]);
         exp = int.Parse(datas[8]);
         stack = int.Parse(datas[9]);
+        implemented = int.Parse(datas[10]);
     }
 
     public static BlessingType ParseBlessingType(string typeStr) {
