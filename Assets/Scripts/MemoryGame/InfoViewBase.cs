@@ -9,7 +9,7 @@ public class InfoViewBase : PoolBase {
     [SerializeField] protected Text txtDesc;
 
 
-    public void SetUp(IMasterData masterData) {
+    public void ShowBleesingInfo(IMasterData masterData) {
         isReleased = false;
 
         if (masterData is IInfoView view) {
