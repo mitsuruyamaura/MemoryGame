@@ -42,6 +42,7 @@ public class MemoryGameManager : MonoBehaviour {
     [SerializeField] private int debugFloorClearBonusFlipPoint;
     [SerializeField] private int debugComboBonusRate;
     [SerializeField] private int debugBlessingID;              // デバッグ用 BlessingData ID 番号
+    [SerializeField] private int debugTrapID;
 
     private readonly Subject<CardView> onCardSelected = new(); // カード選択イベント
     private List<GameObject> slotList = new();                 // スロットを保持
@@ -527,18 +528,20 @@ public class MemoryGameManager : MonoBehaviour {
                 chosenData = DataBaseManager.instance.GetRandomItemByChest(floorData.enemyRarities, floorData.enemyRates);
                 break;
             case CardEventType.Trap:
-                chosenData = DataBaseManager.instance.GetRandomTrapByRarity(floorData.trapRarities, floorData.trapRates);
+                chosenData = debugTrapID != 0   // debugIDが 0 以外なら、指定 ID のトラップデバッグ。0 なら通常処理
+                           ? DataBaseManager.instance.trapDataSO.trapDataList.FirstOrDefault(data => data.id == debugTrapID)
+                           : DataBaseManager.instance.GetRandomTrapByRarity(floorData.trapRarities, floorData.trapRates);
                 break;
-                
-            // 正式
-            //case CardEventType.Blessing:
-            //    chosenData = DataBaseManager.instance.GetRandomBlessingByRarity(floorData.blessingRarities, floorData.blessingRate);
-            //    break;
+            case CardEventType.Blessing:
+                chosenData = debugBlessingID != 0   // debugIDが 0 以外なら、指定 ID のイベントデバッグ。0 なら通常処理
+                           ? DataBaseManager.instance.blessingDataSO.blessingDataList.FirstOrDefault(data => data.id == debugBlessingID)
+                           : DataBaseManager.instance.GetRandomBlessingByRarity(floorData.blessingRarities, floorData.blessingRate);
+                break;
 
             // デバッグ用
-            case CardEventType.Blessing:
-                chosenData = DataBaseManager.instance.blessingDataSO.blessingDataList.FirstOrDefault(data => data.id == debugBlessingID);
-                break;
+            //case CardEventType.Blessing:
+            //    chosenData = DataBaseManager.instance.blessingDataSO.blessingDataList.FirstOrDefault(data => data.id == debugBlessingID);
+            //    break;
 
                 // ... 他も同様
         }
@@ -745,6 +748,9 @@ public class MemoryGameManager : MonoBehaviour {
     /// </summary>
     /// <param name="blessingData"></param>
     public void FaceDownCardsByTargetType(BlessingValueType blessingValueType, CompositeDisposable disposables) {
+        // 該当するアイコン削除
+        blessingIconViewList.ForEach(view => view?.CheckEndBlessing(BlessingType.Look, blessingValueType));
+
         CardEventType targetCardEventType = ConvertCardEventTypeByBlessingValueType(blessingValueType);
         List<CardModelBase> targetCardModelList = cardModelList.Where(card => card.isPair == false && card.cardData.cardTypeMaster.cardEventType == targetCardEventType).ToList();
         if (targetCardModelList.Count == 0) {
