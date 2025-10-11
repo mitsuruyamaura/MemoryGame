@@ -8,7 +8,7 @@ public class TrapExecutor {
     public TrapExecutor() {
         executorMap = new() {
             { TrapType.Damage, new DamageTrapExecutor() },
-            
+            { TrapType.FlipCountDown, new FlipCountDownTrapExecutor() },
         };
     }
 
