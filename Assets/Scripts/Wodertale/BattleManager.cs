@@ -528,4 +528,15 @@ public class BattleManager : AbstractSingleton<BattleManager> {
     public void SetBattleResultType(BattleResultType newBattleResultType) {
         battleResultType = newBattleResultType;
     }
+
+    /// <summary>
+    /// 強制的にゲームオーバー
+    /// 主にトラップでHp 0 やめくる回数 0 になった時に実行
+    /// </summary>
+    /// <returns></returns>
+    public async UniTask ForceGameEndAsync() {
+        SetBattleResultType(BattleResultType.Lose);
+        stageUIManager.ShowBattleState(battleResultType);
+        await BattleResultAsync(null);
+    }
 }

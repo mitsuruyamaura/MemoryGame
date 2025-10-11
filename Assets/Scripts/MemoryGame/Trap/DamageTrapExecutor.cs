@@ -37,14 +37,11 @@ public class DamageTrapExecutor : ITrap {
             BattleManager.instance.UpdatePlayerHp(-damage, EffectType.Physical, false);
         }
 
+        // Hp が 0 になったらゲームオーバー
         if (BattleManager.instance.PlayerHP.Value <= 0) {
-            StageUIManager stageUIManager = GameObject.FindFirstObjectByType<StageUIManager>();
-            stageUIManager.ShowBattleState(BattleResultType.Lose);
-            BattleManager.instance.SetBattleResultType(BattleResultType.Lose);
-            await BattleManager.instance.BattleResultAsync(null);
+            await BattleManager.instance.ForceGameEndAsync();
         }
 
-        //SoundManager.instance.PlaySE(SE_TYPE.Heal);
-        await UniTask.Yield(token);
+        //SoundManager.instance.PlaySE(SE_TYPE.Heal);        
     }
 }

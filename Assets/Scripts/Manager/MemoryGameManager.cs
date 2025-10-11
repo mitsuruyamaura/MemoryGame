@@ -67,6 +67,7 @@ public class MemoryGameManager : MonoBehaviour {
     private Dictionary<BlessingValueType, (SerializableReactiveProperty<int>, CompositeDisposable)> lookCountMap;
 
     private Subject<Unit> onNextFloor = new();
+    private Subject<Unit> onTurnEnd = new();
     private IDisposable floorCountDisposable;
 
     // デバッグ用
@@ -134,7 +135,7 @@ public class MemoryGameManager : MonoBehaviour {
         GameData.instance.userData.FlipPoint
             .Where(flipPoint => flipPoint <= 0)
             .Take(1)
-            .Subscribe(flipPoint => GameEndAsync().Forget()).AddTo(this);
+            .Subscribe(flipPoint => BattleManager.instance.ForceGameEndAsync().Forget()).AddTo(this);  // GameEndAsync().Forget()
 
         // 思い出の秘石獲得時の購読処理
         GameData.instance.userData.MemoryStoneSlotList.ObserveAdd()
@@ -516,6 +517,9 @@ public class MemoryGameManager : MonoBehaviour {
         if (GameData.instance.userData.CanUseStairs.Value == true) {
             btnStairs.interactable = true;
         }
+
+        // ターン終了を知らせる
+        onTurnEnd.OnNext(default);
     }
 
     public IMasterData CreateCardData(CardEventType type, FloorData floorData) {
