@@ -40,6 +40,9 @@ public class TreasureChestCard : CardModelBase {
                 BattleManager.instance.stageUIManager.InventoryMaxInfo();
                 DebugLogger.Log("バッグがいっぱい");
 
+                // ポイント半分獲得
+                GameData.instance.userData.SoulPoint.Value += itemData.price / 2;
+
                 // 獲得できずに終了
                 return;
             }

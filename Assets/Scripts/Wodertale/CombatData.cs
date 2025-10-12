@@ -6,8 +6,8 @@ using System.Collections.Generic;
 /// </summary>
 [System.Serializable]
 public class CombatData {
-    public ReactiveProperty<int> Hp = new();
-    public ReactiveProperty<int> MaxInventorySize = new();
+    public SerializableReactiveProperty<int> Hp = new();
+    public SerializableReactiveProperty<int> MaxInventorySize = new();
 
 
     // インベントリ

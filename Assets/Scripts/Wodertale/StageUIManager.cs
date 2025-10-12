@@ -1,9 +1,10 @@
-﻿using UnityEngine;
-using R3;
-using UnityEngine.UI;
+﻿using Cysharp.Threading.Tasks;
 using DG.Tweening;
-using Cysharp.Threading.Tasks;
+using R3;
+using System;
 using System.Threading;
+using UnityEngine;
+using UnityEngine.UI;
 
 public class StageUIManager : MonoBehaviour {
 
@@ -48,6 +49,22 @@ public class StageUIManager : MonoBehaviour {
     [SerializeField] private RectTransform playerLifeBattleTran;
     [SerializeField] private RectTransform playerLifeSetTran;
 
+    private int flipGainPoint = 1;
+    [SerializeField] private Text txtFlipGainPoint;              // 回復量
+    [SerializeField] private Text txtFlipGainInfo;               // めくれる回数ボタンの上に表示するメッセージ。XP 値か、不足と出す
+    [SerializeField] private Button btnShowFlipCountGainPop;     // めくれる回数部分のボタン。めくれる回数回復ポップを開く
+    [SerializeField] private Button btnSubmitFlipCountGain;      // めくれる回数回復ボタン
+    [SerializeField] private Button btnCloseFlipCountGainPop;    // めくれる回数回復ポップを閉じるボタン
+    [SerializeField] private CanvasGroup cgFlipCountGainPop;     // めくれる回数回復ポップの CanvasGroup
+
+    private float lifeGainRate = 0.3f;
+    [SerializeField] private Text txtLifeGainPoint;         // 回復量
+    [SerializeField] private Text txtLifeGainInfo;          // ライフボタンの上に表示するメッセージ。XP 値か、不足と出す
+    [SerializeField] private Button btnShowLifeGainPop;     // ライフ部分のボタン。ライフ回復ポップを開く
+    [SerializeField] private Button btnSubmitLifeGain;      // ライフ回復ボタン
+    [SerializeField] private Button btnCloseLifeGainPop;    // ライフ回復ポップを閉じるボタン
+    [SerializeField] private CanvasGroup cgLifeGainPop;     // ライフ回復ポップの CanvasGroup
+
     private string SuccessSettlementMessage = "平和的解決に成功しました!!";
     private float defaultTime;
 
@@ -60,7 +77,7 @@ public class StageUIManager : MonoBehaviour {
     private CancellationTokenSource cts;
 
 
-    public void SetupStageUIManager(int stamina, int maxHp) {
+    public void SetupStageUIManager(int stamina, int maxHp, MemoryGameManager memoryGameManager) {
         cts = new();
 
         SetMaxHpDisplay(maxHp);
@@ -103,6 +120,35 @@ public class StageUIManager : MonoBehaviour {
 
         // ペアのコンボ回数の購読
         GameData.instance.ComboPairCount.Subscribe(comboCount => UpdateDisplayComboPairCount(comboCount)).AddTo(this);
+
+        // めくれる回数回復関連のボタン
+        btnShowFlipCountGainPop
+            .OnClickExt(() => {
+                if (cgFlipCountGainPop.blocksRaycasts == false) {
+                    ShowFlipCountGainPopup();
+                } else {
+                    HideFlipCountGainPopup();
+                }
+            }, this, TimeSpan.FromMilliseconds(500));
+        btnSubmitFlipCountGain.OnClickExt(() => GainFlipCount(), this);
+        btnCloseFlipCountGainPop.OnClickExt(() => HideFlipCountGainPopup(), this);
+
+        // ライフ回復関連のボタン
+        btnShowLifeGainPop
+            .OnClickExt(() => {
+                if (cgLifeGainPop.blocksRaycasts == false) {
+                    ShowLifeGainPopup();
+                } else {
+                    HideLifeGainPopup();
+                }
+            }, this, TimeSpan.FromMilliseconds(500));
+        btnSubmitLifeGain.OnClickExt(() => GainLife(), this);
+        btnCloseLifeGainPop.OnClickExt(() => HideLifeGainPopup(), this);
+
+        HidePopups();
+
+        // カードをめくったときの購読処理。開いているポップアップを閉じる
+        memoryGameManager.OnCardSelect.Subscribe(_ => HidePopups());
     }
 
     /// <summary>
@@ -320,5 +366,102 @@ public class StageUIManager : MonoBehaviour {
 
     private void HidePlayerInfoListPop() {
         playerInfoListPopup.ClosePopUpAsync(cts.Token).Forget();
+    }
+
+    private void ShowFlipCountGainPopup() {
+        if (GameData.instance.CurrentGameState.Value != GameData.GameState.Play) {
+            return;
+        }
+
+        cgFlipCountGainPop.alpha = 1.0f;
+        cgFlipCountGainPop.blocksRaycasts = true;
+
+        // 回復量表示
+        txtFlipGainPoint.text = $"{GameData.instance.userData.FlipPoint.Value} >>> {GameData.instance.userData.FlipPoint.Value + flipGainPoint}";
+
+        // 必要なポイント表示(一旦、固定値で)
+        int flipGainRequiredPoint = GameData.instance.flipGainRequiredXP;
+        txtFlipGainInfo.text = $"{flipGainRequiredPoint}";
+
+        // ポイントが足りていないなら
+        if (flipGainRequiredPoint > GameData.instance.userData.SoulPoint.Value) {
+            txtFlipGainInfo.color = Color.red;
+            btnSubmitFlipCountGain.interactable = false;
+        } else {
+            txtFlipGainInfo.color = new(1, 1, 1, 1);
+            btnSubmitFlipCountGain.interactable = true;
+        }
+    }
+
+    private void HideFlipCountGainPopup() {
+        cgFlipCountGainPop.alpha = 0f;
+        cgFlipCountGainPop.blocksRaycasts = false;
+    }
+
+    private void GainFlipCount() {
+        // ポイント消費
+        int flipGainRequiredPoint = GameData.instance.flipGainRequiredXP;
+        GameData.instance.userData.SoulPoint.Value -= flipGainRequiredPoint;
+
+        GameData.instance.userData.FlipPoint.Value += flipGainPoint;
+
+        // ポップ表示内容更新
+        ShowFlipCountGainPopup();
+    }
+
+    private void ShowLifeGainPopup() {
+        if (GameData.instance.CurrentGameState.Value != GameData.GameState.Play) {
+            return;
+        }
+
+        cgLifeGainPop.alpha = 1.0f;
+        cgLifeGainPop.blocksRaycasts = true;
+
+        // 回復量を計算し、最大値以内に抑えたうえで回復量表示
+        int gainPoint = Mathf.FloorToInt(GameData.instance.charaStatus.MaxHp.Value * lifeGainRate);
+        int limitPoint = Mathf.Min(BattleManager.instance.PlayerHP.Value + gainPoint, GameData.instance.charaStatus.MaxHp.Value);
+        txtLifeGainPoint.text = $"{BattleManager.instance.PlayerHP.Value} >>> {limitPoint}";
+
+        // 必要なポイント表示(一旦、固定値で)
+        int lifeGainRequiredPoint = GameData.instance.lifeGainRequiredXP;
+        txtLifeGainInfo.text = $"{lifeGainRequiredPoint}";
+
+        // ポイントが足りていないなら
+        if (lifeGainRequiredPoint > GameData.instance.userData.SoulPoint.Value) {
+            txtLifeGainInfo.color = Color.red;
+            btnSubmitLifeGain.interactable = false;
+        } else {
+            txtLifeGainInfo.color = new(1, 1, 1, 1);
+            btnSubmitLifeGain.interactable = true;
+        }
+    }
+
+    private void HideLifeGainPopup() {
+        cgLifeGainPop.alpha = 0f;
+        cgLifeGainPop.blocksRaycasts = false;
+    }
+
+    private void GainLife() {
+        // ポイント消費
+        int lifeGainRequiredPoint = GameData.instance.lifeGainRequiredXP;
+        GameData.instance.userData.SoulPoint.Value -= lifeGainRequiredPoint;
+
+
+        // TODO クラス特典、回復量増量など
+
+
+        // 回復量を計算し、最大値以内に抑えたうえで回復量表示
+        int gainPoint = Mathf.FloorToInt(GameData.instance.charaStatus.MaxHp.Value * lifeGainRate);
+        int newHp = Mathf.Min(BattleManager.instance.PlayerHP.Value + gainPoint, GameData.instance.charaStatus.MaxHp.Value);
+
+        BattleManager.instance.UpdatePlayerHp(newHp, EffectType.Heal, false);
+
+        // ポップ表示内容更新
+        ShowLifeGainPopup();
+    }
+
+    public void HidePopups() {
+        HideFlipCountGainPopup();
+        HideLifeGainPopup();
     }
 }

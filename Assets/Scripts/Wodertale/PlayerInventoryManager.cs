@@ -47,6 +47,8 @@ public class PlayerInventoryManager : AbstractSingleton<PlayerInventoryManager> 
     private int minRecoveryDurabilityValue = 1;
     private int maxRecoveryDurabilityValue = 3;
 
+    private StageUIManager stageUIManager;
+
 
     protected override void Awake() {
         base.Awake();
@@ -74,7 +76,8 @@ public class PlayerInventoryManager : AbstractSingleton<PlayerInventoryManager> 
     }
 
 
-    public void Setup(Transform playerBackPackItemTran) {
+    public void Setup(Transform playerBackPackItemTran, MemoryGameManager memoryGameManager, StageUIManager stageUIManager) {
+        this.stageUIManager = stageUIManager;
         backPackItemGenerator.InitObjectPool();
 
         disposables = new CompositeDisposable();
@@ -148,6 +151,9 @@ public class PlayerInventoryManager : AbstractSingleton<PlayerInventoryManager> 
         btnCloseExpandInventoryPop.OnClickExt(() => HideExpandInventorySizePop(), this);
 
         HideExpandInventorySizePop();
+
+        // カードをめくったときの購読処理。開いているポップアップを閉じる
+        memoryGameManager.OnCardSelect.Subscribe(_ => HideExpandInventorySizePop());
     }
 
     /// <summary>
@@ -303,6 +309,15 @@ public class PlayerInventoryManager : AbstractSingleton<PlayerInventoryManager> 
         PlayerBackPackItemList.Remove(item);
         GameData.instance.userData.equipItemList.Remove(item.itemData.id);
         DebugLogger.Log($"Release : {item.itemData.itemName}");
+
+        // もしもなければ一度だけキャッシュ
+        if (stageUIManager != null) {
+            stageUIManager = FindFirstObjectByType<StageUIManager>();
+        }
+
+        // 各ポップを隠す
+        HideExpandInventorySizePop();
+        stageUIManager.HidePopups();
     }
 
 
@@ -462,15 +477,19 @@ public class PlayerInventoryManager : AbstractSingleton<PlayerInventoryManager> 
             btnSubmitExpandInventorySize.interactable = false;
             return;
         }
+
+        // サイズ表示
         txtNextSize.text = $"{GameData.instance.playerCombatData.MaxInventorySize.Value} >>> {GameData.instance.playerCombatData.MaxInventorySize.Value + 1}";
 
-        // ポイントが足りていないなら
+        // 必要なポイント表示
         int expandRequiredPoint = GameData.instance.expandRequiredXP + (GameData.instance.expandRequiredXP * GameData.instance.userData.expandInventoryCount / 2);
+        txtSizeInfo.text = $"{expandRequiredPoint}";
+
+        // ポイントが足りていないなら
         if (expandRequiredPoint > GameData.instance.userData.SoulPoint.Value) {
             txtSizeInfo.color = Color.red;
             btnSubmitExpandInventorySize.interactable = false;
         } else {
-            txtSizeInfo.text = $"{expandRequiredPoint}";
             txtSizeInfo.color = new(1, 1, 1, 1);
             btnSubmitExpandInventorySize.interactable = true;
         }
@@ -593,7 +612,6 @@ public class PlayerInventoryManager : AbstractSingleton<PlayerInventoryManager> 
             }
         }
     }
-
 
     private void OnDestory() {
         disposables?.Clear();

@@ -9,7 +9,7 @@ public class DamageTrapExecutor : ITrap {
         int damage = 0;
 
         if (trapData.valueType == TrapValueType.Rate) {
-            int maxHp = GameData.instance.debugMaxHp;
+            int maxHp = GameData.instance.charaStatus.MaxHp.Value;
             int currentHp = BattleManager.instance.PlayerHP.Value;
 
             // 目標HP(処理後のHP)を計算
@@ -24,8 +24,8 @@ public class DamageTrapExecutor : ITrap {
             BattleManager.instance.UpdatePlayerHp(delta, EffectType.Magic, false);
         } else {
             // 最大 Hp に指定割合をかけてダメージを算出
-            damage = Mathf.FloorToInt(GameData.instance.debugMaxHp * damageRate);
-            DebugLogger.Log($"damage : {damage} = {damageRate} * {GameData.instance.debugMaxHp}");
+            damage = Mathf.FloorToInt(GameData.instance.charaStatus.MaxHp.Value * damageRate);
+            DebugLogger.Log($"damage : {damage} = {damageRate} * {GameData.instance.charaStatus.MaxHp.Value}");
 
             // 現在 Hp よりも大きい場合には1残す 
             //int currentHp = BattleManager.instance.PlayerHP.Value;

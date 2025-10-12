@@ -5,8 +5,8 @@ using UnityEngine;
 public class HealEventExecutor : IEventExecutor {
     public async UniTask ExecuteAsync(BlessingData blessingData, CancellationToken token) {
         float healRate = blessingData.value;
-        int healPower = Mathf.FloorToInt(GameData.instance.debugMaxHp * healRate);
-        DebugLogger.Log($"healPower : {healPower} = {healRate} * {GameData.instance.debugMaxHp}");
+        int healPower = Mathf.FloorToInt(GameData.instance.charaStatus.MaxHp.Value * healRate);
+        DebugLogger.Log($"healPower : {healPower} = {healRate} * {GameData.instance.charaStatus.MaxHp.Value}");
 
         int currentHp = BattleManager.instance.PlayerHP.Value;
         int maxHp = GameData.instance.charaStatus.MaxHp.Value;

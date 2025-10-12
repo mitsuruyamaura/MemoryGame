@@ -81,7 +81,7 @@ public class StageLogicManager : MonoBehaviour {
         EnemyInfoDisplayManager.instance.Setup(null);
 
         // UI 初期設定
-        stageUIManager?.SetupStageUIManager(GameData.instance.userData.Stamina.Value, GameData.instance.charaStatus.MaxHp.Value);
+        stageUIManager?.SetupStageUIManager(GameData.instance.userData.Stamina.Value, GameData.instance.charaStatus.MaxHp.Value, memoryGameManager);
 
         // スタミナの値の購読開始
         //GameData.instance.userData.Stamina.Subscribe(stamina => stageUIManager.UpdateDisplayStaminaPoint(stamina));
@@ -145,7 +145,7 @@ public class StageLogicManager : MonoBehaviour {
 
 
         // BackPackInItem のオブジェクトプールの初期化、List の購読などを設定
-        PlayerInventoryManager.instance.Setup(stageUIManager.playerBackPackItemTran);
+        PlayerInventoryManager.instance.Setup(stageUIManager.playerBackPackItemTran, memoryGameManager, stageUIManager);
 
         GameData.instance.CurrentGameState.Value = GameData.GameState.Play;
 
