@@ -176,9 +176,4 @@ public class ItemInfoView : InfoViewBase {
 
         cg.alpha = 1;
     }
-
-    public void HideInfoView() {
-        cg.alpha = 0;
-        cg.blocksRaycasts = false;
-    }
 }

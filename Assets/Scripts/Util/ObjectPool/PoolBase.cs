@@ -22,6 +22,7 @@ public abstract class PoolBase : MonoBehaviour, IPoolable {
 
         // すでに戻っているときには処理しない
         if (isReleased) {
+            DebugLogger.Log("This object has already been released.");
             return;
         }
 
@@ -34,5 +35,10 @@ public abstract class PoolBase : MonoBehaviour, IPoolable {
         disposable = null;
 
         objectPool.Release(this);
+
+        transform.SetParent(PlayerInventoryManager.instance.transform);
+
+        transform.localScale = Vector3.one;
+        transform.localPosition = Vector3.zero;
     }
 }

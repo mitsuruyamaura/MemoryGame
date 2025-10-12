@@ -20,6 +20,7 @@ public class PopupBase : MonoBehaviour {
     public bool isPopupAnime;// ポップアップを開く時閉じる時、アニメーションをする機能ON/OFF
     public bool isDestroy;
     public float filterAplha;
+    public bool isNotOpenPopupSetSerialize;   // SetSerialize 後に呼ばない場合にチェックいれる
 
     [Header("閉じる際に非同期処理を利用する場合は true にする")]
     public bool useAsyncClosePopup;
@@ -30,11 +31,11 @@ public class PopupBase : MonoBehaviour {
     protected IDisposable disposable;
     protected AsyncOperationHandle<Sprite> spriteHandle = default;  // Addressables の Sprite の読み込みに使用
 
-    private void Awake() {
+    protected virtual void Awake() {
         //canvasGroup.alpha = 0f;
     }
 
-    public virtual async UniTask SetInitialize(object param = null, UnityAction popupAction = null){
+    public virtual async UniTask SetInitializeAsync(object param = null, UnityAction popupAction = null){
         await UniTask.Yield();
         SetInitialize();
     }
@@ -70,6 +71,10 @@ public class PopupBase : MonoBehaviour {
             }                
         }
 
+        if (isNotOpenPopupSetSerialize) {
+            return;
+        }
+
         // ポップアップウィンドウを表示する
         OpenPopupProc(false);
     }
@@ -97,6 +102,7 @@ public class PopupBase : MonoBehaviour {
             OpenPopupWithoutAnimation();
         }
         isClickable = true;
+        canvasGroup.blocksRaycasts = true;
     }
 
     /// <summary>
@@ -146,6 +152,9 @@ public class PopupBase : MonoBehaviour {
             if (isSe) {
                 //AudioManager.instance.PlaySE(ENUM_SE.POPUP_BACK);
             }
+
+            canvasGroup.blocksRaycasts = false;
+            
             if (isPopupAnime) {
                 await ClosePopupAsync();
             } else {
