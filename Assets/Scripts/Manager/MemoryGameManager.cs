@@ -44,7 +44,7 @@ public class MemoryGameManager : MonoBehaviour {
     [SerializeField] private int debugBlessingID;              // デバッグ用 BlessingData ID 番号
     [SerializeField] private int debugTrapID;
 
-
+    [SerializeField] private MemoryLinkPopup memoryLinkPopup;
 
     private readonly Subject<CardView> onCardSelected = new(); // カード選択イベント
     public Observable<CardView> OnCardSelect => onCardSelected;
@@ -166,6 +166,9 @@ public class MemoryGameManager : MonoBehaviour {
                 if (KeyLookCount.Value > 0) KeyLookCount.Value--;
                 if (TreasureChestLookCount.Value > 0) TreasureChestLookCount.Value--;
             }).AddTo(this);
+
+
+        HideMemoryLinkPopup();
 
         // デバッグ用リセット機能
         this.UpdateAsObservable()
@@ -613,8 +616,8 @@ public class MemoryGameManager : MonoBehaviour {
             // ランクアップ
             GameData.instance.userData.MemoriaRank.Value++;
 
-            // TODO 誰かの記憶を取り戻す(つなぐ)
-
+            // 誰かの記憶を取り戻す(つなぐ)
+            ShowMemoryLinkPopup().Forget();
 
 
             //// デバッグ用。インベントリの上限を超えていないなら
@@ -645,6 +648,22 @@ public class MemoryGameManager : MonoBehaviour {
         for (int i = 0; i < imgMemoryStoneIcons.Length; i++) {
             imgMemoryStoneIcons[i].enabled = false;
         }
+    }
+
+    public async UniTask ShowMemoryLinkPopup() {
+        await memoryLinkPopup.SetInitializeAsync();
+
+        // 選択されるか、閉じられるまで待機
+        // channel 使う
+
+
+    }
+
+
+    public void HideMemoryLinkPopup() {
+
+
+        memoryLinkPopup.ClosePopupProc();
     }
 
     /// <summary>

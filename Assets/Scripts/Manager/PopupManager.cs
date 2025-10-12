@@ -85,7 +85,7 @@ public class PopupManager : AbstractSingleton<PopupManager> {
 
         // ポップアップ生成と初期設定
         var popup = Instantiate(popupPrefab, transform, false);
-        popup.SetInitialize(param, popupAction).Forget();
+        popup.SetInitializeAsync(param, popupAction).Forget();
 
         // 新しく開いたポップアップをカレントとして保持しない場合(下にあるポップアップを残しておく場合)
         if (!keepInHistory) {
