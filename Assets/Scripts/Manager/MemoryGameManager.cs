@@ -44,7 +44,10 @@ public class MemoryGameManager : MonoBehaviour {
     [SerializeField] private int debugBlessingID;              // デバッグ用 BlessingData ID 番号
     [SerializeField] private int debugTrapID;
 
+
+
     private readonly Subject<CardView> onCardSelected = new(); // カード選択イベント
+    public Observable<CardView> OnCardSelect => onCardSelected;
     private List<GameObject> slotList = new();                 // スロットを保持
     private CancellationTokenSource cts;
     private int memoryStoneCount;
@@ -443,9 +446,6 @@ public class MemoryGameManager : MonoBehaviour {
     private async UniTask HandleCardSelectionAsync(CardView cardView) {
         CardModelBase selectedCardModel = cardModelList[cardView.cardIndex];
 
-        // インベントリの拡張が開いていたら閉じる
-        PlayerInventoryManager.instance.HideExpandInventorySizePop();
-
         // 同じカードを選択した場合
         if (selectedCardModel.isFaceUp) return;
 
@@ -542,6 +542,10 @@ public class MemoryGameManager : MonoBehaviour {
                            : DataBaseManager.instance.GetRandomBlessingByRarity(floorData.blessingRarities, floorData.blessingRate);
                 break;
 
+            case CardEventType.MemoryFragments:
+                chosenData = DataBaseManager.instance.GetRandomMemoryStoneByWeight();
+                break;
+
             // デバッグ用
             //case CardEventType.Blessing:
             //    chosenData = DataBaseManager.instance.blessingDataSO.blessingDataList.FirstOrDefault(data => data.id == debugBlessingID);
@@ -609,11 +613,11 @@ public class MemoryGameManager : MonoBehaviour {
             // ランクアップ
             GameData.instance.userData.MemoriaRank.Value++;
 
-            // TODO 記憶を取り戻す
+            // TODO 誰かの記憶を取り戻す(つなぐ)
 
 
 
-            //// インベントリの上限を超えていないなら
+            //// デバッグ用。インベントリの上限を超えていないなら
             //if (GameData.instance.playerCombatData.MaxInventorySize.Value < GameData.instance.limitInventorySize) {
             //    // インベントリのサイズアップ
             //    GameData.instance.playerCombatData.MaxInventorySize.Value++;

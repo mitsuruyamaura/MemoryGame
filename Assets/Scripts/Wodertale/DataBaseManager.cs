@@ -201,6 +201,23 @@ public class DataBaseManager : AbstractSingleton<DataBaseManager> {
         return rarityBlessingDataList[index];
     }
 
+    /// <summary>
+    /// 思い出の断片の抽選
+    /// </summary>
+    /// <returns></returns>
+    public MemoryStoneData GetRandomMemoryStoneByWeight() {
+        int totalWeight = memoryStoneDataSO.memoryStoneList.Sum(data => data.weight);
+        int roll = UnityEngine.Random.Range(0, totalWeight);
+
+        int cumulative = 0;
+        for (int i = 0; i < memoryStoneDataSO.memoryStoneList.Count; i++) {
+            cumulative += memoryStoneDataSO.memoryStoneList[i].weight;
+            if (roll < cumulative) {
+                return memoryStoneDataSO.memoryStoneList[i];
+            }
+        }
+        return null;
+    }
 
     /// <summary>
     /// 次のレベルアップに必要な経験値を計算して取得

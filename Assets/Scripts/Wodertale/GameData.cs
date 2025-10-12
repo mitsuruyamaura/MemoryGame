@@ -13,17 +13,18 @@ public class InventryAbilityItemData {
     public int abilityNo;
 } 
 
-public class GameData : AbstractSingleton<GameData>
-{
+public class GameData : AbstractSingleton<GameData> {
 
-    public void AddMemoryStoneList(int addStoneType, int addFlipCount) {
+    public void AddMemoryStoneList(MemoryStoneData memoryStoneData) {
         // 獲得数を加算
         userData.MemoryStoneCount.Value++;
 
         // 思い出の秘石をスロットにセット
-        userData.MemoryStoneSlotList.Add(addStoneType);
+        userData.MemoryStoneSlotList.Add(memoryStoneData.id);
 
-        userData.FlipPoint.Value += addFlipCount;
+        // めくれる回数を加算
+        //userData.SoulPoint.Value += memoryStoneData.memoryPoint;
+        userData.FlipPoint.Value += memoryStoneData.addFlipCount;
     }
 
     public void ClearMemoryStoneList() {
@@ -71,6 +72,8 @@ public class GameData : AbstractSingleton<GameData>
 
     public int limitInventorySize = 20;                // 上限値
     public int expandRequiredXP = 200;                 // インベントリの拡張に必要な基礎値
+    public int flipGainRequiredXP = 100;               // めくれる回数の回復に必要な基礎値
+    public int lifeGainRequiredXP = 100;               // ライフの回復に必要な基礎値
 
     public CombatData playerCombatData;
     public CombatData enemyCombatData;

@@ -10,15 +10,13 @@ public class MemoryFragmentsCard : CardModelBase {
 
         SoundManager.instance.PlaySE(SE_TYPE.PowerSpot);
 
-        // TODO CardData を指定のマスターに変換して値を取得
+        // CardData を指定のマスターに変換して値を取得
         if (cardData.masterData is MemoryStoneData memoryStoneData) {
             // 思い出の秘石の獲得数を加算、秘石をスロットにセット
-            GameData.instance.AddMemoryStoneList(memoryStoneData.id, memoryStoneData.addFlipCount);
-        } else {
-            // 見つからない場合には固定値で加算
-            GameData.instance.AddMemoryStoneList(1, 3);
-        }
-
+            GameData.instance.AddMemoryStoneList(memoryStoneData);
+        } 
+            
+        // 見つからない場合には何もせずに終了        
         await UniTask.Yield(token);
     }
 }

@@ -3,7 +3,7 @@ using System.Threading;
 
 public class HealAllEventExecutor : IEventExecutor {
     public async UniTask ExecuteAsync(BlessingData blessingData, CancellationToken token) {
-        int healPower = GameData.instance.debugMaxHp;
+        int healPower = GameData.instance.charaStatus.MaxHp.Value;
         DebugLogger.Log($"healPower : {healPower}");
 
         int currentHp = BattleManager.instance.PlayerHP.Value;

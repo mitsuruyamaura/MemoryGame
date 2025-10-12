@@ -126,7 +126,7 @@ public class BattleManager : AbstractSingleton<BattleManager> {
         // 敵用のアイテムを処理
         //enemyBackPackItemList.ForEach(item => item.Hoge(item.itemData, cts.Token, EntityType.Enemy).Forget());
 
-        UpdatePlayerHp(GameData.instance.debugMaxHp, EffectType.Heal, false, false);
+        UpdatePlayerHp(GameData.instance.charaStatus.MaxHp.Value, EffectType.Heal, false, false);
 
         PlayerHP
             .Zip(PlayerHP.Skip(1), (oldValue, newValue) => (oldValue, newValue))
