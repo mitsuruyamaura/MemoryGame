@@ -3,6 +3,20 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+public enum EnemyType {
+    悪魔,
+    巨人,
+    獣人,
+    神話,
+    精霊,
+    不死,
+    魔獣,
+    魔法生物,
+    妖魔,
+    竜
+}
+
+
 [System.Serializable]
 public class EnemyData : IMasterData, IInfoView, IHasIcon {
     public int enemyNo;
@@ -24,6 +38,8 @@ public class EnemyData : IMasterData, IInfoView, IHasIcon {
     public string debuffDataStr;
     public string undefined;
     public int shieldPower;
+
+    public EnemyType enemyType;
 
     public int Id => enemyNo;
     public Rarity Rarity => rarity;
@@ -50,6 +66,7 @@ public class EnemyData : IMasterData, IInfoView, IHasIcon {
         debuffDataStr = datas[11];
         undefined = datas[12];
         shieldPower = int.Parse(datas[13]);
+        enemyType = (EnemyType)Enum.Parse(typeof(EnemyType), datas[14]);
     }
 
 

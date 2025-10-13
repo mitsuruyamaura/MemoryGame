@@ -1,8 +1,8 @@
 ﻿/// <summary>
 /// コンディションの種類
 /// </summary>
-public enum ConditionType
-{
+public enum ConditionType {
+    None,
     Poison,           // 毒の場合は体力を減らす。移動後に HP にダメージ
     Hide_Symbols,     // すべてのシンボルが見えないが、通過すれば取れる。エネミーも戦闘になる
     View_Wide,        // 視界を広くする 2.5 ～ 6.0f

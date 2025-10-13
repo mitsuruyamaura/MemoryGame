@@ -119,6 +119,16 @@ public class ItemData : IMasterData, IInfoView, IHasIcon {
     public float absorptionRate;           // ダメージ半分吸収
     public float settlementRate;           // 交渉
 
+    public float tAvoid;                   // 罠回避
+    public float tRelease;                 // 罠自動解除
+
+    public float poisonResist;             // 毒耐性
+    public float dazzleResist;             // 幻惑耐性
+    public float weaknessResist;           // 衰弱耐性
+    public float curseResist;              // 呪い耐性
+
+    public float resilience;               // 自然治癒
+
     public float criticalDamageRate;       // クリティカルの倍率ボーナス
 
     public int Id => id;
@@ -173,6 +183,16 @@ public class ItemData : IMasterData, IInfoView, IHasIcon {
         absorptionRate = otherItemData.absorptionRate;
         settlementRate = otherItemData.settlementRate;
 
+        tAvoid = otherItemData.tAvoid;
+        tRelease = otherItemData.tRelease;
+
+        poisonResist = otherItemData.poisonResist;
+        dazzleResist = otherItemData.dazzleResist;
+        weaknessResist = otherItemData.weaknessResist;
+        curseResist = otherItemData.curseResist;
+
+        resilience = otherItemData.resilience;
+
         criticalDamageRate = otherItemData.criticalDamageRate;
     }
 
@@ -209,7 +229,17 @@ public class ItemData : IMasterData, IInfoView, IHasIcon {
         absorptionRate = float.Parse(datas[23]);
         settlementRate = float.Parse(datas[24]);
 
-        criticalDamageRate = float.Parse(datas[25]);
+        tAvoid = float.Parse(datas[25]);
+        tRelease = float.Parse(datas[26]);
+
+        poisonResist = float.Parse(datas[27]);
+        dazzleResist = float.Parse(datas[28]);
+        weaknessResist = float.Parse(datas[29]);
+        curseResist = float.Parse(datas[30]);
+
+        resilience = float.Parse(datas[31]);
+
+        criticalDamageRate = float.Parse(datas[32]);
     }
 
 
