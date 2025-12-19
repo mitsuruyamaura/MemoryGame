@@ -2,10 +2,12 @@
 
 [Preserve]
 [SkillEffect(SkillEffectType.MaxHpUp)]
-public class MaxHpUpHandler : ISkillEffectHandler {
-    SkillEffectType ISkillEffectHandler.EffectType => SkillEffectType.MaxHpUp;
+public class MaxHpUpHandler : SkillEffectHandlerBase {
 
-    void ISkillEffectHandler.ApplyEffect(ITarget target, float value) {
+    public override SkillEffectType EffectType => SkillEffectType.MaxHpUp;
+
+
+    protected override void ApplyToTarget(ITarget target, float value) {
         //if (target is PlayerUnit player) {
         //    player.MaxHp += (int)value;
         //} else if (target is Equipment equip) {
@@ -13,7 +15,7 @@ public class MaxHpUpHandler : ISkillEffectHandler {
         //}
     }
 
-    void ISkillEffectHandler.RemoveEffect(ITarget target, float value) {
+    protected override void RemoveFromTarget(ITarget target, float value) {
         //if (target is PlayerUnit player) {
         //    player.MaxHp -= (int)value;
         //} else if (target is Equipment equip) {

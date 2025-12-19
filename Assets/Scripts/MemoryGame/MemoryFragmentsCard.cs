@@ -3,7 +3,7 @@ using System.Threading;
 
 [System.Serializable]
 public class MemoryFragmentsCard : CardModelBase {
-    public MemoryFragmentsCard(CardData cardData) : base(cardData) { }
+    public MemoryFragmentsCard(CardData cardData, int cardIndex) : base(cardData, cardIndex) { }
 
     public override async UniTask ExecuteCardAsync(CancellationToken token) {
         DebugLogger.Log("MemoryFragments");

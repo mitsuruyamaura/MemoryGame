@@ -1,0 +1,23 @@
+﻿<Solution>
+  <Project Path="Assembly-CSharp.csproj" />
+  <Project Path="Assembly-CSharp-Editor.csproj" />
+  <Project Path="Fungus.csproj" />
+  <Project Path="SimpleScrollSnap.csproj" />
+  <Project Path="FungusEditor.csproj" />
+  <Project Path="MJTStudio.TemplateCreator.Editor.csproj" />
+  <Project Path="Assembly-CSharp-firstpass.csproj" />
+  <Project Path="SimpleInspectorAttributesEditor.csproj" />
+  <Project Path="CopyrightNoticeEditor.csproj" />
+  <Project Path="Fungus.FungusLuaEditor.csproj" />
+  <Project Path="SimpleInspectorAttributes.csproj" />
+  <Project Path="ICSC.SZL.csproj" />
+  <Project Path="Coffee.UnmaskForUGUI.Editor.csproj" />
+  <Project Path="Assembly-CSharp-Editor-firstpass.csproj" />
+  <Project Path="SimpleScrollSnapEditor.csproj" />
+  <Project Path="Fungus.FungusLuaJSONCheckerEditor.csproj" />
+  <Project Path="Utilities.csproj" />
+  <Project Path="Coffee.UnmaskForUGUI.csproj" />
+  <Project Path="UtilitiesEditor.csproj" />
+  <Project Path="Fungus.UsfxrEditor.csproj" />
+  <Project Path="Fungus.LineEndingsEditor.csproj" />
+</Solution>

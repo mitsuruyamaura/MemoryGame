@@ -22,7 +22,7 @@ public enum SE_TYPE {
     Critical,
     Miss,
     Magic_1,
-    Magic_2,
+    TrapDisarm,
     Drop,
     OpenTreasure,
     Heal,

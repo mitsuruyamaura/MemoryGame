@@ -5,12 +5,14 @@ using System.Threading;
 public class TreasureChestCard : CardModelBase {
     public bool isEnemyDrop;
 
-    public TreasureChestCard(CardData cardData, bool isEnemyDrop) : base(cardData) {
+    public TreasureChestCard(CardData cardData, int cardIndex, bool isEnemyDrop) : base(cardData, cardIndex) {
         this.isEnemyDrop = isEnemyDrop;
     }
 
     public override async UniTask ExecuteCardAsync(CancellationToken token) {
         DebugLogger.Log("TreasureChest");
+
+        GameData.instance.userData.FindTreasureCount.Value++;
 
         if (cardData.masterData is ItemData itemData) {
             // 回収方法で演出分岐

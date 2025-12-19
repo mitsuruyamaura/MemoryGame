@@ -26,6 +26,7 @@ public class FloorData : IMasterData {
     public int memoryStoneWeight;
     public Rarity[] blessingRarities;
     public int[] blessingRate;
+    public int clearFlipBonus; // フロアクリア時のめくれる回数ボーナス
 
     public int Id => id;
 
@@ -61,5 +62,6 @@ public class FloorData : IMasterData {
 
         blessingRarities = datas[21].Split('/').Select(type => (Rarity)Enum.Parse(typeof(Rarity), type)).ToArray();
         blessingRate = datas[22].Split('/').Select(int.Parse).ToArray();
+        clearFlipBonus = int.Parse(datas[23]);
     }
 }

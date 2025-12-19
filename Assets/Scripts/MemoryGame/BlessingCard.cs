@@ -3,7 +3,7 @@ using System.Threading;
 
 [System.Serializable]
 public class BlessingCard : CardModelBase {
-    public BlessingCard(CardData cardData) : base(cardData) {}
+    public BlessingCard(CardData cardData, int cardIndex) : base(cardData, cardIndex) {}
 
     public override async UniTask ExecuteCardAsync(CancellationToken token) {
         //DebugLogger.Log("blessing");

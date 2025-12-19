@@ -37,6 +37,7 @@ public class MemoryGameManager : MonoBehaviour {
     [SerializeField] private Transform blessingIconViewTran;
     [SerializeField] private BlessingIconGenerator blessingIconGenerator;
     [SerializeField] private List<BlessingIconView> blessingIconViewList = new();
+    [SerializeField] private Text txtMatchedPairCount;
 
     [SerializeField] private int debugFlipPoint;
     [SerializeField] private int debugFloorClearBonusFlipPoint;
@@ -45,6 +46,14 @@ public class MemoryGameManager : MonoBehaviour {
     [SerializeField] private int debugTrapID;
 
     [SerializeField] private MemoryLinkPopup memoryLinkPopup;
+
+    [SerializeField] private Image imgBackGround;
+    [SerializeField] private Sprite[] spriteBackGrounds;
+    [SerializeField] private Sprite spriteLastFloorBackGround;
+    [SerializeField] private Sprite spriteGameClear;
+
+    private int backGroundIndex = -1;
+    private int changeFloorCount = 5;
 
     private readonly Subject<CardView> onCardSelected = new(); // カード選択イベント
     public Observable<CardView> OnCardSelect => onCardSelected;
@@ -60,7 +69,7 @@ public class MemoryGameManager : MonoBehaviour {
     public SerializableReactiveProperty<int> KeyLookCount = new(0);
     public SerializableReactiveProperty<int> TreasureChestLookCount = new(0);
 
-    private CompositeDisposable enemyLookDisposables;         // 灰色だが使っている
+    private CompositeDisposable enemyLookDisposables;         // 灰色だがすべて使っている
     private CompositeDisposable trapLookDisposables;
     private CompositeDisposable memoriaLookDisposables;
     private CompositeDisposable blessingLookDisposables;
@@ -69,9 +78,11 @@ public class MemoryGameManager : MonoBehaviour {
 
     private Dictionary<BlessingValueType, (SerializableReactiveProperty<int>, CompositeDisposable)> lookCountMap;
 
-    private Subject<Unit> onNextFloor = new();
+    private Subject<int> onNextFloor = new();
     private Subject<Unit> onTurnEnd = new();
-    private IDisposable floorCountDisposable;
+    private Subject<Unit> onFloorCardsCreated = new();
+    private IDisposable floorCountDisposable;    // 灰色だが使っている
+    private IDisposable cardCreateDisposable;
 
     // デバッグ用
     //private async void Start() {
@@ -88,6 +99,9 @@ public class MemoryGameManager : MonoBehaviour {
         cts = new();
         cardGenerator.InitObjectPool();
         blessingIconGenerator.InitObjectPool();
+
+        // 背景用の画像のランダム設定
+        RandomChangeBackGroundImage();
 
         // フロア表示の更新
         GameData.instance.userData.FloorCount.Subscribe(count => UpdateDisplayFloorCount(count)).AddTo(this);
@@ -146,6 +160,8 @@ public class MemoryGameManager : MonoBehaviour {
 
         GameData.instance.ComboPairCount.Subscribe(comboCount => CheckComboEffect(comboCount)).AddTo(this);
 
+        GameData.instance.MatchedPairCount.Subscribe(machedPairCount => UpdateDisplayNextBonusFlipPoint(machedPairCount));
+
         // マッピング
         lookCountMap = new() {
             { BlessingValueType.Enemy, (EnemyLookCount, enemyLookDisposables = new()) },
@@ -158,15 +174,26 @@ public class MemoryGameManager : MonoBehaviour {
 
         // フロアが進んだときの購読処理
         floorCountDisposable = onNextFloor.Subscribe(count => {
-                // 効果時間が残っているなら、時間を減算して、カードに効果適用
-                if (EnemyLookCount.Value > 0) EnemyLookCount.Value--;                
-                if (TrapLookCount.Value > 0) TrapLookCount.Value--;
-                if (MemoriaLookCount.Value > 0) MemoriaLookCount.Value--;
-                if (BlessingLookCount.Value > 0) BlessingLookCount.Value--;
-                if (KeyLookCount.Value > 0) KeyLookCount.Value--;
-                if (TreasureChestLookCount.Value > 0) TreasureChestLookCount.Value--;
-            }).AddTo(this);
+            // 効果時間が残っているなら、時間を減算して、カードに効果適用
+            if (EnemyLookCount.Value > 0) EnemyLookCount.Value--;
+            if (TrapLookCount.Value > 0) TrapLookCount.Value--;
+            if (MemoriaLookCount.Value > 0) MemoriaLookCount.Value--;
+            if (BlessingLookCount.Value > 0) BlessingLookCount.Value--;
+            if (KeyLookCount.Value > 0) KeyLookCount.Value--;
+            if (TreasureChestLookCount.Value > 0) TreasureChestLookCount.Value--;
 
+            // 最終フロア到達時の背景変更
+            if (count == GameData.instance.lastFloorCount) {
+                ChangeBackGroundImageLastFloor();
+            } else if (count % changeFloorCount == 0) {
+                // 一定フロアごとに背景変更
+                RandomChangeBackGroundImage();
+            }
+        }).AddTo(this);
+
+        // フロアが進んでカードがすべて生成されたときの購読処理
+        cardCreateDisposable = onFloorCardsCreated
+            .Subscribe(_ => RefreshAllFaceUpCards()).AddTo(this);
 
         HideMemoryLinkPopup();
 
@@ -182,6 +209,7 @@ public class MemoryGameManager : MonoBehaviour {
     /// </summary>
     private void ResetFloorState() {
         GameData.instance.userData.CanUseStairs.Value = false;
+        GameData.instance.MatchedPairCount.Value = 0;
 
         firstSelectedCardView = null;
         firstSelectedCardModel = null;
@@ -202,8 +230,16 @@ public class MemoryGameManager : MonoBehaviour {
     /// </summary>
     /// <returns></returns>
     private async UniTask InitFloorAsync() {
+        // 最終フロアなら音楽変更
+        if (GameData.instance.lastFloorCount == GameData.instance.userData.FloorCount.Value) {
+            SoundManager.instance.PlayBGM(BGM_TYPE.Boss);
+        }
+
         // 現在のフロア数より、フロアのデータを取得
         currentFloorData = DataBaseManager.instance.GetFloorDataByFloor(GameData.instance.userData.FloorCount.Value);
+
+        // イベント系カードの残り時間減算。0 になっていないなら効果適用。背景用の画像の変更
+        onNextFloor.OnNext(GameData.instance.userData.FloorCount.Value);
 
         // スロットを生成
         CreateSlots();
@@ -216,8 +252,8 @@ public class MemoryGameManager : MonoBehaviour {
         // 最後のカードが裏返るまで待つ
         await UniTask.Delay(500, cancellationToken: cts.Token);
 
-        // 透視カードの残り時間減算。0 になっていないなら効果適用
-        onNextFloor.OnNext(default);
+        // イベント系カードの効果適用
+        onFloorCardsCreated.OnNext(default);
 
         // カードを触れる状態にする
         cgSlotSet.blocksRaycasts = true;
@@ -255,6 +291,7 @@ public class MemoryGameManager : MonoBehaviour {
             await UniTask.Delay(200);
 
             if (this == null || cardGenerator == null || slotList == null) return;
+
             CardView card = (CardView)cardGenerator.GetObjectFromPool(slotList[i].transform);
             card.Setup(index, OnCardSelected, flipDuration, selectedCardDataList[i].cardTypeMaster.spriteCardType, selectedCardDataList[i].cardTypeMaster.cardEventType);
             cardViewList.Add(card);
@@ -409,9 +446,11 @@ public class MemoryGameManager : MonoBehaviour {
     /// </summary>
     /// <param name="selectedCardDataList"></param>
     private void CreateCardModelList(List<CardData> selectedCardDataList) {
+        int cardIndex = 0;
         foreach (CardData cardData in selectedCardDataList) {
-            CardModelBase cardModel = CreateCardModel(cardData);
+            CardModelBase cardModel = CreateCardModel(cardData, cardIndex);
             cardModelList.Add(cardModel);
+            cardIndex++;
         }
     }
 
@@ -420,15 +459,15 @@ public class MemoryGameManager : MonoBehaviour {
     /// </summary>
     /// <param name="cardData"></param>
     /// <returns></returns>
-    private CardModelBase CreateCardModel(CardData cardData) {
+    private CardModelBase CreateCardModel(CardData cardData, int cardIndex) {
         return cardData.cardTypeMaster.cardEventType switch {
-            CardEventType.MemoryFragments => new MemoryFragmentsCard(cardData),
-            CardEventType.TreasureChest => new TreasureChestCard(cardData, false),
-            CardEventType.Blessing => new BlessingCard(cardData),
-            CardEventType.Enemy => new EnemyCard(cardData),
-            CardEventType.Stairs => new StairsCard(cardData),
-            CardEventType.Trap => new TrapCard(cardData),
-            _ => new StairsCard(cardData)
+            CardEventType.MemoryFragments => new MemoryFragmentsCard(cardData, cardIndex),
+            CardEventType.TreasureChest => new TreasureChestCard(cardData, cardIndex, false),
+            CardEventType.Blessing => new BlessingCard(cardData, cardIndex),
+            CardEventType.Enemy => new EnemyCard(cardData, cardIndex),
+            CardEventType.Stairs => new StairsCard(cardData, cardIndex),
+            CardEventType.Trap => new TrapCard(cardData, cardIndex),
+            _ => new StairsCard(cardData, cardIndex)
         };
     }
 
@@ -477,6 +516,8 @@ public class MemoryGameManager : MonoBehaviour {
                 firstSelectedCardModel.SetPair();
                 selectedCardModel.SetPair();
 
+                GameData.instance.MatchedPairCount.Value++;
+
                 await UniTask.Delay((int)(flipDuration * 1000));
 
                 // カードの種類とフロアデータから、カードのマスターデータを設定
@@ -506,7 +547,7 @@ public class MemoryGameManager : MonoBehaviour {
 
                 await UniTask.Delay((int)(flipDuration * 1000));
 
-                // ペアにならなかったので、めくれる回数の減算
+                // ペアにならなかった(お手付きした)ので、めくれる回数の減算
                 GameData.instance.userData.FlipPoint.Value--;
 
                 GameData.instance.ComboPairCount.Value = 0;
@@ -516,8 +557,8 @@ public class MemoryGameManager : MonoBehaviour {
             inputLocked = false;
         }
 
-        // 階段フラグが立っている場合には、再度階段ボタンを有効化
-        if (GameData.instance.userData.CanUseStairs.Value == true) {
+        // 最終フロアではなく、階段フラグが立っている場合には、再度階段ボタンを有効化
+        if (GameData.instance.lastFloorCount != GameData.instance.userData.FloorCount.Value && GameData.instance.userData.CanUseStairs.Value == true) {
             btnStairs.interactable = true;
         }
 
@@ -571,15 +612,55 @@ public class MemoryGameManager : MonoBehaviour {
 
         //SceneManager.LoadScene("Main");
 
-        // TODO 最終フロアか確認
+        // クリアしたフロアが最終フロアか確認
+        if (GameData.instance.userData.FloorCount.Value >= GameData.instance.lastFloorCount) {
+            // ゲームクリア
+            cgSlotSet.blocksRaycasts = false;
+            btnRetry.interactable = false;
+            btnStairs.interactable = false;
 
+            SoundManager.instance.PlayBGM(BGM_TYPE.Clear);
+            DebugLogger.Log("ゲームクリア");
+
+            // ゲームクリア画像へ変更
+            ChangeBackGroundImageGameClear();
+
+            // データセーブ
+            List<ItemData> itemDatalist = new(PlayerInventoryManager.instance.PlayerBackPackItemList.ToList().Select(data => new ItemData(data.itemData)).ToList());
+            List<int> enhanceLevelList = PlayerInventoryManager.instance.PlayerBackPackItemList.ToList().Select(data => data.EnhanceLevel.Value).ToList();
+            SaveData saveData = new(GameData.instance.userData, itemDatalist, enhanceLevelList);
+            PlayerPrefsHelper.ConditionalSave(saveData);
+
+            await UniTask.Delay(1000, cancellationToken: cts.Token);
+            SoundManager.instance.PlayVoice(VOICE_TYPE.Win);
+
+            // ゲームクリアのメッセージ表示
+            //.ShowRestartMessage();
+
+            await UniTask.WaitUntil(() => Input.GetMouseButtonDown(0), cancellationToken: cts.Token);
+
+            // TODO 一旦タイトルへ
+            SceneStateManager.instance.PrepareteNextScene(SceneName.Title);
+            return;
+        }
+
+        // デバッグ用
+        //GameData.instance.userData.FlipPoint.Value += debugFloorClearBonusFlipPoint;
+
+        // めくれる回数のフロアクリアボーナスを加算
+        //DebugLogger.Log($"currentFloorData : {currentFloorData.minFloorCount} / {currentFloorData.clearFlipBonus}");
+
+        int bonusFlipPoint = GameData.instance.MatchedPairCount.Value / 2;
+        GameData.instance.userData.FlipPoint.Value += bonusFlipPoint;
+        DebugLogger.Log($"bonusFlipPoint : {bonusFlipPoint}");
 
         ResetFloorState();
 
         await UniTask.Delay(500);
 
-        GameData.instance.userData.FlipPoint.Value += debugFloorClearBonusFlipPoint;
+        //GameData.instance.userData.FlipPoint.Value += currentFloorData.clearFlipBonus;
 
+        // フロア数を増やす
         GameData.instance.userData.FloorCount.Value++;
 
         InitFloorAsync().Forget();
@@ -601,9 +682,15 @@ public class MemoryGameManager : MonoBehaviour {
         txtMemoriaRank.text = newMemoriaRank.ToString();
     }
 
+    private void UpdateDisplayNextBonusFlipPoint(int matchedPairCount) {
+        int bonusFlipPoint = matchedPairCount / 2;
+        txtMatchedPairCount.text = bonusFlipPoint.ToString();
+    }
+
+
     public void SetMemoryStoneIcon(int memoryStoneId) {
         // オーブを UI に表示、光らせる
-        imgMemoryStoneIcons[memoryStoneCount].sprite = spriteMemoryStone;
+        //imgMemoryStoneIcons[memoryStoneCount].sprite = spriteMemoryStone;
         imgMemoryStoneIcons[memoryStoneCount].enabled = true;
         shinyEffects[memoryStoneCount].Play(0.75f);
 
@@ -689,7 +776,7 @@ public class MemoryGameManager : MonoBehaviour {
     }
 
     /// <summary>
-    /// 指定された種類のカードを見えるようにする
+    /// 指定された種類のカードを表向き(半透明)して見えるようにする
     /// </summary>
     /// <param name="blessingData"></param>
     /// <returns></returns>
@@ -705,15 +792,24 @@ public class MemoryGameManager : MonoBehaviour {
 
         // 指定された種類のカードを見える状態にする
         targetCardViewList.ForEach(cardView => cardView?.FaceUpCard());
-        DebugLogger.Log($"blessingData.valueType : {blessingData.valueType}");
+        //DebugLogger.Log($"blessingData.valueType : {blessingData.valueType}");
 
         // マッピングしてある情報と照合
         if (lookCountMap.TryGetValue(blessingData.valueType, out (SerializableReactiveProperty<int> lookCount, CompositeDisposable disposables) lookTarget)) {
+            bool isFirstActivation = lookTarget.lookCount.Value == 0;
+
             // 該当する種類のカードの効果時間を加算
             lookTarget.lookCount.Value += (int)blessingData.value;
 
             // 未購読時のみ購読登録とアイコン表示(購読処理が動いているなら、同じ効果の時間加算による重複を防止したいのでやらない)
-            if (lookTarget.disposables.Count == 0) {
+            //DebugLogger.Log($"lookTarget.disposables.Count : {lookTarget.disposables.Count}");
+            if (isFirstActivation) {
+                // 新しく作り直す(Dictionary 内で更新をかけない)
+                // 更新をしてもクロージャ(メソッドが終わっても、生き続けるローカル変数)は古い参照を保持してしまうため
+                // クロージャは「変数の値」ではなく「変数そのもの」を掴む
+                lookTarget.disposables = new CompositeDisposable();
+                //DebugLogger.Log($"lookTarget.disposables.Count : {lookTarget.disposables.Count}");
+
                 // 0 になったときにカードを伏せる購読処理
                 lookTarget.lookCount
                     .Where(lookCount => lookCount == 0)
@@ -725,17 +821,7 @@ public class MemoryGameManager : MonoBehaviour {
                 lookTarget.lookCount
                     .Where(lookCount => lookCount > 0)
                     .Subscribe(lookCount => {
-                        CardEventType targetEventType = ConvertCardEventTypeByBlessingValueType(blessingData.valueType);
-                        DebugLogger.Log($"blessingData.valueType : {blessingData.valueType}");
-                        List<CardModelBase> targetModelList = cardModelList.Where(card => card.isPair == false && card.cardData.cardTypeMaster.cardEventType == targetEventType).ToList();
-                        if (targetModelList.Count == 0) {
-                            DebugLogger.Log($"該当する種類のカードなし");
-                            return;
-                        }
-
-                        List<CardView> targetViewList = cardViewList.Where(view => targetModelList.Exists(model => model.cardData.cardTypeMaster.cardEventType == view.cardEventType)).ToList();
-
-                        targetViewList.ForEach(cardView => cardView?.FaceUpCard());
+                        RefreshFaceUpCards(blessingData.valueType);
                     })
                     .AddTo(lookTarget.disposables);
 
@@ -751,6 +837,41 @@ public class MemoryGameManager : MonoBehaviour {
         }
 
         await UniTask.Yield();
+    }
+
+    /// <summary>
+    /// すべてのカードを種類ごとに判定して、それぞれ表向き(半透明)にする
+    /// フロアが進んだとき、そのフロアのカードがセットされた後に実行される
+    /// </summary>
+    private void RefreshAllFaceUpCards() {
+        foreach (var kvp in lookCountMap) {
+            BlessingValueType valueType = kvp.Key;
+            var (lookCount, _) = kvp.Value;
+
+            // 効果が残っているものだけ
+            if (lookCount.Value > 0) {
+                RefreshFaceUpCards(valueType);
+            }
+        }
+    }
+
+    /// <summary>
+    /// 対象の種類のカードを表向き(半透明)にする
+    /// </summary>
+    /// <param name="valueType"></param>
+    private void RefreshFaceUpCards(BlessingValueType valueType) {
+        CardEventType targetEventType = ConvertCardEventTypeByBlessingValueType(valueType);
+        DebugLogger.Log($"blessingData.valueType : {valueType}");
+        
+        List<CardModelBase> targetModelList = cardModelList.Where(card => card.isPair == false && card.cardData.cardTypeMaster.cardEventType == targetEventType).ToList();
+        if (targetModelList.Count == 0) {
+            DebugLogger.Log($"効果終了となる種類のカードなし");
+            return;
+        }
+
+        List<CardView> targetViewList = cardViewList.Where(view => targetModelList.Exists(model => model.cardData.cardTypeMaster.cardEventType == view.cardEventType)).ToList();
+
+        targetViewList.ForEach(cardView => cardView?.FaceUpCard());
     }
 
     /// <summary>
@@ -788,8 +909,11 @@ public class MemoryGameManager : MonoBehaviour {
         List<CardView> targetCardViewList = cardViewList.Where(view => targetCardModelList.Exists(model => model.cardData.cardTypeMaster.cardEventType == view.cardEventType)).ToList();
 
         targetCardViewList.ForEach(cardView => cardView.FaceDownCard());
-        disposables.Clear();
-        disposables = new();  // null にせず、Count 0 として判定させるため
+        //disposables.Clear();
+        //disposables = new();  // null にせず、Count 0 として判定させるため
+
+        // 購読を完全終了(古い参照を保持している Subscribe 内のクロージャも完全破棄)
+        disposables.Dispose();
 
         // 該当するアイコン削除
         blessingIconViewList.ForEach(view => view?.CheckEndBlessing(BlessingType.Look, blessingValueType));
@@ -803,46 +927,63 @@ public class MemoryGameManager : MonoBehaviour {
     /// <param name="blessingData"></param>
     /// <returns></returns>
     public async UniTask ChooseDestroyEnemyOrTrapCardAsync(BlessingData blessingData) {
-        bool isRestEnemy = true;
-        bool isRestTrap = true;
 
-        // 敵とトラップのみを抽出したリストを作る
-        List<CardModelBase> restEnemyCardModelList = cardModelList.Where(card => card.isPair == false && card.cardData.cardTypeMaster.cardEventType == CardEventType.Enemy).ToList();
-        isRestEnemy = restEnemyCardModelList.Count > 0 ? true : false;
-        List<CardView> restEnemyCardViewList = new();
-        if (isRestEnemy) {
-            restEnemyCardViewList = cardViewList.Where(view => restEnemyCardModelList.Exists(model => model.cardData.cardTypeMaster.cardEventType == view.cardEventType)).ToList();
+        // 敵かトラップの「残っている Model」を取得
+        List<CardModelBase> restEnemyModels = cardModelList
+            .Where(m =>
+                !m.isPair &&
+                m.cardData.cardTypeMaster.cardEventType == CardEventType.Enemy)
+            .ToList();
+
+        List<CardModelBase> restTrapModels = cardModelList
+            .Where(m =>
+                !m.isPair &&
+                m.cardData.cardTypeMaster.cardEventType == CardEventType.Trap)
+            .ToList();
+
+        bool canDestroyEnemy = restEnemyModels.Count >= 2;
+        bool canDestroyTrap = restTrapModels.Count >= 2;
+
+        // どちらもペア不可なら終了
+        if (!canDestroyEnemy && !canDestroyTrap)
+            return;
+
+        // どちらを破壊するか決定
+        CardEventType targetType;
+
+        if (canDestroyEnemy && canDestroyTrap) {
+            targetType = UnityEngine.Random.Range(0, 2) == 0
+                ? CardEventType.Enemy
+                : CardEventType.Trap;
+        } else {
+            targetType = canDestroyEnemy
+                ? CardEventType.Enemy
+                : CardEventType.Trap;
         }
 
-        List<CardModelBase> restTrapCardModelList = cardModelList.Where(card => card.isPair == false && card.cardData.cardTypeMaster.cardEventType == CardEventType.Trap).ToList();
-        isRestTrap = restTrapCardModelList.Count > 0 ? true : false;
-        List<CardView> restTrapCardViewList = new();
-        if (isRestTrap) {
-            restTrapCardViewList = cardViewList.Where(view => restTrapCardModelList.Exists(model => model.cardData.cardTypeMaster.cardEventType == view.cardEventType)).ToList();
-        }
+        // 対象 Model を2枚選択(順番は任意)
+        List<CardModelBase> targetModels = (targetType == CardEventType.Enemy
+                ? restEnemyModels
+                : restTrapModels)
+            .Take(2)
+            .ToList();
 
-        // 敵やトラップが残っていない場合
-        if(isRestEnemy == false && isRestTrap == false) {
+        // 念のため
+        if (targetModels.Count < 2)
+            return;
+
+        // cardIndex で View を取得(Dictionary にして安全に引く)
+        Dictionary<int, CardView> viewByIndex = cardViewList.ToDictionary(v => v.cardIndex);
+
+        if (!viewByIndex.TryGetValue(targetModels[0].cardIndex, out var firstView) ||
+            !viewByIndex.TryGetValue(targetModels[1].cardIndex, out var secondView)) {
+            // Model と View の不整合(設計エラー)
+            DebugLogger.Log("CardView が見つかりません");
             return;
         }
 
-        // どちらを対象にするか
-        if (isRestEnemy && isRestTrap) {
-            // 両方存在する場合
-            int randomValue = UnityEngine.Random.Range(0, 2);
-            if (randomValue == 0) {
-                // 対象のカードのペアを破壊
-                await DestroyTargetPairCard(restEnemyCardModelList[0], restEnemyCardViewList[0], restEnemyCardModelList[1], restEnemyCardViewList[1]);
-            } else {
-                await DestroyTargetPairCard(restTrapCardModelList[0], restTrapCardViewList[0], restTrapCardModelList[1], restTrapCardViewList[1]);
-            }
-        } else if (!isRestEnemy && isRestTrap) {
-            // 敵がいない場合、トラップを破壊
-            await DestroyTargetPairCard(restTrapCardModelList[0], restTrapCardViewList[0], restTrapCardModelList[1], restTrapCardViewList[1]);
-        } else if (isRestEnemy && !isRestTrap) {
-            // トラップがない場合、敵を破壊
-            await DestroyTargetPairCard(restEnemyCardModelList[0], restEnemyCardViewList[0], restEnemyCardModelList[1], restEnemyCardViewList[1]);
-        }
+        // ペア破壊
+        await DestroyTargetPairCard(targetModels[0], firstView, targetModels[1], secondView);
     }
 
     /// <summary>
@@ -854,6 +995,10 @@ public class MemoryGameManager : MonoBehaviour {
     /// <param name="secoundCardView"></param>
     /// <returns></returns>
     private async UniTask DestroyTargetPairCard(CardModelBase firstCardModel, CardView firstCardView, CardModelBase secoundCardModel, CardView secoundCardView) {
+        // View 側状態更新
+        firstCardView.isPaired = true;
+        secoundCardView.isPaired = true;
+
         firstCardView.Hide();
         secoundCardView.Hide();
 
@@ -878,12 +1023,64 @@ public class MemoryGameManager : MonoBehaviour {
 
     }
 
+    /// <summary>
+    /// 背景用の画像のランダム変更
+    /// </summary>
+    public void RandomChangeBackGroundImage() {
+        // 配列の長さ
+        int length = spriteBackGrounds.Length;
+
+        // 現在の値を除外したランダムインデックス生成
+        int newIndex = Enumerable.Range(0, length)   // 0 ～ length-1 までのインデックス一覧を作成
+            .Where(i => i != backGroundIndex)        // 現在の index を除外
+            .OrderBy(_ => Guid.NewGuid())            // 全要素をランダム順に並び替え
+            .First();                                // その中の先頭(＝ランダム値)を取得
+
+        backGroundIndex = newIndex;
+
+        // フェード処理による画像の変更
+        imgBackGround.DOFade(0f, 0.25f).SetEase(Ease.Linear)
+            .OnComplete(() => {
+                // 背景用の画像の設定
+                imgBackGround.sprite = spriteBackGrounds[newIndex];
+                imgBackGround.DOFade(1.0f, 0.5f).SetEase(Ease.Linear);
+            }).SetLink(gameObject);
+    }
+
+    /// <summary>
+    /// 最終フロア用の背景画像に変更
+    /// </summary>
+    private void ChangeBackGroundImageLastFloor() {
+        // フェード処理による画像の変更
+        imgBackGround.DOFade(0f, 0.25f).SetEase(Ease.Linear)
+            .OnComplete(() => {
+                // 背景用の画像の設定
+                imgBackGround.sprite = spriteLastFloorBackGround;
+                imgBackGround.DOFade(1.0f, 0.5f).SetEase(Ease.Linear);
+            }).SetLink(gameObject);
+    }
+
+    /// <summary>
+    /// ゲームクリア用の背景画像に変更
+    /// </summary>
+    private void ChangeBackGroundImageGameClear() {
+        // フェード処理による画像の変更
+        imgBackGround.DOFade(0f, 0.25f).SetEase(Ease.Linear)
+            .OnComplete(() => {
+                // 背景用の画像の設定
+                imgBackGround.sprite = spriteGameClear;
+                imgBackGround.DOFade(1.0f, 0.5f).SetEase(Ease.Linear);
+            }).SetLink(gameObject);
+    }
 
     private void OnDestroy() {
         foreach (var entry in lookCountMap.Values) {
             // 動いているものだけ購読解除
             entry.Item2?.Dispose();
         }
+
+        floorCountDisposable?.Dispose();
+        cardCreateDisposable?.Dispose();
     }
 
     private async UniTask GameEndAsync() {

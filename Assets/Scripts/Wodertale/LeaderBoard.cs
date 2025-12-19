@@ -1,17 +1,20 @@
-﻿using R3;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 public class LeaderBoard : MonoBehaviour { 
-    [SerializeField] private CanvasGroup canvasGroup; 
-    
-    [SerializeField] private Text txtClearWaveNo;
-    [SerializeField] private Text txtWalkCount;
-    [SerializeField] private Text txtSoulPoint;
+    [SerializeField] private CanvasGroup canvasGroup;
+
+    [SerializeField] private Text txtTotalSoulPoint;
+    [SerializeField] private Text txtMemoriaRank;
+    [SerializeField] private Text txtInventorySize;
 
     [SerializeField] private Text txtDefeatedEnemies;
     [SerializeField] private Text txtFindTreasures;
-    [SerializeField] private Text txtReleasePowerSpot;
+    [SerializeField] private Text txtBlessingCount;
+
+    [SerializeField] private Text txtMemoriaCount;
+    [SerializeField] private Text txtTrapDisarmCount;
+    [SerializeField] private Text txtTrapFailureCount;
 
     [SerializeField] private Transform contentTran;
     [SerializeField] private BackPackInItem backPackInItemPrefab;
@@ -31,14 +34,17 @@ public class LeaderBoard : MonoBehaviour {
     public void SetLeaderBoard(SaveData saveData) {
         canvasGroup.alpha = 1.0f;
 
-        // 各種数値の設定
-        txtClearWaveNo.text = saveData.userData.waveNo.ToString();
-        txtWalkCount.text = saveData.userData.WalkCount.Value.ToString();
-        txtSoulPoint.text = (saveData.userData.SoulPoint.Value + saveData.userData.consumeSoulPoint).ToString();
+        // 各種数値の設定 
+        txtTotalSoulPoint.text = (saveData.userData.SoulPoint.Value + saveData.userData.consumeSoulPoint).ToString();
+        txtMemoriaRank.text = saveData.userData.MemoriaRank.Value.ToString();
+        txtInventorySize.text = (saveData.userData.expandInventoryCount + ConstData.DEFAULT__INVENTORY_SIZE).ToString();
 
         txtDefeatedEnemies.text = saveData.userData.DefeatedEnemyCount.Value.ToString();
         txtFindTreasures.text = saveData.userData.FindTreasureCount.Value.ToString();
-        txtReleasePowerSpot.text = saveData.userData.ExploreCount.Value.ToString();
+        txtBlessingCount.text = saveData.userData.BlessingCount.Value.ToString();
+        txtMemoriaCount.text = saveData.userData.MemoriaCount.Value.ToString();
+        txtTrapDisarmCount.text = saveData.userData.TrapDisarmCount.Value.ToString();
+        txtTrapFailureCount.text = saveData.userData.TrapFailureCount.Value.ToString();
 
         // アイテム一覧作成
         for (int i = 0; i < saveData.itemDataList.Count; i++) {

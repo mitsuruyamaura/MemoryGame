@@ -36,11 +36,13 @@ public class ItemInfoView : InfoViewBase {
             txtDescs[0].text += "クールタイム : " + backPackInItem.itemData.coolTime.ToString("F2") + " s\n";  // CoolTime
             txtDescs[0].text += "命中率 : " + backPackInItem.itemData.accuracy.ToString("F1") + " %\n";  // Accuracy
             txtDescs[0].text += "クリティカル率 : " + backPackInItem.itemData.criticalRate.ToString("F1") + " %\n";  // CriticalRate
+            txtDescs[0].text += "クリティカルダメージ率 : " + backPackInItem.itemData.criticalDamageRate.ToString("F1") + " %\n";  // CriticalDamage
         } else {
             txtDescs[0].text += $"パリィ 成功率 : {backPackInItem.itemData.parryRate.ToString("F2")} %\n";
             txtDescs[0].text += $"ダメージ吸収 成功率 : {backPackInItem.itemData.absorptionRate.ToString("F2")} %\n";
             txtDescs[0].text += $"ダメージ反射 成功率 : {backPackInItem.itemData.reflectionRate.ToString("F2")} %\n";
             txtDescs[0].text += $"交渉 成功率 : {backPackInItem.itemData.settlementRate.ToString("F2")} %\n";
+            txtDescs[0].text += $"罠回避 成功率 : {backPackInItem.itemData.tAvoid.ToString("F2")} %\n";
         }
 
         string valueName = backPackInItem.itemData.effectType switch {
@@ -121,11 +123,13 @@ public class ItemInfoView : InfoViewBase {
             txtDescs[0].text += "クールタイム : " + itemData.coolTime.ToString("F2") + " s\n";  // CoolTime
             txtDescs[0].text += "命中率 : " + itemData.accuracy.ToString("F1") + " %\n";  // Accuracy
             txtDescs[0].text += "クリティカル率 : " + itemData.criticalRate.ToString("F1") + " %\n";  // CriticalRate
+            txtDescs[0].text += "クリティカルダメージ率 : " + itemData.criticalDamageRate.ToString("F1") + " %\n";  // CriticalDamage
         } else {
             txtDescs[0].text += $"パリィ 成功率 : {itemData.parryRate.ToString("F2")} %\n";
             txtDescs[0].text += $"ダメージ吸収 成功率 : {itemData.absorptionRate.ToString("F2")} %\n";
             txtDescs[0].text += $"ダメージ反射 成功率 : {itemData.reflectionRate.ToString("F2")} %\n";
             txtDescs[0].text += $"交渉 成功率 : {itemData.settlementRate.ToString("F2")} %\n";
+            txtDescs[0].text += $"罠回避 成功率 : {itemData.tAvoid.ToString("F2")} %\n";
         }
 
         string valueName = itemData.effectType switch {

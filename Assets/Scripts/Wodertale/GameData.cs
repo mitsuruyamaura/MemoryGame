@@ -14,72 +14,23 @@ public class InventryAbilityItemData {
 } 
 
 public class GameData : AbstractSingleton<GameData> {
-
-    public void AddMemoryStoneList(MemoryStoneData memoryStoneData) {
-        // 獲得数を加算
-        userData.MemoryStoneCount.Value++;
-
-        // 思い出の秘石をスロットにセット
-        userData.MemoryStoneSlotList.Add(memoryStoneData.id);
-
-        // めくれる回数を加算
-        //userData.SoulPoint.Value += memoryStoneData.memoryPoint;
-        userData.FlipPoint.Value += memoryStoneData.addFlipCount;
-    }
-
-    public void ClearMemoryStoneList() {
-        userData.MemoryStoneSlotList.Clear();
-    }
-
-
-    //public ReactiveProperty<int> staminaPoint = new ReactiveProperty<int>();
-
-    //public ReactiveDictionary<int, bool> orbs = new ReactiveDictionary<int, bool>();
-
-    //public int hp;
-
-    //public int maxHp;
-
-    //public bool isDebugOn;
-
-    //public int playerLevel;
-
-    //public int totalExp;
-
-    //public CharacterData currentCharaData;
-
-    //public int abilityPoint;
-
-    //// アビリティアイテムのリスト
-    //public List<InventryAbilityItemData> abilityItemDatasList = new List<InventryAbilityItemData>();
-
-    //// バトルで付与されたデバフのリスト
-    //public List<ConditionType> debuffConditionsList = new List<ConditionType>();
-
-    //// World シーンで一時的に選択しているステージの番号
-    public int chooseStageNo;
-
-    //// クリア済のステージの番号
-    //public List<int> clearedStageNos;
-
-
-    //public bool isBossBattled;
-
     public float moveTimeScale;
 
     public CharaStatus charaStatus;
     public UserData userData;
 
-    public int limitInventorySize = 20;                // 上限値
+    public int limitInventorySize = 32;                // 上限値
     public int expandRequiredXP = 200;                 // インベントリの拡張に必要な基礎値
     public int flipGainRequiredXP = 100;               // めくれる回数の回復に必要な基礎値
     public int lifeGainRequiredXP = 100;               // ライフの回復に必要な基礎値
 
-    public CombatData playerCombatData;
+    public int lastFloorCount = 50;                    // 最終階層
+
+    public CombatData playerCombatData;           // プレイヤーの戦闘データ。この中に Hp などが含まれる
     public CombatData enemyCombatData;
 
-    public int debugStamina;
-    public int debugMaxHp;
+    public int initFlipCount;                     // 初期のめくれる回数
+    public int initMaxHp;                         // 初期の最大HP
 
     public List<int> defeatEnemyNoList = new();   // 倒したことのある敵のリスト
     public List<int> getItemNoList = new();       // 獲得したことのあるアイテムのリスト
@@ -92,38 +43,8 @@ public class GameData : AbstractSingleton<GameData> {
     public SerializableReactiveProperty<int> EnchantPoint = new(0);
     public int consumeEnchantPoint;
 
-    public SerializableReactiveProperty<int> ComboPairCount = new(0);
-
-
-    //protected override void Awake() {
-    //    base.Awake();
-
-    //    DOTween.Init().SetCapacity(1000, 500);
-
-    //    // ゲームの初期化
-    //    InitialzeGameData();
-    //    InitUserData();
-    //    InitCharaStatus();
-
-    //    // Unityroom は PlayFab 対応していないので止めておく
-    //    //LoginManager.InitializeAsync().Forget();
-
-    //    //LoginManagerMono.instance.InitializeAsync().Forget();
-
-    //    // ゲームの初期化
-    //    void InitialzeGameData() {
-    //        //maxHp = currentCharaData.maxHp;
-    //        //hp = maxHp;
-
-    //        //playerLevel = 1;
-
-    //        //totalExp = 0;
-
-    //        //abilityPoint += playerLevel;
-
-    //        moveTimeScale = 1.0f;
-    //    }
-    //}
+    public SerializableReactiveProperty<int> ComboPairCount = new(0);     // コンボで繋げたペア数
+    public SerializableReactiveProperty<int> MatchedPairCount = new(0);   // ペアを揃えた数
 
 
     protected override void Awake() {
@@ -139,35 +60,32 @@ public class GameData : AbstractSingleton<GameData> {
 
     private // ゲームの初期化
         void InitialzeGameData() {
-        //maxHp = currentCharaData.maxHp;
-        //hp = maxHp;
-
-        //playerLevel = 1;
-
-        //totalExp = 0;
-
-        //abilityPoint += playerLevel;
-
         moveTimeScale = 1.0f;
     }
 
-    /// <summary>
-    /// アビリティポイントの加算
-    /// </summary>
-    //public void AddAbilityPoint() {
-    //    abilityPoint += playerLevel;
-    //}
+    public void AddMemoryStoneList(MemoryStoneData memoryStoneData) {
+        // 獲得数を加算
+        userData.MemoryStoneCount.Value++;
 
-    /// <summary>
-    /// 獲得したトレジャーの情報を追加
-    /// </summary>
-    //public void AddaAbilityItemDatasList(AbilityType abilityType, int abilityNo) {
-    //    abilityItemDatasList.Add(new InventryAbilityItemData { abilityType = abilityType, abilityNo = abilityNo});
-    //}
+        userData.MemoriaCount.Value++;
 
+        // 思い出の秘石をスロットにセット
+        userData.MemoryStoneSlotList.Add(memoryStoneData.id);
+
+        // めくれる回数を加算
+        userData.FlipPoint.Value += memoryStoneData.addFlipCount;
+    }
+
+    public void ClearMemoryStoneList() {
+        userData.MemoryStoneSlotList.Clear();
+    }
 
     public void InitUserData() {
-        userData = new(debugStamina);
+        userData = new(initFlipCount);
+
+        // 物理か魔法の効果タイプのコモンアイテムをランダムで2つ取得して装備させる
+        var initItemDataList = DataBaseManager.instance.GetItemDataListByRarity(Rarity.Common).Where(data => data.effectType == EffectType.Physical || data.effectType == EffectType.Magic);
+        getItemNoList = initItemDataList.OrderBy(_ => UnityEngine.Random.value).Take(2).Select(data => data.id).ToList();
 
         // debug(new で新規インスタンスにしないと参照してしまって重複リストになる)
         userData.equipItemList = new(getItemNoList);
@@ -178,7 +96,7 @@ public class GameData : AbstractSingleton<GameData> {
     }
 
     public void InitCharaStatus() {
-        charaStatus = new(debugMaxHp);
+        charaStatus = new(initMaxHp);
         EnchantPoint.Value = GetTotalStatusValues();
     }
 
@@ -225,7 +143,8 @@ public class GameData : AbstractSingleton<GameData> {
         Wait,
         Play,
         GameUp,
-        Battle
+        Battle,
+        TrapDisarm
     }
 
     /// <summary>

@@ -130,10 +130,10 @@ public static class PlayerPrefsHelper {
         for (int i = ConstData.MAX_SAVE_SLOTS - 1; i >= 0; i--) {
             SaveData existingData = LoadGameData(i);
 
-            // 条件比較(上書き条件)：WaveNoが低い、またはWaveNoが同じでWalkCountが低い
-            if (newData.userData.waveNo < existingData.userData.waveNo ||
-                (newData.userData.waveNo == existingData.userData.waveNo &&
-                 newData.userData.WalkCount.Value < existingData.userData.WalkCount.Value)) {
+            // 条件比較(上書き条件)：SoulPoint が低い、または SoulPoint が同じで MemoriaRank が低い
+            if (newData.userData.SoulPoint.Value < existingData.userData.SoulPoint.Value ||
+                (newData.userData.SoulPoint.Value == existingData.userData.SoulPoint.Value &&
+                 newData.userData.MemoriaRank.Value < existingData.userData.MemoriaRank.Value)) {
 
                 // 上書き対象を記録
                 overwriteIndex = i;
@@ -217,16 +217,16 @@ public static class PlayerPrefsHelper {
             return saveDataList;
         }
 
-        // 並び替え：WaveNo → WalkCount
+        // 並び替え：SoulPoint → MemoriaRank
         saveDataList.Sort((a, b) => {
-            // まずWaveNoで比較
-            int waveComparison = a.userData.waveNo.CompareTo(b.userData.waveNo);
+            // まず SoulPoint で比較
+            int waveComparison = a.userData.SoulPoint.Value.CompareTo(b.userData.SoulPoint.Value);
             if (waveComparison != 0) {
-                return waveComparison; // WaveNoが低い方が上位
+                return waveComparison; // SoulPoint が低い方が上位
             }
 
-            // WaveNoが同じ場合はWalkCountで比較
-            return a.userData.WalkCount.Value.CompareTo(b.userData.WalkCount.Value); // WalkCountが低い方が上位
+            // SoulPoint が同じ場合は MemoriaRank で比較
+            return a.userData.MemoriaRank.Value.CompareTo(b.userData.MemoriaRank.Value); // MemoriaRank が低い方が上位
         });
 
         return saveDataList;
