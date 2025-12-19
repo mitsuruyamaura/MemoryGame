@@ -25,6 +25,7 @@ public class StageUIManager : MonoBehaviour {
     [SerializeField] private Text txtInventoryMaxInfo;
     [SerializeField] private Text txtRestartMessage;
     [SerializeField] private Text txtSettlementInfo;    // 画面優先順位の関係上、Canvas_ItemInfo オブジェクト内にあるオブジェクトを使う
+    [SerializeField] private Text txtTrapInfo;
 
     [SerializeField] private Slider sliderHp;
 
@@ -37,7 +38,9 @@ public class StageUIManager : MonoBehaviour {
     [SerializeField] private Image enemyIcon;
 
     [SerializeField] private GameObject timeObj;
+    [SerializeField] private GameObject timeObjTrapDisarm;   // 罠解除QTE用
     [SerializeField] private Image imgTime;
+    [SerializeField] private Image imgTimeTrapDisarm;        // 罠解除QTE用
     [SerializeField] private Image imgBattleState;
     [SerializeField] private Sprite[] stateSprites;    // Win,Loose,Timeout の順番
     [SerializeField] private Image inventoryFilter;
@@ -65,7 +68,13 @@ public class StageUIManager : MonoBehaviour {
     [SerializeField] private Button btnCloseLifeGainPop;    // ライフ回復ポップを閉じるボタン
     [SerializeField] private CanvasGroup cgLifeGainPop;     // ライフ回復ポップの CanvasGroup
 
+    [SerializeField] private CanvasGroup cgTrapDisarm;      // 罠解除QTE用の CanvasGroup
+
     private string SuccessSettlementMessage = "平和的解決に成功しました!!";
+
+    private string SuccessTrapMessage = "罠の解除に成功しました!!";
+    private string FailureTrapMessage = "罠の解除に失敗しました...";
+
     private float defaultTime;
 
     public Transform playerBackPackItemTran;
@@ -77,7 +86,7 @@ public class StageUIManager : MonoBehaviour {
     private CancellationTokenSource cts;
 
 
-    public void SetupStageUIManager(int stamina, int maxHp, MemoryGameManager memoryGameManager) {
+    public void SetupStageUIManager(int maxHp, MemoryGameManager memoryGameManager) {
         cts = new();
 
         SetMaxHpDisplay(maxHp);
@@ -191,9 +200,27 @@ public class StageUIManager : MonoBehaviour {
         playerLifeSetTran.transform.localPosition = Vector3.zero;
     }
 
+    public void ShowTimeCanvasTrapDisarm() {
+        imgTimeTrapDisarm.fillAmount = 1.0f;
+        timeObjTrapDisarm.SetActive(true);
+        cgTrapDisarm.alpha = 1f;
+        cgTrapDisarm.blocksRaycasts = true;
+    }
+
 
     private void HideTimeCanvas() {
         timeObj.SetActive(false);
+    }
+
+    public void HideTimeCanvasTrapDisarm() {
+        cgTrapDisarm.alpha = 0f;
+        cgTrapDisarm.blocksRaycasts = false;
+        timeObjTrapDisarm.SetActive(false);
+    }
+
+    public void UpdateTimeCanvasTrapDisarm(float timeLimit, float remainTime) {
+        float fil = remainTime / timeLimit;
+        imgTimeTrapDisarm.DOFillAmount(fil, fil).SetEase(Ease.Linear).SetLink(gameObject);
     }
 
     public void SetBossBattleTime(float bossTime) {
@@ -261,8 +288,8 @@ public class StageUIManager : MonoBehaviour {
     private void SetUpActionResultDisplays() {
         GameData.instance.userData.DefeatedEnemyCount.Subscribe(count => UpdateDisplayDefeatedEnemyCount(count)).AddTo(this);
         GameData.instance.userData.FindTreasureCount.Subscribe(count => UpdateDisplayFindTreasureCount(count)).AddTo(this);
-        GameData.instance.userData.ExploreCount.Subscribe(count => UpdateDisplayExploreCount(count)).AddTo(this);
-        GameData.instance.userData.UncurseCount.Subscribe(count => UpdateDisplayUncurseCount(count)).AddTo(this);
+        GameData.instance.userData.BlessingCount.Subscribe(count => UpdateDisplayExploreCount(count)).AddTo(this);
+        GameData.instance.userData.MemoriaCount.Subscribe(count => UpdateDisplayUncurseCount(count)).AddTo(this);
     }
 
     private void UpdateDisplayDefeatedEnemyCount(int count) {
@@ -348,6 +375,32 @@ public class StageUIManager : MonoBehaviour {
     }
 
     /// <summary>
+    /// 罠の解除に成功したときのメッセージ表示
+    /// </summary>
+    public void SuccessTrapDisarmInfo() {
+        txtTrapInfo.text = SuccessTrapMessage;
+
+        // 点滅させて表示
+        Sequence sequence = DOTween.Sequence();
+        sequence.SetLink(gameObject);
+        sequence.Append(txtTrapInfo.DOFade(1.0f, 0.8f).SetEase(Ease.Linear)).SetLoops(2, LoopType.Yoyo);
+        sequence.Append(txtTrapInfo.DOFade(0f, 0f).SetEase(Ease.Linear)).OnComplete(() => txtTrapInfo.DOFade(0f, 0f));  // 消えないことがあるので念のため
+    }
+
+    /// <summary>
+    /// 罠の解除に失敗したときのメッセージ表示
+    /// </summary>
+    public void FailureTrapDisarmInfo() {
+        txtTrapInfo.text = FailureTrapMessage;
+
+        // 点滅させて表示
+        Sequence sequence = DOTween.Sequence();
+        sequence.SetLink(gameObject);
+        sequence.Append(txtTrapInfo.DOFade(1.0f, 0.8f).SetEase(Ease.Linear)).SetLoops(2, LoopType.Yoyo);
+        sequence.Append(txtTrapInfo.DOFade(0f, 0f).SetEase(Ease.Linear)).OnComplete(() => txtTrapInfo.DOFade(0f, 0f));  // 消えないことがあるので念のため
+    }
+
+    /// <summary>
     /// ゲームオーバー、クリア時に表示する、タイトルへ戻すためのメッセージ
     /// </summary>
     public void ShowRestartMessage() {
@@ -398,10 +451,16 @@ public class StageUIManager : MonoBehaviour {
         cgFlipCountGainPop.blocksRaycasts = false;
     }
 
+    /// <summary>
+    /// ソウルポイントを消費して、めくれる回数を回復する
+    /// </summary>
     private void GainFlipCount() {
         // ポイント消費
         int flipGainRequiredPoint = GameData.instance.flipGainRequiredXP;
         GameData.instance.userData.SoulPoint.Value -= flipGainRequiredPoint;
+
+        // 消費ポイントの累計を更新
+        GameData.instance.userData.consumeSoulPoint += flipGainRequiredPoint;
 
         GameData.instance.userData.FlipPoint.Value += flipGainPoint;
 
@@ -446,15 +505,19 @@ public class StageUIManager : MonoBehaviour {
         int lifeGainRequiredPoint = GameData.instance.lifeGainRequiredXP;
         GameData.instance.userData.SoulPoint.Value -= lifeGainRequiredPoint;
 
+        // 消費ポイントの累計を更新
+        GameData.instance.userData.consumeSoulPoint += lifeGainRequiredPoint;
 
         // TODO クラス特典、回復量増量など
 
 
+
         // 回復量を計算し、最大値以内に抑えたうえで回復量表示
         int gainPoint = Mathf.FloorToInt(GameData.instance.charaStatus.MaxHp.Value * lifeGainRate);
-        int newHp = Mathf.Min(BattleManager.instance.PlayerHP.Value + gainPoint, GameData.instance.charaStatus.MaxHp.Value);
+        gainPoint = Mathf.Min(gainPoint, GameData.instance.charaStatus.MaxHp.Value);
 
-        BattleManager.instance.UpdatePlayerHp(newHp, EffectType.Heal, false);
+        // この中で回復処理実行
+        BattleManager.instance.UpdatePlayerHp(gainPoint, EffectType.Heal, false);
 
         // ポップ表示内容更新
         ShowLifeGainPopup();

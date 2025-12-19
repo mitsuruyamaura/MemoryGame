@@ -147,7 +147,7 @@ public class PlayerInventoryManager : AbstractSingleton<PlayerInventoryManager> 
                     HideExpandInventorySizePop();
                 }
             }, this, TimeSpan.FromMilliseconds(500));
-        btnSubmitExpandInventorySize.OnClickExt(() => ExpandInventorySize(), this);
+        btnSubmitExpandInventorySize.OnClickExt(() => ExpandInventorySize(), this, TimeSpan.FromSeconds(0.25f));
         btnCloseExpandInventoryPop.OnClickExt(() => HideExpandInventorySizePop(), this);
 
         HideExpandInventorySizePop();
@@ -474,7 +474,7 @@ public class PlayerInventoryManager : AbstractSingleton<PlayerInventoryManager> 
         if (GameData.instance.playerCombatData.MaxInventorySize.Value >= GameData.instance.limitInventorySize) {
             txtNextSize.text = $"最大です";
             txtSizeInfo.color = Color.red;
-            btnSubmitExpandInventorySize.interactable = false;
+            btnSubmitExpandInventorySize.gameObject.SetActive(false);
             return;
         }
 
@@ -518,6 +518,9 @@ public class PlayerInventoryManager : AbstractSingleton<PlayerInventoryManager> 
 
             // ポイント消費
             GameData.instance.userData.SoulPoint.Value -= expandRequiredPoint;
+
+            // 消費ポイントの累計を更新
+            GameData.instance.userData.consumeSoulPoint += expandRequiredPoint;
 
             // 拡張した回数をカウントアップ
             GameData.instance.userData.expandInventoryCount++;

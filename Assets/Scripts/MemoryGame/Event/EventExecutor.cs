@@ -32,6 +32,8 @@ public class EventExecutor {
         if (executorMap.TryGetValue(blessingData.type, out var executor)) {
             DebugLogger.Log($"BlessingType: {blessingData.type}");
             await executor.ExecuteAsync(blessingData, token);
+
+            GameData.instance.userData.BlessingCount.Value++;
         } else {
             DebugLogger.Log($"未登録のBlessingType: {blessingData.type}");
         }

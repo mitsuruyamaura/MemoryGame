@@ -39,6 +39,5 @@ public class BlessingIconView : PoolBase {
 
         transform.SetParent(GameData.instance.transform);
         transform.localPosition = Vector3.zero;
-        imgIcon.sprite = null;
     }
 }

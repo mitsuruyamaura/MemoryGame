@@ -77,11 +77,12 @@ public class StageLogicManager : MonoBehaviour {
 
 
         BattleManager.instance.SetUp(stageUIManager);
+        TrapDisarmQTEManager.instance.SetUp(stageUIManager);
 
         EnemyInfoDisplayManager.instance.Setup(null);
 
         // UI 初期設定
-        stageUIManager?.SetupStageUIManager(GameData.instance.userData.Stamina.Value, GameData.instance.charaStatus.MaxHp.Value, memoryGameManager);
+        stageUIManager?.SetupStageUIManager(GameData.instance.charaStatus.MaxHp.Value, memoryGameManager);
 
         // スタミナの値の購読開始
         //GameData.instance.userData.Stamina.Subscribe(stamina => stageUIManager.UpdateDisplayStaminaPoint(stamina));
@@ -240,24 +241,24 @@ public class StageLogicManager : MonoBehaviour {
     /// <summary>
     /// ターンの確認。プレイヤーのターンに切り替え。コンディションの更新
     /// </summary>
-    private void CheckTurn() {
-        if (GameData.instance.userData.Stamina.Value <= 0) {
-            CurrentTurnState = TurnState.Boss;
-        } else {
-            CurrentTurnState = TurnState.Player;
+    //private void CheckTurn() {
+    //    if (GameData.instance.userData.Stamina.Value <= 0) {
+    //        CurrentTurnState = TurnState.Boss;
+    //    } else {
+    //        CurrentTurnState = TurnState.Player;
 
-            // コンディションの残り時間の更新(いまは MapController 内の２箇所でやっているので、ここで一本化する)
-            //UpdateConditionsDuration();
+    //        // コンディションの残り時間の更新(いまは MapController 内の２箇所でやっているので、ここで一本化する)
+    //        //UpdateConditionsDuration();
 
-            // TODO UI を押せるようにする
-            // 移動ボタンと足踏みボタンを押せる状態にする
-            //ActivateInputButtons();
+    //        // TODO UI を押せるようにする
+    //        // 移動ボタンと足踏みボタンを押せる状態にする
+    //        //ActivateInputButtons();
 
-            // コンディションの効果を適用
-            ApplyEffectConditions();
-        }
-        DebugLogger.Log(CurrentTurnState);
-    }
+    //        // コンディションの効果を適用
+    //        ApplyEffectConditions();
+    //    }
+    //    DebugLogger.Log(CurrentTurnState);
+    //}
 
     /// <summary>
     /// プレイヤーレベルのボタンを押下した際の処理

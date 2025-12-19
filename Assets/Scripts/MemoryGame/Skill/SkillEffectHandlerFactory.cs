@@ -8,7 +8,7 @@ using UnityEngine;
 /// SkillEffectYpe と効果を自動登録(紐づけ)し、取り出すクラス
 /// </summary>
 public static class SkillEffectHandlerFactory {
-    private static readonly Dictionary<SkillEffectType, ISkillEffectHandler> handlers;
+    private static readonly Dictionary<SkillEffectType, SkillEffectHandlerBase> handlers;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     private static void InitializeSkillFactory() {
@@ -17,12 +17,12 @@ public static class SkillEffectHandlerFactory {
     }
 
     static SkillEffectHandlerFactory() {
-        handlers = new Dictionary<SkillEffectType, ISkillEffectHandler>();
+        handlers = new Dictionary<SkillEffectType, SkillEffectHandlerBase>();
 
-        // リフレクションで全アセンブリを走査して、ISkillEffectHandler を実装したクラスを探す
+        // リフレクションで全アセンブリを走査して、SkillEffectHandlerBase を実装したクラスを探す
         var handlerTypes = Assembly.GetExecutingAssembly()
             .GetTypes()
-            .Where(type => typeof(ISkillEffectHandler).IsAssignableFrom(type) && !type.IsInterface && !type.IsAbstract);
+            .Where(type => typeof(SkillEffectHandlerBase).IsAssignableFrom(type) && !type.IsInterface && !type.IsAbstract);
 
         DebugLogger.Log($"handlerTypes : {handlerTypes.Count()}");
 
@@ -32,7 +32,7 @@ public static class SkillEffectHandlerFactory {
             SkillEffectAttribute attribute = type.GetCustomAttribute<SkillEffectAttribute>();
             if (attribute != null) {
                 // 1回インスタンス化して辞書に登録
-                ISkillEffectHandler instance = (ISkillEffectHandler)Activator.CreateInstance(type);
+                SkillEffectHandlerBase instance = (SkillEffectHandlerBase)Activator.CreateInstance(type);
                 handlers[attribute.EffectType] = instance;
                 DebugLogger.Log($"handlers[attribute.EffectType] : {handlers[attribute.EffectType]}");
             }
@@ -46,8 +46,8 @@ public static class SkillEffectHandlerFactory {
     /// </summary>
     /// <param name="type"></param>
     /// <returns></returns>
-    public static ISkillEffectHandler GetHandler(SkillEffectType type) {
-        if (handlers.TryGetValue(type, out ISkillEffectHandler handler)) {
+    public static SkillEffectHandlerBase GetHandler(SkillEffectType type) {
+        if (handlers.TryGetValue(type, out SkillEffectHandlerBase handler)) {
             return handler;
         }
 

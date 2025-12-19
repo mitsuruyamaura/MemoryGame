@@ -3,7 +3,7 @@ using System.Threading;
 
 [System.Serializable]
 public class StairsCard : CardModelBase {
-    public StairsCard(CardData cardData) : base(cardData) {}
+    public StairsCard(CardData cardData, int cardIndex) : base(cardData, cardIndex) {}
 
     public override async UniTask ExecuteCardAsync(CancellationToken token) {
         DebugLogger.Log("Stairs");

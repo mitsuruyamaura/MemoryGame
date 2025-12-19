@@ -12,6 +12,7 @@ public class CardView : PoolBase {
     private float flipDuration;
     private Sprite spriteCardType;        // カードの表面のイラスト
 
+    public bool isPaired;
     public int cardIndex;
     public CardEventType cardEventType;
     private Color defaultColor = new(1, 1, 1, 1);
@@ -26,6 +27,7 @@ public class CardView : PoolBase {
         this.cardEventType = cardEventType;
 
         isReleased = false;
+        isPaired = false;
         rectTransform = (RectTransform)transform;
 
         imgCard.sprite = defaultSprite;

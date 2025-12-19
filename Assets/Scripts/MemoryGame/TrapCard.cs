@@ -3,7 +3,7 @@ using System.Threading;
 
 [System.Serializable]
 public class TrapCard : CardModelBase {
-    public TrapCard(CardData cardData) : base(cardData) {}
+    public TrapCard(CardData cardData, int cardIndex) : base(cardData, cardIndex) {}
 
     public override async UniTask ExecuteCardAsync(CancellationToken token) {
         DebugLogger.Log("Trap");

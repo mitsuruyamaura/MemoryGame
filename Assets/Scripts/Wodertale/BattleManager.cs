@@ -320,11 +320,11 @@ public class BattleManager : AbstractSingleton<BattleManager> {
     }
 
     public async UniTask BattleResultAsync(EnemyData enemyData) {
-
         // バトル結果が勝利の場合
         if (battleResultType == BattleResultType.Win) {
             // 討伐した敵を登録
             GameData.instance.AddDefeatEnemyList(enemyData.enemyNo);
+            GameData.instance.userData.DefeatedEnemyCount.Value++;
 
             // 経験値獲得
             GameData.instance.userData.SoulPoint.Value += enemyData.exp;
@@ -342,7 +342,7 @@ public class BattleManager : AbstractSingleton<BattleManager> {
             GameData.instance.CurrentGameState.Value = GameData.GameState.Play;
 
             // 宝箱カードの生成、カードの効果を実行
-            TreasureChestCard treasureChestCard = new(cardData, true);
+            TreasureChestCard treasureChestCard = new(cardData, -1, true);
 
             if (cts.IsCancellationRequested) {
                 return;
