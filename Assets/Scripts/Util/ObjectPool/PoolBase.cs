@@ -36,7 +36,7 @@ public abstract class PoolBase : MonoBehaviour, IPoolable {
 
         objectPool.Release(this);
 
-        transform.SetParent(PlayerInventoryManager.instance.transform);
+        transform.SetParent(GameData.instance.transform);
 
         transform.localScale = Vector3.one;
         transform.localPosition = Vector3.zero;

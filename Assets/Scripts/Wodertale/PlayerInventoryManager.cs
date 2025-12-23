@@ -8,8 +8,7 @@ using System.Threading;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class PlayerInventoryManager : AbstractSingleton<PlayerInventoryManager> {
-
+public class PlayerInventoryManager : MonoBehaviour {
     public ObservableList<BackPackInItem> PlayerBackPackItemList = new();
     private CancellationTokenSource cts;
 
@@ -39,8 +38,6 @@ public class PlayerInventoryManager : AbstractSingleton<PlayerInventoryManager> 
 
     [SerializeField] private int[] enhanceRates;
 
-    private int orbCount;
-
     private Transform playerBackPackItemTran;
     private CompositeDisposable disposables;
 
@@ -48,36 +45,44 @@ public class PlayerInventoryManager : AbstractSingleton<PlayerInventoryManager> 
     private int maxRecoveryDurabilityValue = 3;
 
     private StageUIManager stageUIManager;
+    private BattleManager battleManager;
+    private FloatingViewGenerator floatingViewGenerator;
+    private ItemInfoDisplayManager itemInfoDisplayManager;
+
+    //protected override void Awake() {
+    //base.Awake();
+
+    //cts = new ();
+
+    //// ReactiveCollection の変更を監視し、アイテムが追加または削除された時に処理を行う
+    //PlayerBackPackItemList.ObserveAdd().Subscribe(addEvent => {
+    //    // アイテムが追加された時の処理
+    //    addEvent.Value.SetUpBackPackItem(addEvent.Value.ItemData.Value, cts.Token);            
+    //});
+
+    //PlayerBackPackItemList.ObserveRemove().Subscribe(removeEvent => {
+    //    // アイテムが削除された時の処理
+    //    removeEvent.Value.Release(); // 必要に応じてリソースを解放
+    //});
+
+    //InitOrbIcons();
+    //}
+
+    //private void Start() {
+    // デバッグ用。Awake でやると BattleManager のインスタンスがなくて null エラーになる 
+    //AddItem(BackPackInItem_1);
+    //AddItem(BackPackInItem_2);
+    //}
 
 
-    protected override void Awake() {
-        base.Awake();
-
-        //cts = new ();
-
-        //// ReactiveCollection の変更を監視し、アイテムが追加または削除された時に処理を行う
-        //PlayerBackPackItemList.ObserveAdd().Subscribe(addEvent => {
-        //    // アイテムが追加された時の処理
-        //    addEvent.Value.SetUpBackPackItem(addEvent.Value.ItemData.Value, cts.Token);            
-        //});
-
-        //PlayerBackPackItemList.ObserveRemove().Subscribe(removeEvent => {
-        //    // アイテムが削除された時の処理
-        //    removeEvent.Value.Release(); // 必要に応じてリソースを解放
-        //});
-
-        //InitOrbIcons();
-    }
-
-    private void Start() {
-        // デバッグ用。Awake でやると BattleManager のインスタンスがなくて null エラーになる 
-        //AddItem(BackPackInItem_1);
-        //AddItem(BackPackInItem_2);
-    }
-
-
-    public void Setup(Transform playerBackPackItemTran, MemoryGameManager memoryGameManager, StageUIManager stageUIManager) {
+    public void Setup(MemoryGameManager memoryGameManager, StageUIManager stageUIManager, BattleManager battleManager, FloatingViewGenerator floatingViewGenerator, ItemInfoDisplayManager itemInfoDisplayManager) {
         this.stageUIManager = stageUIManager;
+        this.battleManager = battleManager;
+        this.floatingViewGenerator = floatingViewGenerator;
+        this.itemInfoDisplayManager = itemInfoDisplayManager;
+
+        playerBackPackItemTran = stageUIManager.PlayerBackPackItemTran;
+
         backPackItemGenerator.InitObjectPool();
 
         disposables = new CompositeDisposable();
@@ -105,8 +110,6 @@ public class PlayerInventoryManager : AbstractSingleton<PlayerInventoryManager> 
 
         // サイズ変更時の購読処理
         PlayerBackPackItemList.ObserveCountChanged().Subscribe(count => { txtCurrentInventorySize.text = count.ToString(); }).AddTo(disposables);
-
-        this.playerBackPackItemTran = playerBackPackItemTran;
 
         GenerateBackPackInItem();
 
@@ -164,7 +167,7 @@ public class PlayerInventoryManager : AbstractSingleton<PlayerInventoryManager> 
         for (int i = 0; i < GameData.instance.userData.equipItemList.Count; i++) {
             BackPackInItem backPackInItem = (BackPackInItem)backPackItemGenerator.GetObjectFromPool(playerBackPackItemTran);
             ItemData itemData = DataBaseManager.instance.GetItemData(GameData.instance.userData.equipItemList[i]);
-            backPackInItem.SetUpBackPackItem(itemData, BattleManager.instance.Cts.Token, EntityType.Player);
+            backPackInItem.SetUpBackPackItem(battleManager, floatingViewGenerator, this, itemInfoDisplayManager, itemData, EntityType.Player);
             AddItem(backPackInItem);
         }
     }
@@ -187,7 +190,7 @@ public class PlayerInventoryManager : AbstractSingleton<PlayerInventoryManager> 
             (ItemData enhanceItemData, int enhanceCount) = CaluEnhanceItemData(itemData, -1);
             if (enhanceItemData != null) {
                 DebugLogger.Log($"強化 : {enhanceItemData} / {enhanceCount}");
-                backPackInItem.UpdateBackPackItem(enhanceItemData, enhanceCount, BattleManager.instance.Cts.Token);
+                backPackInItem.UpdateBackPackItem(enhanceItemData, enhanceCount);
 
                 // リアクション表示更新
                 UpdateDisplayReactionsParam();
@@ -197,7 +200,7 @@ public class PlayerInventoryManager : AbstractSingleton<PlayerInventoryManager> 
 
         // 新規アイテムの場合には追加
         backPackInItem = (BackPackInItem)backPackItemGenerator.GetObjectFromPool(playerBackPackItemTran);
-        backPackInItem.SetUpBackPackItem(itemData, BattleManager.instance.Cts.Token, EntityType.Player);
+        backPackInItem.SetUpBackPackItem(battleManager, floatingViewGenerator, this, itemInfoDisplayManager, itemData, EntityType.Player);
         PlayerBackPackItemList.Add(backPackInItem);
 
         GameData.instance.userData.equipItemList.Add(itemData.id);
@@ -221,7 +224,12 @@ public class PlayerInventoryManager : AbstractSingleton<PlayerInventoryManager> 
         //Debug.Log(itemData.id);
     }
 
-
+    /// <summary>
+    /// アイテムの強化値の算出
+    /// </summary>
+    /// <param name="baseItemData"></param>
+    /// <param name="enhanceCount"></param>
+    /// <returns></returns>
     public (ItemData, int) CaluEnhanceItemData(ItemData baseItemData, int enhanceCount = -1) {
         if (enhanceCount == 0) {
             return (null, 0);
@@ -243,6 +251,10 @@ public class PlayerInventoryManager : AbstractSingleton<PlayerInventoryManager> 
             enhanceCount = index + 1;
         }
         DebugLogger.Log($"enhanceCount : {enhanceCount}");
+
+        // マスターデータを取得
+        ItemData itemData = DataBaseManager.instance.GetItemData(baseItemData.id);
+
         ItemData enhanceItemData = new();
         enhanceItemData.statusTypes = new StatusType[baseItemData.statusTypes.Length];
         enhanceItemData.requiredValues = new int[baseItemData.requiredValues.Length];
@@ -256,8 +268,8 @@ public class PlayerInventoryManager : AbstractSingleton<PlayerInventoryManager> 
             enhanceItemData.criticalRate += UnityEngine.Random.Range(0, 100) < 50 ? UnityEngine.Random.Range(0.1f, 0.3f) : 0;
 
             // 耐久値と価値は必ず加算
-            enhanceItemData.durability += baseItemData.durability;
-            enhanceItemData.price += baseItemData.price / 2;
+            enhanceItemData.durability += itemData.durability;
+            enhanceItemData.price += itemData.price / 2;
 
             // TODO 能力値の修正　最初から設定されているもののみ上げているが、加算ステータスをランダムにするか検討する
             for (int j = 0; j < enhanceItemData.statusTypes.Length; j++) {
@@ -271,13 +283,13 @@ public class PlayerInventoryManager : AbstractSingleton<PlayerInventoryManager> 
 
             // Hp とリアクション か Value を強化
             if (baseItemData.effectType == EffectType.Passive) {
-                enhanceItemData.hpBonus += (int)(baseItemData.hpBonus * 0.5f);
+                enhanceItemData.hpBonus += (int)(itemData.hpBonus * 0.5f);
 
                 // ベース値のあるものは、半分加算
-                enhanceItemData.reflectionRate += baseItemData.reflectionRate * 0.5f;
-                enhanceItemData.parryRate += baseItemData.parryRate * 0.5f;
-                enhanceItemData.absorptionRate += baseItemData.absorptionRate * 0.5f;
-                enhanceItemData.settlementRate += baseItemData.settlementRate * 0.5f;
+                enhanceItemData.reflectionRate += itemData.reflectionRate * 0.5f;
+                enhanceItemData.parryRate += itemData.parryRate * 0.5f;
+                enhanceItemData.absorptionRate += itemData.absorptionRate * 0.5f;
+                enhanceItemData.settlementRate += itemData.settlementRate * 0.5f;
 
                 // 0 のリアクションも上げる対象とする
                 enhanceItemData.reflectionRate += UnityEngine.Random.Range(0, 100) < 50 ? UnityEngine.Random.Range(0.1f, 0.3f) : 0;
@@ -463,7 +475,7 @@ public class PlayerInventoryManager : AbstractSingleton<PlayerInventoryManager> 
     /// インベントリ拡張ポップの表示(表示更新にも使う)
     /// </summary>
     public void ShowExpandInventorySizePop() {
-        if (GameData.instance.CurrentGameState.Value != GameData.GameState.Play) {
+        if (GameData.instance.CurrentGameState.Value != GameState.Play) {
             return;
         }
 
@@ -561,10 +573,10 @@ public class PlayerInventoryManager : AbstractSingleton<PlayerInventoryManager> 
             (ItemData enhanceItemData, int enhanceCount) = CaluEnhanceItemData(backPackInItem.itemData, (int)blessingData.value);
             if (enhanceItemData != null) {
                 DebugLogger.Log($"強化 : {enhanceItemData} / {enhanceCount}");
-                backPackInItem.UpdateBackPackItem(enhanceItemData, enhanceCount, BattleManager.instance.Cts.Token);
+                backPackInItem.UpdateBackPackItem(enhanceItemData, enhanceCount);
 
                 // リアクション表示更新
-                instance.UpdateDisplayReactionsParam();
+                UpdateDisplayReactionsParam();
             }
         }
 
@@ -582,9 +594,10 @@ public class PlayerInventoryManager : AbstractSingleton<PlayerInventoryManager> 
             return;
         }
 
-        // ランダムな複数のアイテムを強化する場合
+        // 強化する回数をランダムに決定(1～3回)
         System.Random random = new();
-        int randomValue = random.Next(0, 5);
+        int randomValue = random.Next(1, 4);
+        DebugLogger.Log($"強化対象アイテム数 : {randomValue}");
 
         // 同じアイテムも強化対象とする
         for (int i = 0; i < randomValue; i++) {
@@ -608,10 +621,10 @@ public class PlayerInventoryManager : AbstractSingleton<PlayerInventoryManager> 
             (ItemData enhanceItemData, int enhanceCount) = CaluEnhanceItemData(backPackInItem.itemData, -1);
             if (enhanceItemData != null) {
                 DebugLogger.Log($"強化 : {enhanceItemData} / {enhanceCount}");
-                backPackInItem.UpdateBackPackItem(enhanceItemData, enhanceCount, BattleManager.instance.Cts.Token);
+                backPackInItem.UpdateBackPackItem(enhanceItemData, enhanceCount);
 
                 // リアクション表示更新
-                instance.UpdateDisplayReactionsParam();
+                UpdateDisplayReactionsParam();
             }
         }
     }

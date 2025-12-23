@@ -26,7 +26,7 @@ public enum SE_TYPE {
     Drop,
     OpenTreasure,
     Heal,
-    PowerSpot,
+    MemoryFragments,
     Debuff,
     Buff,
     Shield,
@@ -50,7 +50,6 @@ public enum VOICE_TYPE {
 /// 音管理クラス
 /// </summary>
 public class SoundManager : AbstractSingleton<SoundManager> {
-
 	// 音量
 	public SoundVolume volume = new SoundVolume();
 

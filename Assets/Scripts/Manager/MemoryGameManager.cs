@@ -45,8 +45,6 @@ public class MemoryGameManager : MonoBehaviour {
     [SerializeField] private int debugBlessingID;              // デバッグ用 BlessingData ID 番号
     [SerializeField] private int debugTrapID;
 
-    [SerializeField] private MemoryLinkPopup memoryLinkPopup;
-
     [SerializeField] private Image imgBackGround;
     [SerializeField] private Sprite[] spriteBackGrounds;
     [SerializeField] private Sprite spriteLastFloorBackGround;
@@ -59,7 +57,6 @@ public class MemoryGameManager : MonoBehaviour {
     public Observable<CardView> OnCardSelect => onCardSelected;
     private List<GameObject> slotList = new();                 // スロットを保持
     private CancellationTokenSource cts;
-    private int memoryStoneCount;
     private FloorData currentFloorData;
 
     public SerializableReactiveProperty<int> EnemyLookCount = new(0);
@@ -84,6 +81,9 @@ public class MemoryGameManager : MonoBehaviour {
     private IDisposable floorCountDisposable;    // 灰色だが使っている
     private IDisposable cardCreateDisposable;
 
+    private CardFactory cardFactory;
+    private PlayerInventoryManager playerInventoryManager;
+
     // デバッグ用
     //private async void Start() {
     //    SetupAsync().Forget();
@@ -94,7 +94,10 @@ public class MemoryGameManager : MonoBehaviour {
     /// ステージ初期設定
     /// </summary>
     /// <returns></returns>
-    public async UniTask SetUpAsync() {
+    public async UniTask SetUpAsync(CardFactory cardFactory, BattleManager battleManager, PlayerInventoryManager playerInventoryManager) {
+        this.cardFactory = cardFactory;
+        this.playerInventoryManager = playerInventoryManager;
+
         // 各初期化処理
         cts = new();
         cardGenerator.InitObjectPool();
@@ -129,7 +132,7 @@ public class MemoryGameManager : MonoBehaviour {
 
         // カード選択イベントを購読。選択したカードをめくる
         onCardSelected
-            .Where(_ => GameData.instance.CurrentGameState.Value == GameData.GameState.Play)
+            .Where(_ => GameData.instance.CurrentGameState.Value == GameState.Play)
             .Where(_ => !inputLocked) // ロック中は無視
             .Subscribe(cardView => HandleCardSelectionAsync(cardView).Forget())
             .AddTo(this);
@@ -143,7 +146,7 @@ public class MemoryGameManager : MonoBehaviour {
         if (this == null || btnRetry == null) return;
         btnRetry
             .OnClickExt(() => {
-                if (GameData.instance.CurrentGameState.Value != GameData.GameState.Play) {
+                if (GameData.instance.CurrentGameState.Value != GameState.Play) {
                     return;
                 }
                 GameEndAsync().Forget(); }, this);
@@ -152,11 +155,11 @@ public class MemoryGameManager : MonoBehaviour {
         GameData.instance.userData.FlipPoint
             .Where(flipPoint => flipPoint <= 0)
             .Take(1)
-            .Subscribe(flipPoint => BattleManager.instance.ForceGameEndAsync().Forget()).AddTo(this);  // GameEndAsync().Forget()
+            .Subscribe(flipPoint => battleManager.ForceGameEndAsync().Forget()).AddTo(this);  // GameEndAsync().Forget()
 
-        // 思い出の秘石獲得時の購読処理
+        // 思い出の断片獲得時の購読処理
         GameData.instance.userData.MemoryStoneSlotList.ObserveAdd()
-            .Subscribe(memoryStoneId => SetMemoryStoneIcon(memoryStoneId.Value)).AddTo(this);
+            .Subscribe(memoryStoneIndex => SetMemoryStoneIcon(memoryStoneIndex.Value)).AddTo(this);
 
         GameData.instance.ComboPairCount.Subscribe(comboCount => CheckComboEffect(comboCount)).AddTo(this);
 
@@ -194,8 +197,6 @@ public class MemoryGameManager : MonoBehaviour {
         // フロアが進んでカードがすべて生成されたときの購読処理
         cardCreateDisposable = onFloorCardsCreated
             .Subscribe(_ => RefreshAllFaceUpCards()).AddTo(this);
-
-        HideMemoryLinkPopup();
 
         // デバッグ用リセット機能
         this.UpdateAsObservable()
@@ -448,27 +449,10 @@ public class MemoryGameManager : MonoBehaviour {
     private void CreateCardModelList(List<CardData> selectedCardDataList) {
         int cardIndex = 0;
         foreach (CardData cardData in selectedCardDataList) {
-            CardModelBase cardModel = CreateCardModel(cardData, cardIndex);
+            CardModelBase cardModel = cardFactory.CreateCardModel(cardData, cardIndex);
             cardModelList.Add(cardModel);
             cardIndex++;
         }
-    }
-
-    /// <summary>
-    /// カードモデル作成
-    /// </summary>
-    /// <param name="cardData"></param>
-    /// <returns></returns>
-    private CardModelBase CreateCardModel(CardData cardData, int cardIndex) {
-        return cardData.cardTypeMaster.cardEventType switch {
-            CardEventType.MemoryFragments => new MemoryFragmentsCard(cardData, cardIndex),
-            CardEventType.TreasureChest => new TreasureChestCard(cardData, cardIndex, false),
-            CardEventType.Blessing => new BlessingCard(cardData, cardIndex),
-            CardEventType.Enemy => new EnemyCard(cardData, cardIndex),
-            CardEventType.Stairs => new StairsCard(cardData, cardIndex),
-            CardEventType.Trap => new TrapCard(cardData, cardIndex),
-            _ => new StairsCard(cardData, cardIndex)
-        };
     }
 
     /// <summary>
@@ -606,7 +590,7 @@ public class MemoryGameManager : MonoBehaviour {
     /// </summary>
     /// <returns></returns>
     private async UniTask NextFloorAsync() {
-        if (GameData.instance.CurrentGameState.Value != GameData.GameState.Play) {
+        if (GameData.instance.CurrentGameState.Value != GameState.Play) {
             return;
         }
 
@@ -626,8 +610,8 @@ public class MemoryGameManager : MonoBehaviour {
             ChangeBackGroundImageGameClear();
 
             // データセーブ
-            List<ItemData> itemDatalist = new(PlayerInventoryManager.instance.PlayerBackPackItemList.ToList().Select(data => new ItemData(data.itemData)).ToList());
-            List<int> enhanceLevelList = PlayerInventoryManager.instance.PlayerBackPackItemList.ToList().Select(data => data.EnhanceLevel.Value).ToList();
+            List<ItemData> itemDatalist = new(playerInventoryManager.PlayerBackPackItemList.ToList().Select(data => new ItemData(data.itemData)).ToList());
+            List<int> enhanceLevelList = playerInventoryManager.PlayerBackPackItemList.ToList().Select(data => data.EnhanceLevel.Value).ToList();
             SaveData saveData = new(GameData.instance.userData, itemDatalist, enhanceLevelList);
             PlayerPrefsHelper.ConditionalSave(saveData);
 
@@ -677,7 +661,6 @@ public class MemoryGameManager : MonoBehaviour {
         txtFloorCount.text = newFloorCount.ToString();
     }
 
-
     private void UpdateDisplayMemoriaRank(int newMemoriaRank) {
         txtMemoriaRank.text = newMemoriaRank.ToString();
     }
@@ -687,37 +670,26 @@ public class MemoryGameManager : MonoBehaviour {
         txtMatchedPairCount.text = bonusFlipPoint.ToString();
     }
 
-
-    public void SetMemoryStoneIcon(int memoryStoneId) {
-        // オーブを UI に表示、光らせる
+    /// <summary>
+    /// 思い出の断片を UI に表示、光らせる
+    /// </summary>
+    /// <param name="memoryStoneIndex"></param>
+    public void SetMemoryStoneIcon(int memoryStoneIndex) {
         //imgMemoryStoneIcons[memoryStoneCount].sprite = spriteMemoryStone;
-        imgMemoryStoneIcons[memoryStoneCount].enabled = true;
-        shinyEffects[memoryStoneCount].Play(0.75f);
+        imgMemoryStoneIcons[memoryStoneIndex].enabled = true;
+        shinyEffects[memoryStoneIndex].Play(0.75f);
 
-        memoryStoneCount++;
-        memoryStoneCount = memoryStoneCount % imgMemoryStoneIcons.Length;
-
-        if (memoryStoneCount == 0) {
+        // 3つ目の思い出の断片を獲得したら、すべてを光らせる
+        if (memoryStoneIndex == 2) {
             FlashIconsAsync().Forget();
-
-            // ランクアップ
-            GameData.instance.userData.MemoriaRank.Value++;
-
-            // 誰かの記憶を取り戻す(つなぐ)
-            ShowMemoryLinkPopup().Forget();
-
-
-            //// デバッグ用。インベントリの上限を超えていないなら
-            //if (GameData.instance.playerCombatData.MaxInventorySize.Value < GameData.instance.limitInventorySize) {
-            //    // インベントリのサイズアップ
-            //    GameData.instance.playerCombatData.MaxInventorySize.Value++;
-            //}
-
-
         }
     }
 
-    private async UniTask FlashIconsAsync() {
+    /// <summary>
+    /// 思い出の断片アイコンを点滅させる
+    /// </summary>
+    /// <returns></returns>
+    public async UniTask FlashIconsAsync() {
         await UniTask.Delay(1000);
 
         for (int i = 0; i < imgMemoryStoneIcons.Length; i++) {
@@ -726,31 +698,14 @@ public class MemoryGameManager : MonoBehaviour {
 
         await UniTask.Delay(1000);
 
-        // すべての思い出の秘石を UI から消す
+        // すべての思い出の断片を UI から消す
         InitMemoryStoneIcons();
-        GameData.instance.ClearMemoryStoneList();
     }
 
     public void InitMemoryStoneIcons() {
         for (int i = 0; i < imgMemoryStoneIcons.Length; i++) {
             imgMemoryStoneIcons[i].enabled = false;
         }
-    }
-
-    public async UniTask ShowMemoryLinkPopup() {
-        await memoryLinkPopup.SetInitializeAsync();
-
-        // 選択されるか、閉じられるまで待機
-        // channel 使う
-
-
-    }
-
-
-    public void HideMemoryLinkPopup() {
-
-
-        memoryLinkPopup.ClosePopupProc();
     }
 
     /// <summary>
@@ -926,19 +881,19 @@ public class MemoryGameManager : MonoBehaviour {
     /// </summary>
     /// <param name="blessingData"></param>
     /// <returns></returns>
-    public async UniTask ChooseDestroyEnemyOrTrapCardAsync(BlessingData blessingData) {
+    public async UniTask<bool> ChooseDestroyEnemyOrTrapCardAsync(BlessingData blessingData) {
 
         // 敵かトラップの「残っている Model」を取得
         List<CardModelBase> restEnemyModels = cardModelList
-            .Where(m =>
-                !m.isPair &&
-                m.cardData.cardTypeMaster.cardEventType == CardEventType.Enemy)
+            .Where(model =>
+                !model.isPair &&
+                model.cardData.cardTypeMaster.cardEventType == CardEventType.Enemy)
             .ToList();
 
         List<CardModelBase> restTrapModels = cardModelList
-            .Where(m =>
-                !m.isPair &&
-                m.cardData.cardTypeMaster.cardEventType == CardEventType.Trap)
+            .Where(model =>
+                !model.isPair &&
+                model.cardData.cardTypeMaster.cardEventType == CardEventType.Trap)
             .ToList();
 
         bool canDestroyEnemy = restEnemyModels.Count >= 2;
@@ -946,7 +901,7 @@ public class MemoryGameManager : MonoBehaviour {
 
         // どちらもペア不可なら終了
         if (!canDestroyEnemy && !canDestroyTrap)
-            return;
+            return false;
 
         // どちらを破壊するか決定
         CardEventType targetType;
@@ -970,7 +925,7 @@ public class MemoryGameManager : MonoBehaviour {
 
         // 念のため
         if (targetModels.Count < 2)
-            return;
+            return false;
 
         // cardIndex で View を取得(Dictionary にして安全に引く)
         Dictionary<int, CardView> viewByIndex = cardViewList.ToDictionary(v => v.cardIndex);
@@ -979,11 +934,12 @@ public class MemoryGameManager : MonoBehaviour {
             !viewByIndex.TryGetValue(targetModels[1].cardIndex, out var secondView)) {
             // Model と View の不整合(設計エラー)
             DebugLogger.Log("CardView が見つかりません");
-            return;
+            return false;
         }
 
         // ペア破壊
         await DestroyTargetPairCard(targetModels[0], firstView, targetModels[1], secondView);
+        return true;
     }
 
     /// <summary>
@@ -999,23 +955,18 @@ public class MemoryGameManager : MonoBehaviour {
         firstCardView.isPaired = true;
         secoundCardView.isPaired = true;
 
-        firstCardView.Hide();
-        secoundCardView.Hide();
-
         firstCardModel.SetPair();
         secoundCardModel.SetPair();
 
-        await UniTask.Delay((int)(flipDuration * 1000));
-
-        // カードの種類とフロアデータから、カードのマスターデータを設定
-        //secoundCardModel.cardData.masterData = CreateCardData(secoundCardModel.cardData.cardTypeMaster.cardEventType, currentFloorData);
-        //DebugLogger.Log($"secoundCardModel : {secoundCardModel}");
-        //DebugLogger.Log($"secoundCardModel.cardData.masterData : {secoundCardModel.cardData.masterData}");
+        // ペア破壊アニメーションが両方終了するまで待機
+        await UniTask.WhenAll(
+            firstCardView.PlayHideAnimationAsync(cts.Token),
+            secoundCardView.PlayHideAnimationAsync(cts.Token)
+        );
 
         // カードの効果を実行
         if (this == null || secoundCardModel == null || cts == null) return;
-        //await secoundCardModel.ExecuteCardAsync(cts.Token);
-        DebugLogger.Log("カード実行");
+        DebugLogger.Log("カード破棄実行");
     }
 
 

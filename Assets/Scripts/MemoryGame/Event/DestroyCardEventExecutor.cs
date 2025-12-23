@@ -1,14 +1,24 @@
 ﻿using Cysharp.Threading.Tasks;
 using System.Threading;
 
+/// <summary>
+/// 敵かトラップカードの破棄イベント実行クラス
+/// </summary>
 public class DestroyCardEventExecutor : IEventExecutor {
-    public async UniTask ExecuteAsync(BlessingData blessingData, CancellationToken token) {
-        MemoryGameManager memoryGameManager = UnityEngine.GameObject.FindFirstObjectByType<MemoryGameManager>();
+    private MemoryGameManager memoryGameManager;
+    public DestroyCardEventExecutor(MemoryGameManager memoryGameManager) {
+        this.memoryGameManager = memoryGameManager;
+    }
 
+    public async UniTask ExecuteAsync(BlessingData blessingData, CancellationToken token) {
         // 指定回数だけ、敵かトラップカードを破棄
         for (int i = 0; i < blessingData.value; i++) {
-            await memoryGameManager.ChooseDestroyEnemyOrTrapCardAsync(blessingData);
-            await UniTask.Delay(1000);
+            bool destroyed = await memoryGameManager.ChooseDestroyEnemyOrTrapCardAsync(blessingData);
+
+            // 破棄されなかった(破棄可能なカードがなかった)場合にはループを抜ける
+            if (!destroyed) {
+                break;
+            }
         }
     }
 }

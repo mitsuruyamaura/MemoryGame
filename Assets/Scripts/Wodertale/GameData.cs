@@ -11,7 +11,28 @@ using System.Linq;
 public class InventryAbilityItemData {
     public AbilityType abilityType;
     public int abilityNo;
-} 
+}
+
+/// <summary>
+/// ゲーム進行状態の種類
+/// </summary>
+public enum GameState {
+    Prepare,
+    Wait,
+    Play,
+    GameUp,
+    Battle,
+    TrapDisarm
+}
+
+/// <summary>
+/// PlayFabのTitleId種類
+/// </summary>
+public enum PlayFabServer {
+    Test,
+    Dev,
+}
+
 
 public class GameData : AbstractSingleton<GameData> {
     public float moveTimeScale;
@@ -37,14 +58,22 @@ public class GameData : AbstractSingleton<GameData> {
 
     public List<PlayerConditionBase> conditionList = new();
 
-    [SerializeField]
-    private Transform conditionEffectTran;
+    [SerializeField] private Transform conditionEffectTran;
 
     public SerializableReactiveProperty<int> EnchantPoint = new(0);
     public int consumeEnchantPoint;
 
     public SerializableReactiveProperty<int> ComboPairCount = new(0);     // コンボで繋げたペア数
     public SerializableReactiveProperty<int> MatchedPairCount = new(0);   // ペアを揃えた数
+
+    private int currentMemoryStoneIndex = 0;
+    private readonly int maxMemoryStoneCount = 3;
+
+    public SerializableReactiveProperty<GameState> CurrentGameState = new(GameState.Prepare);
+
+    public PlayFabServer playFabServer;       // ログインするゲームサーバー
+
+    private PlayerInventoryManager playerInventoryManager;
 
 
     protected override void Awake() {
@@ -58,26 +87,58 @@ public class GameData : AbstractSingleton<GameData> {
         InitCharaStatus();
     }
 
-    private // ゲームの初期化
-        void InitialzeGameData() {
+    public void Setup(PlayerInventoryManager playerInventoryManager) {
+        this.playerInventoryManager = playerInventoryManager;
+    }
+
+    /// <summary>
+    /// ゲームの初期化
+    /// </summary>
+    private void InitialzeGameData() {
         moveTimeScale = 1.0f;
     }
 
+    /// <summary>
+    /// 思い出の断片をリストに追加
+    /// </summary>
+    /// <param name="memoryStoneData"></param>
+    /// <returns></returns>
     public void AddMemoryStoneList(MemoryStoneData memoryStoneData) {
         // 獲得数を加算
         userData.MemoryStoneCount.Value++;
 
         userData.MemoriaCount.Value++;
 
-        // 思い出の秘石をスロットにセット
-        userData.MemoryStoneSlotList.Add(memoryStoneData.id);
+        // 思い出の断片をスロットにセット
+        userData.MemoryStoneSlotList.Add(currentMemoryStoneIndex);
+
+        // UI 用のスロットインデックスを更新
+        currentMemoryStoneIndex++;
+        currentMemoryStoneIndex = currentMemoryStoneIndex % maxMemoryStoneCount;
 
         // めくれる回数を加算
         userData.FlipPoint.Value += memoryStoneData.addFlipCount;
+
+        // ランクアップの確認
+        bool isRankUp = CheckMemoriaRankUp();
+        if (isRankUp) {
+            // ランクアップ
+            userData.MemoriaRank.Value++;
+            ClearMemoryStoneList();
+        }
     }
 
     public void ClearMemoryStoneList() {
         userData.MemoryStoneSlotList.Clear();
+    }
+
+    /// <summary>
+    /// ランクアップするか確認
+    /// ランクアップする場合には true を返す
+    /// </summary>
+    /// <returns></returns>
+    public bool CheckMemoriaRankUp() {
+        return userData.MemoryStoneCount.Value % maxMemoryStoneCount == 0;
     }
 
     public void InitUserData() {
@@ -99,67 +160,6 @@ public class GameData : AbstractSingleton<GameData> {
         charaStatus = new(initMaxHp);
         EnchantPoint.Value = GetTotalStatusValues();
     }
-
-    /// <summary>
-    /// レベルアップするか確認
-    /// </summary>
-    public void CheckExpNextLevel() {
-
-        //// 現在の経験値と次のレベルに必要な経験値を比べて、レベルが上がるか確認
-        //if (currentCharaStatus.exp < DataBaseManager.instance.CalcNextLevelExp(currentCharaStatus.level - 1)) {
-        //    // 達していない場合には経験値とゲージ更新
-        //    UpdateDisplayExp(true);
-
-        //    // 処理終了
-        //    return;
-        //} else {
-        //    // 達している場合にはレベルアップ
-        //    GameData.instance.playerLevel++;
-        //    levelupCount++;
-
-        //    // アビリティポイント加算
-        //    GameData.instance.AddAbilityPoint();
-
-        //    Debug.Log("レベルアップ！ 現在のレベル : " + GameData.instance.playerLevel);
-
-        //    // レベルアップ演出
-        //    shinyEffectImgPlayerLevelFrame.Play();
-
-        //    // プレイヤーレベルと経験値の表示更新
-        //    UpdateDisplayPlayerLevel();
-        //    UpdateDisplayExp(false);
-
-        //    // さらにレベルが上がるか再帰処理を行って確認
-        //    CheckExpNextLevel();
-        //}
-    }
-
-
-    /// <summary>
-    /// ゲーム進行状態の種類
-    /// </summary>
-    public enum GameState {
-        Prepare,
-        Wait,
-        Play,
-        GameUp,
-        Battle,
-        TrapDisarm
-    }
-
-    /// <summary>
-    /// PlayFabのTitleId種類
-    /// </summary>
-    public enum PlayFabServer {
-        Test,
-        Dev,
-    }
-
-
-    public SerializableReactiveProperty<GameState> CurrentGameState = new(GameState.Prepare);
-
-    // ログインするゲームサーバー
-    public PlayFabServer playFabServer;
 
     /// <summary>
     /// GameState の切り替え
@@ -205,7 +205,7 @@ public class GameData : AbstractSingleton<GameData> {
     /// </summary>
     /// <returns></returns>
     public bool IsInventoryUnderMaxSize() {
-        return PlayerInventoryManager.instance.PlayerBackPackItemList.Count < playerCombatData.MaxInventorySize.Value;
+        return playerInventoryManager.PlayerBackPackItemList.Count < playerCombatData.MaxInventorySize.Value;
 
     }
 

@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class EnemyInfoDisplayManager : AbstractSingleton<EnemyInfoDisplayManager> {
-
+public class EnemyInfoDisplayManager : MonoBehaviour {
     [SerializeField] private Canvas enemyInfoCanvas;
     [SerializeField] private Image imgEnemyIcon;
     [SerializeField] private Image imgShadeIcon;
@@ -26,7 +25,7 @@ public class EnemyInfoDisplayManager : AbstractSingleton<EnemyInfoDisplayManager
 
 
     public void Setup(Transform enemyBackPackItemTran) {
-        this.enemyBackPackItemTran = enemyBackPackItemTran;
+        this.enemyBackPackItemTran = enemyBackPackItemTran;  // 敵の装備品アイテム表示用トランスフォーム設定。現在は使っていないので null をもらっている 
         HideEnemyInfo();
     }
 
@@ -37,7 +36,7 @@ public class EnemyInfoDisplayManager : AbstractSingleton<EnemyInfoDisplayManager
     /// <param name="name"></param>
     /// <param name="equipItemNoList"></param>
     /// <param name="gameState"></param>
-    public void ShowEnemyInfo(EnemyData enemyData, List<int> equipItemNoList, GameData.GameState gameState) {
+    public void ShowEnemyInfo(EnemyData enemyData, List<int> equipItemNoList, GameState gameState) {
         // エネミー情報表示中(バトル中)は動作させない(バトル中に敵シンボルにマウスオーバーすると、アイテムが重複表示されるため)
         if (enemyInfoCanvas.enabled) {
             return;
@@ -103,32 +102,33 @@ public class EnemyInfoDisplayManager : AbstractSingleton<EnemyInfoDisplayManager
 
         //enemyBackPackItemList.ForEach(item => item.gameObject.SetActive(false));
 
+        // 敵の装備品アイコン表示設定。現在は使わないので非表示にしておく
         // 装備品のアイコン設定
-        for (int i = 0; i < equipItemNoList.Count; i++) {
-            // 装備品データを設定
-            BackPackInItem backPackInItem = PlayerInventoryManager.instance.GetBackPackInItem(enemyBackPackItemTran);
-            ItemData itemData = DataBaseManager.instance.GetItemData(equipItemNoList[i]);
+        //for (int i = 0; i < equipItemNoList.Count; i++) {
+        //    // 装備品データを設定
+        //    BackPackInItem backPackInItem = PlayerInventoryManager.instance.GetBackPackInItem(enemyBackPackItemTran);
+        //    ItemData itemData = DataBaseManager.instance.GetItemData(equipItemNoList[i]);
 
-            // バトル時のみ購読設定
-            if (gameState == GameData.GameState.Battle) {
-                backPackInItem.SetUpBackPackItem(itemData, BattleManager.instance.Cts.Token, EntityType.Enemy);
-            } else {
-                backPackInItem.SetUpInfoDisplay(EntityType.Enemy);
-            }
-            enemyBackPackItemList.Add(backPackInItem);
+        //    // バトル時のみ購読設定
+        //    if (gameState == GameData.GameState.Battle) {
+        //        backPackInItem.SetUpBackPackItem(itemData, BattleManager.instance.Cts.Token, EntityType.Enemy);
+        //    } else {
+        //        backPackInItem.SetUpInfoDisplay(EntityType.Enemy);
+        //    }
+        //    enemyBackPackItemList.Add(backPackInItem);
 
-            Sprite itemIconSprite = DataBaseManager.instance.GetItemIcon(equipItemNoList[i]);
-            enemyBackPackItemList[i].imgItemIcon.sprite = itemIconSprite;
-            //enemyBackPackItemList[i].gameObject.SetActive(true);
+        //    Sprite itemIconSprite = DataBaseManager.instance.GetItemIcon(equipItemNoList[i]);
+        //    enemyBackPackItemList[i].imgItemIcon.sprite = itemIconSprite;
+        //    enemyBackPackItemList[i].gameObject.SetActive(true);
 
-            // 獲得したことがないアイテムの場合
-            if (!GameData.instance.CheckGetItem(equipItemNoList[i])) {
-                // シルエット表示
-                enemyBackPackItemList[i].imgItemIcon.color = Color.black;
-            } else {
-                enemyBackPackItemList[i].imgItemIcon.color = Color.white;
-            }
-        }
+        //    // 獲得したことがないアイテムの場合
+        //    if (!GameData.instance.CheckGetItem(equipItemNoList[i])) {
+        //        // シルエット表示
+        //        enemyBackPackItemList[i].imgItemIcon.color = Color.black;
+        //    } else {
+        //        enemyBackPackItemList[i].imgItemIcon.color = Color.white;
+        //    }
+        //}
 
         if (enemyInfoCanvas != null) {
             enemyInfoCanvas.enabled = true;
@@ -145,11 +145,9 @@ public class EnemyInfoDisplayManager : AbstractSingleton<EnemyInfoDisplayManager
         }
     }
 
-
     public void NoShadeEnemy() {
         imgShadeIcon.enabled = false;
     }
-
 
     /// <summary>
     /// Hp表示更新
@@ -161,7 +159,6 @@ public class EnemyInfoDisplayManager : AbstractSingleton<EnemyInfoDisplayManager
         txtHp.DOCounter(oldHp, newHp, sliderAnimeDuration).SetEase(Ease.Linear).SetLink(gameObject);
         DebugLogger.Log("Hp 表示更新");
     }
-
 
     public void UpdateEnemyShieldHp(int shield) {
         txtShieldHp.text = shield.ToString();

@@ -14,7 +14,6 @@ public enum ReleaseType {
 
 
 public class BackPackInItem : PoolBase {
-
     public Image imgItemIcon;
     public Image imgIconGauge;
     [SerializeField] private Image imgEnhanceFrame;
@@ -25,6 +24,8 @@ public class BackPackInItem : PoolBase {
     [SerializeField] private Button btnRelease;      // リリース
     [SerializeField] private CanvasGroup canvasGroupShade;
 
+    [SerializeField] private ItemHoverUI itemHoverUI;
+
     public ItemData itemData;
     public ReactiveProperty<int> EnhanceLevel = new(0);
 
@@ -34,6 +35,10 @@ public class BackPackInItem : PoolBase {
     public int currentMaxDamage;
     public int currentMinAttackCount;
     public int currentMaxAttackCount;
+
+    private BattleManager battleManager;
+    private FloatingViewGenerator floatingViewGenerator;
+    private PlayerInventoryManager playerInventoryManager;
 
     private Tweener tweener;
     private Subject<Unit> onCancel = new Subject<Unit>();
@@ -54,13 +59,23 @@ public class BackPackInItem : PoolBase {
     private int prevDurability = 0;
 
 
+    protected void Reset() {
+        TryGetComponent(out itemHoverUI);
+    }
+
     /// <summary>
     /// 初期設定
     /// </summary>
+    /// <param name="battleManager"></param>
     /// <param name="itemData"></param>
-    /// <param name="token"></param>
     /// <param name="entityType"></param>
-    public void SetUpBackPackItem(ItemData itemData, CancellationToken token, EntityType entityType = EntityType.Player) {
+    public void SetUpBackPackItem(BattleManager battleManager, FloatingViewGenerator floatingViewGenerator, PlayerInventoryManager playerInventoryManager, ItemInfoDisplayManager itemInfoDisplayManager, ItemData itemData, EntityType entityType = EntityType.Player) {
+        this.battleManager = battleManager;
+        this.floatingViewGenerator = floatingViewGenerator;
+        this.playerInventoryManager = playerInventoryManager;
+
+        itemHoverUI.Setup(this, itemInfoDisplayManager);
+
         // 新しいインスタンスで ItemData のコピーを使う(参照すると、全 ItemData が変わってしまうため)
         this.itemData = new(itemData);
 
@@ -87,7 +102,7 @@ public class BackPackInItem : PoolBase {
         battleStartDisposable?.Dispose();
 
         // バトル開始の購読
-        battleStartDisposable = BattleManager.instance.OnBattleStart
+        battleStartDisposable = battleManager.OnBattleStart
             .Subscribe(tuple => {
                 var (cts, resultType) = tuple;
                 ExecuteBackPackItem(this.itemData, cts.Token, entityType, resultType).Forget();
@@ -96,7 +111,7 @@ public class BackPackInItem : PoolBase {
         EnhanceLevel.Value = 0;
         enhanceLevelDispose = EnhanceLevel.Subscribe(level => UpdateEnhanceLevelDisplay(level));
 
-        battleEndDisposable = BattleManager.instance.OnBattleEnd
+        battleEndDisposable = battleManager.OnBattleEnd
             .Subscribe(async battleResult => {
                 battleResultType = battleResult;
 
@@ -120,7 +135,7 @@ public class BackPackInItem : PoolBase {
 
                 tweener?.Kill();
                 int attackInterval = Mathf.CeilToInt(currentCoolTime * 1000); // 1000 でスケールして切り上げ
-                await UniTask.Delay(attackInterval, cancellationToken: token).SuppressCancellationThrow();
+                await UniTask.Delay(attackInterval, cancellationToken: battleManager.Cts.Token).SuppressCancellationThrow();
 
                 if (this == null || imgIconGauge == null) return;
                 tweener = imgIconGauge.DOFillAmount(1.0f, 0.2f).SetEase(Ease.Linear).SetLink(gameObject);
@@ -138,13 +153,13 @@ public class BackPackInItem : PoolBase {
 
         // 使用停止ボタンの設定
         disuseButtonSubscribe = btnDisuse.OnClickAsObservable()
-            .Where(_ => GameData.instance.CurrentGameState.Value == GameData.GameState.Play)
+            .Where(_ => GameData.instance.CurrentGameState.Value == GameState.Play)
             .ThrottleFirst(TimeSpan.FromSeconds(0.25f))
             .Subscribe(_ => ChangeDisuseshade());
 
         // リリースボタンの設定
         releaseButtonSubscribe = btnRelease.OnClickAsObservable()
-            .Where(_ => GameData.instance.CurrentGameState.Value == GameData.GameState.Play)
+            .Where(_ => GameData.instance.CurrentGameState.Value == GameState.Play)
             .ThrottleFirst(TimeSpan.FromSeconds(1.0f))
             .Subscribe(_ => {
                 AddPriceToMoney(ReleaseType.SelfRelease);
@@ -155,7 +170,7 @@ public class BackPackInItem : PoolBase {
         imgReleaseIcon.alphaHitTestMinimumThreshold = 1;
 
         // 交渉成功時
-        successSettlementDisposable = BattleManager.instance.OnSuccessSettlement
+        successSettlementDisposable = battleManager.OnSuccessSettlement
             .Subscribe(_ => {
                 // パッシブの場合には耐久値を1回分だけ減らす
                 // 必ず this で、新しく作成した ItemData を参照する
@@ -188,8 +203,7 @@ public class BackPackInItem : PoolBase {
     /// </summary>
     /// <param name="enhanceItemData"></param>
     /// <param name="enhanceCount"></param>
-    /// <param name="token"></param>
-    public void UpdateBackPackItem(ItemData enhanceItemData, int enhanceCount, CancellationToken token) {
+    public void UpdateBackPackItem(ItemData enhanceItemData, int enhanceCount) {
         // 強化
         itemData.coolTime = Mathf.Max(itemData.coolTime - enhanceItemData.coolTime, 0.02f);
         itemData.accuracy = Mathf.Min(itemData.accuracy + enhanceItemData.accuracy, 150);
@@ -215,11 +229,12 @@ public class BackPackInItem : PoolBase {
         // 強化分をステータスに加算
         GameData.instance.charaStatus.CalculateCharaStatus(enhanceItemData);
 
-        // Hp だけ加算の場合
-        //if (enhanceItemData.effectType == EffectType.Passive) {
-        //    GameData.instance.charaStatus.CalculateMaxHp(enhanceItemData.hpBonus);
-        //    Debug.Log($"hpBonus : {enhanceItemData.hpBonus}");
-        //}
+        // パッシブの場合、Hp 最大値を加算して、現在 Hp にも反映
+        if (enhanceItemData.effectType == EffectType.Passive) {
+            GameData.instance.charaStatus.CalculateMaxHp(enhanceItemData.hpBonus);
+            battleManager.UpdatePlayerHp(enhanceItemData.hpBonus, EffectType.Passive, false);
+            DebugLogger.Log($"EnhanceItemData　hpBonus : {enhanceItemData.hpBonus}");
+        }
 
         // 強化回数を加算 = 表示更新の購読処理が動く
         EnhanceLevel.Value += enhanceCount;
@@ -228,7 +243,7 @@ public class BackPackInItem : PoolBase {
         battleStartDisposable?.Dispose();
 
         // バトル開始の再購読
-        battleStartDisposable = BattleManager.instance.OnBattleStart
+        battleStartDisposable = battleManager.OnBattleStart
             .Subscribe(tuple => {
                 var (cts, resultType) = tuple;
                 ExecuteBackPackItem(itemData, cts.Token, entityType, resultType).Forget();
@@ -464,7 +479,7 @@ public class BackPackInItem : PoolBase {
 
             // 対象先を設定してダメージを処理する
             if (myEntityType == EntityType.Player) {
-                BattleManager.instance.UpdateEnemyHp(-damage, itemData.effectType, isCritical);
+                battleManager.UpdateEnemyHp(-damage, itemData.effectType, isCritical);
 
                 // ボイスを再生
                 int voiceIndex = UnityEngine.Random.Range(0, 2);
@@ -473,7 +488,7 @@ public class BackPackInItem : PoolBase {
                 // プレイヤーの場合のみ、敵からの攻撃に対してリアクション判定する
 
                 // ①受け流し(パリィ)
-                float parryRate = PlayerInventoryManager.instance.GetParryRate();
+                float parryRate = playerInventoryManager.GetParryRate();
                 DebugLogger.Log($"parryRate : {parryRate}");
 
                 float parryBonus = GameData.instance.charaStatus.GetReactionBonusRate(StatusType.Strength);
@@ -488,7 +503,7 @@ public class BackPackInItem : PoolBase {
                 // 受け流し判定
                 if (randomParryValue <= parryRate) {
                     // パリィ成功
-                    FloatingView floatingView = (FloatingView)FloatingViewGenerator.instance.GetObjectFromPool(BattleManager.instance.playerFloatingViewTran);
+                    FloatingView floatingView = (FloatingView)floatingViewGenerator.GetObjectFromPool(battleManager.playerFloatingViewTran);
                     floatingView.SetColor(FloatingViewType.dodge);
                     floatingView.SetViewFontSize(FloatingViewType.dodge);
                     floatingView.UpdateText("Parry!!").Forget();
@@ -496,7 +511,7 @@ public class BackPackInItem : PoolBase {
                     SoundManager.instance.PlaySE(SE_TYPE.Parry);
                 } else {
                     // 失敗時は通常ダメージ処理
-                    BattleManager.instance.UpdatePlayerHp(-damage, itemData.effectType, isCritical);
+                    battleManager.UpdatePlayerHp(-damage, itemData.effectType, isCritical);
                     
                     // ボイスを再生
                     int voiceIndex = UnityEngine.Random.Range(5, 7);
@@ -504,12 +519,12 @@ public class BackPackInItem : PoolBase {
                 }
 
                 // Hp が 0 以下ならリアクションしない
-                if (BattleManager.instance.PlayerHP.Value <= 0) {
+                if (battleManager.PlayerHP.Value <= 0) {
                     return;
                 }
 
                 // ②反射
-                float reflectionRate = PlayerInventoryManager.instance.GetReflectionRate();
+                float reflectionRate = playerInventoryManager.GetReflectionRate();
                 DebugLogger.Log($"reflectionRate : {reflectionRate}");
 
                 float reflectionBonus = GameData.instance.charaStatus.GetReactionBonusRate(StatusType.Dexterity);
@@ -524,11 +539,11 @@ public class BackPackInItem : PoolBase {
                 // 反射判定
                 if (randomReflectionValue <= reflectionRate) {
                     // ダメージの半分を敵に反射
-                    BattleManager.instance.UpdateEnemyHp(-damage / 2, itemData.effectType, false);
+                    battleManager.UpdateEnemyHp(-damage / 2, itemData.effectType, false);
                     DebugLogger.Log($"反射 : {-damage / 2}");
 
                     // 自分のところにもフロート表示
-                    FloatingView floatingView = (FloatingView)FloatingViewGenerator.instance.GetObjectFromPool(BattleManager.instance.playerFloatingViewTran);
+                    FloatingView floatingView = (FloatingView)floatingViewGenerator.GetObjectFromPool(battleManager.playerFloatingViewTran);
                     floatingView.SetColor(FloatingViewType.reaction);
                     floatingView.SetViewFontSize(FloatingViewType.reaction);
                     floatingView.UpdateText("Reflect!!").Forget();
@@ -537,7 +552,7 @@ public class BackPackInItem : PoolBase {
                 }
 
                 // ③吸収
-                float absorptionRate = PlayerInventoryManager.instance.GetAbsorptionRate();
+                float absorptionRate = playerInventoryManager.GetAbsorptionRate();
                 DebugLogger.Log($"absorptionRate : {absorptionRate}");
 
                 float absorptionBonus = GameData.instance.charaStatus.GetReactionBonusRate(StatusType.Intelligence);
@@ -552,11 +567,11 @@ public class BackPackInItem : PoolBase {
                 // 吸収判定
                 if (randomAbsorptionValue <= absorptionRate) {
                     // ダメージの半分回復
-                    BattleManager.instance.UpdatePlayerHp(damage / 2, EffectType.Heal, false);
+                    battleManager.UpdatePlayerHp(damage / 2, EffectType.Heal, false);
                     DebugLogger.Log($"吸収 : {damage / 2}");
 
                     // 追加のフロート表示
-                    FloatingView floatingView = (FloatingView)FloatingViewGenerator.instance.GetObjectFromPool(BattleManager.instance.playerFloatingViewTran);
+                    FloatingView floatingView = (FloatingView)floatingViewGenerator.GetObjectFromPool(battleManager.playerFloatingViewTran);
                     floatingView.SetColor(FloatingViewType.heal);
                     floatingView.SetViewFontSize(FloatingViewType.heal);
                     floatingView.UpdateText("Absorb!!").Forget();
@@ -578,9 +593,9 @@ public class BackPackInItem : PoolBase {
             // Miss 表示
             FloatingView floatingView;
             if (myEntityType == EntityType.Player) {
-                floatingView = (FloatingView)FloatingViewGenerator.instance.GetObjectFromPool(BattleManager.instance.enemyFloatingViewTran);
+                floatingView = (FloatingView)floatingViewGenerator.GetObjectFromPool(battleManager.enemyFloatingViewTran);
             } else {
-                floatingView = (FloatingView)FloatingViewGenerator.instance.GetObjectFromPool(BattleManager.instance.playerFloatingViewTran);
+                floatingView = (FloatingView)floatingViewGenerator.GetObjectFromPool(battleManager.playerFloatingViewTran);
             }
             floatingView.SetColor(FloatingViewType.dodge);
             floatingView.SetViewFontSize(FloatingViewType.dodge);
@@ -613,10 +628,10 @@ public class BackPackInItem : PoolBase {
         // 対象先設定
         if (myEntityType == EntityType.Player) {
             // シールド加算
-            BattleManager.instance.UpdatePlayerShieldHp(shieldPower, isCritical);
+            battleManager.UpdatePlayerShieldHp(shieldPower, isCritical);
         } else {
             // シールド加算
-            BattleManager.instance.UpdateEnemyShieldHp(shieldPower, isCritical);
+            battleManager.UpdateEnemyShieldHp(shieldPower, isCritical);
         }
         SoundManager.instance.PlaySE(SE_TYPE.Shield);
     }
@@ -643,9 +658,9 @@ public class BackPackInItem : PoolBase {
 
         // 対象先設定
         if (myEntityType == EntityType.Player) {
-            BattleManager.instance.UpdatePlayerHp(healPower, EffectType.Heal, isCritical);
+            battleManager.UpdatePlayerHp(healPower, EffectType.Heal, isCritical);
         } else {
-            BattleManager.instance.UpdateEnemyHp(healPower, EffectType.Heal, isCritical);
+            battleManager.UpdateEnemyHp(healPower, EffectType.Heal, isCritical);
         }
         SoundManager.instance.PlaySE(SE_TYPE.Heal);
     }
@@ -714,16 +729,18 @@ public class BackPackInItem : PoolBase {
                 // パッシブの場合のみ HP を減らす
                 if (itemData.effectType == EffectType.Passive) {
                     GameData.instance.charaStatus.CalculateMaxHp(-itemData.hpBonus);
+                    battleManager.UpdatePlayerHp(-itemData.hpBonus, EffectType.Passive, false);
                     DebugLogger.Log($"うしなったので Hp を減少させる : {-itemData.hpBonus}");
                 }
 
-                PlayerInventoryManager.instance.RemoveItem(this);
+                playerInventoryManager.RemoveItem(this);
 
                 // 一旦 Content の配下から抜く。
                 // そうしないと、オブジェクトプールのあった位置に再表示されるため、新しく追加したものの位置が正しく表示されない
-                transform.SetParent(PlayerInventoryManager.instance.transform);
+                transform.SetParent(playerInventoryManager.transform);
             } else {
-                transform.SetParent(EnemyInfoDisplayManager.instance.transform);
+                // 現在敵のアイテムは表示していないので、ここは使っていない
+                //transform.SetParent(EnemyInfoDisplayManager.instance.transform);
             }
         }
     }
