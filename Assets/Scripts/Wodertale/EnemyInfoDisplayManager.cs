@@ -21,11 +21,22 @@ public class EnemyInfoDisplayManager : MonoBehaviour {
 
     private float sliderAnimeDuration = 0.5f;
 
+    private BattleManager battleManager;
+    private PlayerInventoryManager playerInventoryManager;
+    private FloatingViewGenerator floatingViewGenerator;
+    private ItemInfoDisplayManager itemInfoDisplayManager;
+
     // バフデバフ表示
 
 
-    public void Setup(Transform enemyBackPackItemTran) {
+    public void Setup(Transform enemyBackPackItemTran, BattleManager battleManager, PlayerInventoryManager playerInventoryManager, FloatingViewGenerator floatingViewGenerator, ItemInfoDisplayManager itemInfoDisplayManager) {
         this.enemyBackPackItemTran = enemyBackPackItemTran;  // 敵の装備品アイテム表示用トランスフォーム設定。現在は使っていないので null をもらっている 
+        
+        this.battleManager = battleManager;
+        this.playerInventoryManager = playerInventoryManager;
+        this.floatingViewGenerator = floatingViewGenerator;
+        this.itemInfoDisplayManager = itemInfoDisplayManager;
+
         HideEnemyInfo();
     }
 
@@ -102,33 +113,32 @@ public class EnemyInfoDisplayManager : MonoBehaviour {
 
         //enemyBackPackItemList.ForEach(item => item.gameObject.SetActive(false));
 
-        // 敵の装備品アイコン表示設定。現在は使わないので非表示にしておく
         // 装備品のアイコン設定
-        //for (int i = 0; i < equipItemNoList.Count; i++) {
-        //    // 装備品データを設定
-        //    BackPackInItem backPackInItem = PlayerInventoryManager.instance.GetBackPackInItem(enemyBackPackItemTran);
-        //    ItemData itemData = DataBaseManager.instance.GetItemData(equipItemNoList[i]);
+        for (int i = 0; i < equipItemNoList.Count; i++) {
+            // 装備品データを設定
+            BackPackInItem backPackInItem = playerInventoryManager.GetBackPackInItem(enemyBackPackItemTran);
+            ItemData itemData = DataBaseManager.instance.GetItemData(equipItemNoList[i]);
 
-        //    // バトル時のみ購読設定
-        //    if (gameState == GameData.GameState.Battle) {
-        //        backPackInItem.SetUpBackPackItem(itemData, BattleManager.instance.Cts.Token, EntityType.Enemy);
-        //    } else {
-        //        backPackInItem.SetUpInfoDisplay(EntityType.Enemy);
-        //    }
-        //    enemyBackPackItemList.Add(backPackInItem);
+            // バトル時のみ購読設定
+            if (gameState == GameState.Battle) {
+                backPackInItem.SetUpBackPackItem(battleManager, floatingViewGenerator, playerInventoryManager, itemInfoDisplayManager, itemData, EntityType.Enemy);
+            } else {
+                backPackInItem.SetUpInfoDisplay(EntityType.Enemy);
+            }
+            enemyBackPackItemList.Add(backPackInItem);
 
-        //    Sprite itemIconSprite = DataBaseManager.instance.GetItemIcon(equipItemNoList[i]);
-        //    enemyBackPackItemList[i].imgItemIcon.sprite = itemIconSprite;
-        //    enemyBackPackItemList[i].gameObject.SetActive(true);
+            Sprite itemIconSprite = DataBaseManager.instance.GetItemIcon(equipItemNoList[i]);
+            enemyBackPackItemList[i].imgItemIcon.sprite = itemIconSprite;
+            enemyBackPackItemList[i].gameObject.SetActive(true);
 
-        //    // 獲得したことがないアイテムの場合
-        //    if (!GameData.instance.CheckGetItem(equipItemNoList[i])) {
-        //        // シルエット表示
-        //        enemyBackPackItemList[i].imgItemIcon.color = Color.black;
-        //    } else {
-        //        enemyBackPackItemList[i].imgItemIcon.color = Color.white;
-        //    }
-        //}
+            // 獲得したことがないアイテムの場合
+            if (!GameData.instance.CheckGetItem(equipItemNoList[i])) {
+                // シルエット表示
+                enemyBackPackItemList[i].imgItemIcon.color = Color.black;
+            } else {
+                enemyBackPackItemList[i].imgItemIcon.color = Color.white;
+            }
+        }
 
         if (enemyInfoCanvas != null) {
             enemyInfoCanvas.enabled = true;
