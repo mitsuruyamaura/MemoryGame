@@ -6,18 +6,15 @@ using System.Threading;
 using UnityEngine;
 using UnityEngine.UI;
 
-
-public class ItemInfoDisplayManager : AbstractSingleton<ItemInfoDisplayManager> {
+public class ItemInfoDisplayManager : MonoBehaviour {
     [SerializeField] private CanvasGroup itemInfoCanvas;
 
     [SerializeField] private InfoViewGenerator itemInfoViewGenerator;
     [SerializeField] private Transform backpackItemTran;
     [SerializeField] private Transform TeasureChestItemTran;
     [SerializeField] private Button btnFilter;
-    [SerializeField] private CanvasGroup cgFilter;
-    private IDisposable disposable;
-    private ItemInfoView baclpackItemInfoView;   // 表示しているバックパックアイテム View
-
+    [SerializeField] private CanvasGroup cgFilter
+        ;
     [SerializeField] private Image imgBagIcon;
     [SerializeField] private Ease bagEase;
 
@@ -25,20 +22,26 @@ public class ItemInfoDisplayManager : AbstractSingleton<ItemInfoDisplayManager> 
     [SerializeField] private Image imgTreasureBoxIcon;
     [SerializeField] private Ease treasureBoxEase;
 
-    public bool isTreasureShow;
+    [SerializeField] private Text txtInventoryMaxInfo;
 
     [SerializeField] private InfoViewGenerator blessingInfoViewGenerator;
     [SerializeField] private Transform blessingInfoViewTran;
 
+    public bool isTreasureShow;
 
-    protected override void Awake() {
-        base.Awake();
+    private IDisposable disposable;
+    private ItemInfoView baclpackItemInfoView;   // 表示しているバックパックアイテム View
+
+
+    public void Setup() {
         HideItemInfo();
         cgFilter.blocksRaycasts = false;
         cgFilter.alpha = 0f;
 
         itemInfoViewGenerator.InitObjectPool();
         blessingInfoViewGenerator.InitObjectPool();
+
+        txtInventoryMaxInfo.DOFade(0, 0).SetLink(gameObject);
     }
 
     /// <summary>
@@ -94,6 +97,17 @@ public class ItemInfoDisplayManager : AbstractSingleton<ItemInfoDisplayManager> 
             imgBagIcon.color = new(1, 1, 1, 0);
             imgBagIcon.transform.localPosition = Vector3.zero;
         });
+    }
+
+    /// <summary>
+    /// ポーチが Max の際の Info 表示
+    /// </summary>
+    public void InventoryMaxInfo() {
+        // 点滅させて表示
+        Sequence sequence = DOTween.Sequence();
+        sequence.SetLink(gameObject);
+        sequence.Append(txtInventoryMaxInfo.DOFade(1.0f, 1.0f).SetEase(Ease.Linear)).SetLoops(2, LoopType.Yoyo);
+        sequence.Append(txtInventoryMaxInfo.DOFade(0f, 0.5f).SetEase(Ease.Linear)).OnComplete(() => txtInventoryMaxInfo.DOFade(0f, 0f));  // 消えないことがあるので念のため
     }
 
     /// <summary>

@@ -7,7 +7,7 @@ using UnityEngine;
 /// <summary>
 /// 罠解除用のQTEマネージャー
 /// </summary>
-public class TrapDisarmQTEManager : AbstractSingleton<TrapDisarmQTEManager> {
+public class TrapDisarmQTEManager : MonoBehaviour {
     [SerializeField] private PlayerInputUI playerInputUI;
     [SerializeField] private CorrectSequenceUI correctSequenceUI;
 

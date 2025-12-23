@@ -832,6 +832,7 @@ MonoBehaviour:
   btnDisuse: {fileID: 5375571000705653123}
   btnRelease: {fileID: 1808848340157768281}
   canvasGroupShade: {fileID: 5383536489418116220}
+  itemHoverUI: {fileID: 2728297878414249228}
   itemData:
     id: 0
     itemName: 
@@ -892,7 +893,7 @@ CircleCollider2D:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6135329462937124690}
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_Density: 1
   m_Material: {fileID: 0}

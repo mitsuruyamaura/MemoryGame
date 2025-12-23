@@ -2,7 +2,15 @@
 using System.Threading;
 using UnityEngine;
 
+/// <summary>
+/// ダメージ罠実行クラス
+/// </summary>
 public class DamageTrapExecutor : ITrap {
+    private BattleManager battleManager;
+    public DamageTrapExecutor(BattleManager battleManager) {
+        this.battleManager = battleManager;
+    }
+
     public async UniTask ExecuteAsync(TrapData trapData, CancellationToken token) {
         DebugLogger.Log(trapData.id);
         float damageRate = trapData.value;
@@ -10,7 +18,7 @@ public class DamageTrapExecutor : ITrap {
 
         if (trapData.valueType == TrapValueType.Rate) {
             int maxHp = GameData.instance.charaStatus.MaxHp.Value;
-            int currentHp = BattleManager.instance.PlayerHP.Value;
+            int currentHp = battleManager.PlayerHP.Value;
 
             // 目標HP(処理後のHP)を計算
             int targetHp = Mathf.FloorToInt(maxHp * (1f - damageRate));
@@ -21,7 +29,7 @@ public class DamageTrapExecutor : ITrap {
             DebugLogger.Log($"Trap: max={maxHp}, current={currentHp}, value={damageRate}, target={targetHp}, delta={delta}");
 
             // ダメージ = 残り HP が指定％ になるようにする(シールド適用なし)
-            BattleManager.instance.UpdatePlayerHp(delta, EffectType.Magic, false);
+            battleManager.UpdatePlayerHp(delta, EffectType.Magic, false);
         } else {
             // 最大 Hp に指定割合をかけてダメージを算出
             damage = Mathf.FloorToInt(GameData.instance.charaStatus.MaxHp.Value * damageRate);
@@ -34,12 +42,12 @@ public class DamageTrapExecutor : ITrap {
             //}   
 
             // ダメージ(シールド適用可能)
-            BattleManager.instance.UpdatePlayerHp(-damage, EffectType.Physical, false);
+            battleManager.UpdatePlayerHp(-damage, EffectType.Physical, false);
         }
 
         // Hp が 0 になったらゲームオーバー
-        if (BattleManager.instance.PlayerHP.Value <= 0) {
-            await BattleManager.instance.ForceGameEndAsync();
+        if (battleManager.PlayerHP.Value <= 0) {
+            await battleManager.ForceGameEndAsync();
         }
 
         //SoundManager.instance.PlaySE(SE_TYPE.Heal);        

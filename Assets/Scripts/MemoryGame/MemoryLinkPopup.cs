@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
+/// <summary>
+/// メモリアランクアップ時のクラス選択ポップアップ
+/// </summary>
 public class MemoryLinkPopup : PopupBase {
     [SerializeField] protected ClassInfoViewGenerator classInfoViewGenerator;
     [SerializeField] protected Transform classInfoViewTran;

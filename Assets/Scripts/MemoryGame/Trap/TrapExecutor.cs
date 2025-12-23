@@ -2,14 +2,24 @@
 using System.Collections.Generic;
 using System.Threading;
 
+/// <summary>
+/// トラップの実行クラス
+/// QTE でトラップ解除を試み、失敗した場合に各トラップを実行する
+/// </summary>
 public class TrapExecutor {
+    private BattleManager battleManager;
+    private TrapDisarmQTEManager trapDisarmQTEManager;
+
     private readonly Dictionary<TrapType, ITrap> executorMap;
     private readonly int symbolTypeCount = 4;    // QTEシンボル種類数
     private readonly float timeLimitSeconds = 5f; // QTE制限時間(秒)
 
-    public TrapExecutor() {
+    public TrapExecutor(BattleManager battleManager, TrapDisarmQTEManager trapDisarmQTEManager) {
+        this.battleManager = battleManager;
+        this.trapDisarmQTEManager = trapDisarmQTEManager;
+
         executorMap = new() {
-            { TrapType.Damage, new DamageTrapExecutor() },
+            { TrapType.Damage, new DamageTrapExecutor(battleManager) },
             { TrapType.FlipCountDown, new FlipCountDownTrapExecutor() },
         };
     }
@@ -22,15 +32,15 @@ public class TrapExecutor {
     /// <returns></returns>
     public async UniTask ExecuteTrapAsync(TrapData trapData, CancellationToken token) {
         // マッピングされている TrapType から、トラップ用のインスタンスを見つけて生成
-        if (executorMap.TryGetValue(trapData.type, out var executor)) {
+        if (executorMap.TryGetValue(trapData.type, out var trapExecutor)) {
             DebugLogger.Log($"TrapType: {trapData.type}");
 
             // QTEシンボルシーケンスの長さ(シンボル数：難しさ)を階層数から計算
             int sequenceLength = CalcSymbolLength(GameData.instance.userData.FloorCount.Value);
 
             // トラップ解除用の QTE 実行
-            GameData.instance.CurrentGameState.Value = GameData.GameState.TrapDisarm;
-            bool isSuccess = await TrapDisarmQTEManager.instance.StartTrapDisarmQTEAsync(symbolTypeCount, sequenceLength, timeLimitSeconds, token);
+            GameData.instance.CurrentGameState.Value = GameState.TrapDisarm;
+            bool isSuccess = await trapDisarmQTEManager.StartTrapDisarmQTEAsync(symbolTypeCount, sequenceLength, timeLimitSeconds, token);
 
             if (isSuccess) { 
                 DebugLogger.Log("トラップ解除成功");
@@ -38,11 +48,11 @@ public class TrapExecutor {
                 GameData.instance.userData.TrapDisarmCount.Value++;
             } else {
                 DebugLogger.Log("トラップ解除失敗。それぞれのトラップを実行");
-                await executor.ExecuteAsync(trapData, token);               
+                await trapExecutor.ExecuteAsync(trapData, token);               
                 GameData.instance.userData.TrapFailureCount.Value++;
             }
 
-            GameData.instance.CurrentGameState.Value = GameData.GameState.Play;
+            GameData.instance.CurrentGameState.Value = GameState.Play;
         } else {
             DebugLogger.Log($"未登録のTrapType: {trapData.type}");
         }        

@@ -1,6 +1,9 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// 祝福カードの効果アイコン表示クラス
+/// </summary>
 public class BlessingIconView : PoolBase {
     [SerializeField] private Image imgIcon;
     [SerializeField] private Text txtDuration;

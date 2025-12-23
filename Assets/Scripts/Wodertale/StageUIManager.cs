@@ -7,7 +7,6 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public class StageUIManager : MonoBehaviour {
-
     [SerializeField] private Text txtHp;
     [SerializeField] private Text txtMaxHp;
     [SerializeField] private Text txtPlayerLevel;
@@ -22,7 +21,6 @@ public class StageUIManager : MonoBehaviour {
     [SerializeField] private Text txtComboPairCount;
 
     [SerializeField] private Text txtWaveInfo;
-    [SerializeField] private Text txtInventoryMaxInfo;
     [SerializeField] private Text txtRestartMessage;
     [SerializeField] private Text txtSettlementInfo;    // 画面優先順位の関係上、Canvas_ItemInfo オブジェクト内にあるオブジェクトを使う
     [SerializeField] private Text txtTrapInfo;
@@ -69,52 +67,45 @@ public class StageUIManager : MonoBehaviour {
     [SerializeField] private CanvasGroup cgLifeGainPop;     // ライフ回復ポップの CanvasGroup
 
     [SerializeField] private CanvasGroup cgTrapDisarm;      // 罠解除QTE用の CanvasGroup
+    [SerializeField] private Transform playerBackPackItemTran;
+    public Transform PlayerBackPackItemTran => playerBackPackItemTran;
 
     private string SuccessSettlementMessage = "平和的解決に成功しました!!";
-
     private string SuccessTrapMessage = "罠の解除に成功しました!!";
     private string FailureTrapMessage = "罠の解除に失敗しました...";
 
-    private float defaultTime;
-
-    public Transform playerBackPackItemTran;
-    public Transform enemyBackPackItemTran;
-
+    private float defaultTime;                   // バトルのデフォルト時間
     private float sliderAnimeDuration = 0.5f;
-    private int prevStamina;
-    private int maxHp;
+
     private CancellationTokenSource cts;
+    private BattleManager battleManager;
 
 
-    public void SetupStageUIManager(int maxHp, MemoryGameManager memoryGameManager) {
+    public void Setup(int maxHp, MemoryGameManager memoryGameManager, BattleManager battleManager) {
+        this.battleManager = battleManager;
+
         cts = new();
 
         SetMaxHpDisplay(maxHp);
 
-        //UpdateDisplayPlayerLevel();
-
-        defaultTime = BattleManager.instance.BattleDuration.Value;
+        defaultTime = battleManager.BattleDuration.Value;
 
         // TODO スライダーの初期化と、最大値のセット
-        BattleManager.instance.BattleDuration.Subscribe(time => 
+        battleManager.BattleDuration.Subscribe(time => 
         {
             float fil = time / defaultTime;
             imgTime.DOFillAmount(fil, fil).SetEase(Ease.Linear).SetLink(gameObject);
         }).AddTo(this);
 
-        BattleManager.instance.OnBattleStart.Subscribe(_ => ShowTimeCanvas()).AddTo(this);
-        BattleManager.instance.OnBattleEnd.Subscribe(resultType => {
+        battleManager.OnBattleStart.Subscribe(_ => ShowTimeCanvas()).AddTo(this);
+
+        battleManager.OnBattleEnd.Subscribe(resultType => {
             HideTimeCanvas();
             ShowBattleState(resultType);
         }).AddTo(this);
 
-        //SetUpActionResultDisplays();
-
         HideTimeCanvas();
         HideBattleState(null);
-
-        //txtWaveInfo.DOFade(0, 0).SetLink(gameObject);
-        txtInventoryMaxInfo.DOFade(0, 0).SetLink(gameObject);
 
         GameData.instance.userData.SoulPoint
             .Zip(GameData.instance.userData.SoulPoint.Skip(1), (prevPoint, nextPoint) => (prevPoint, nextPoint))
@@ -207,7 +198,6 @@ public class StageUIManager : MonoBehaviour {
         cgTrapDisarm.blocksRaycasts = true;
     }
 
-
     private void HideTimeCanvas() {
         timeObj.SetActive(false);
     }
@@ -218,26 +208,24 @@ public class StageUIManager : MonoBehaviour {
         timeObjTrapDisarm.SetActive(false);
     }
 
-    public void UpdateTimeCanvasTrapDisarm(float timeLimit, float remainTime) {
-        float fil = remainTime / timeLimit;
-        imgTimeTrapDisarm.DOFillAmount(fil, fil).SetEase(Ease.Linear).SetLink(gameObject);
-    }
-
-    public void SetBossBattleTime(float bossTime) {
-        defaultTime = bossTime;
-    }
-
-    public void SetStaminaDisplay(int stamina) {
-        prevStamina = stamina;
+    /// <summary>
+    /// 罠解除QTE用の残り時間表示更新
+    /// </summary>
+    /// <param name="timeLimit"></param>
+    /// <param name="elapsedTime"></param>
+    public void UpdateTimeCanvasTrapDisarm(float timeLimit, float elapsedTime) {
+        //float fil = remainTime / timeLimit;
+        //imgTimeTrapDisarm.DOFillAmount(fil, fil).SetEase(Ease.Linear).SetLink(gameObject);
+        float remainTime = Mathf.Max(timeLimit - elapsedTime, 0f);
+        imgTimeTrapDisarm.fillAmount = remainTime / timeLimit;
     }
 
     public void SetMaxHpDisplay(int maxHp) {
         txtHp.text = maxHp.ToString();
         txtMaxHp.text = maxHp.ToString();
+
         sliderHp.maxValue = maxHp;
         sliderHp.value = maxHp;
-
-        this.maxHp = maxHp;
     }
 
     /// <summary>
@@ -251,30 +239,6 @@ public class StageUIManager : MonoBehaviour {
         DebugLogger.Log("Hp 表示更新");
     }
 
-    // 敵側も用意する
-
-
-    /// <summary>
-    /// プレイヤーレベルの表示更新
-    /// </summary>
-    public void UpdateDisplayPlayerLevel() {
-        // プレイヤーレベルの表示更新
-        txtPlayerLevel.text = GameData.instance.charaStatus.level.ToString();
-    }
-
-    /// <summary>
-    /// 経験値の表示更新
-    /// </summary>
-    /// <param name="isSliderOn"></param>
-    public void UpdateDisplayExp(bool isSliderOn) {
-        // 現在/目標経験値の表示更新
-
-        // ゲージ更新
-        //sliderExp.DOValue((float)GameData.instance.totalExp / DataBaseManager.instance.CalcNextLevelExp(GameData.instance.playerLevel - 1), 1.0f).SetEase(Ease.Linear);
-
-    }
-
-
     public void UpdatePlayerShieldHp(int shield) {
         txtShieldHp.text = shield.ToString();
         DebugLogger.Log($"shield : {shield}");
@@ -282,31 +246,6 @@ public class StageUIManager : MonoBehaviour {
 
     public void UpdateWaveNo(int waveNo) {
         txtWaveNo.text = waveNo.ToString();
-    }
-
-
-    private void SetUpActionResultDisplays() {
-        GameData.instance.userData.DefeatedEnemyCount.Subscribe(count => UpdateDisplayDefeatedEnemyCount(count)).AddTo(this);
-        GameData.instance.userData.FindTreasureCount.Subscribe(count => UpdateDisplayFindTreasureCount(count)).AddTo(this);
-        GameData.instance.userData.BlessingCount.Subscribe(count => UpdateDisplayExploreCount(count)).AddTo(this);
-        GameData.instance.userData.MemoriaCount.Subscribe(count => UpdateDisplayUncurseCount(count)).AddTo(this);
-    }
-
-    private void UpdateDisplayDefeatedEnemyCount(int count) {
-        txtDefeatedEnemyCount.text = count.ToString();
-    }
-
-    private void UpdateDisplayFindTreasureCount(int count) {
-        txtFindTreasureCount.text = count.ToString();
-    }
-
-    private void UpdateDisplayExploreCount(int count) {
-        txtExploreCount.text = count.ToString();
-    }
-
-
-    private void UpdateDisplayUncurseCount(int count) {
-        txtUncurseCount.text = count.ToString();
     }
 
     private void UpdateDisplayComboPairCount(int count) {
@@ -347,17 +286,6 @@ public class StageUIManager : MonoBehaviour {
         sequence.SetLink(gameObject);
         sequence.Append(txtWaveInfo.DOFade(1.0f, 1.0f).SetEase(Ease.Linear)).SetLoops(2, LoopType.Yoyo);
         sequence.Append(txtWaveInfo.DOFade(0f, 0.5f).SetEase(Ease.Linear));
-    }
-
-    /// <summary>
-    /// ポーチが Max の際の Info 表示
-    /// </summary>
-    public void InventoryMaxInfo() {
-        // 点滅させて表示
-        Sequence sequence = DOTween.Sequence();
-        sequence.SetLink(gameObject);
-        sequence.Append(txtInventoryMaxInfo.DOFade(1.0f, 1.0f).SetEase(Ease.Linear)).SetLoops(2, LoopType.Yoyo);
-        sequence.Append(txtInventoryMaxInfo.DOFade(0f, 0.5f).SetEase(Ease.Linear)).OnComplete(() => txtInventoryMaxInfo.DOFade(0f, 0f));  // 消えないことがあるので念のため
     }
 
     /// <summary>
@@ -408,7 +336,7 @@ public class StageUIManager : MonoBehaviour {
     }
 
     public void ShowPlayerInfoListPop() {
-        if (GameData.instance.CurrentGameState.Value != GameData.GameState.Play) {
+        if (GameData.instance.CurrentGameState.Value != GameState.Play) {
             return;
         }
 
@@ -420,9 +348,9 @@ public class StageUIManager : MonoBehaviour {
     private void HidePlayerInfoListPop() {
         playerInfoListPopup.ClosePopUpAsync(cts.Token).Forget();
     }
-
+    
     private void ShowFlipCountGainPopup() {
-        if (GameData.instance.CurrentGameState.Value != GameData.GameState.Play) {
+        if (GameData.instance.CurrentGameState.Value != GameState.Play) {
             return;
         }
 
@@ -469,7 +397,7 @@ public class StageUIManager : MonoBehaviour {
     }
 
     private void ShowLifeGainPopup() {
-        if (GameData.instance.CurrentGameState.Value != GameData.GameState.Play) {
+        if (GameData.instance.CurrentGameState.Value != GameState.Play) {
             return;
         }
 
@@ -478,8 +406,8 @@ public class StageUIManager : MonoBehaviour {
 
         // 回復量を計算し、最大値以内に抑えたうえで回復量表示
         int gainPoint = Mathf.FloorToInt(GameData.instance.charaStatus.MaxHp.Value * lifeGainRate);
-        int limitPoint = Mathf.Min(BattleManager.instance.PlayerHP.Value + gainPoint, GameData.instance.charaStatus.MaxHp.Value);
-        txtLifeGainPoint.text = $"{BattleManager.instance.PlayerHP.Value} >>> {limitPoint}";
+        int limitPoint = Mathf.Min(battleManager.PlayerHP.Value + gainPoint, GameData.instance.charaStatus.MaxHp.Value);
+        txtLifeGainPoint.text = $"{battleManager.PlayerHP.Value} >>> {limitPoint}";
 
         // 必要なポイント表示(一旦、固定値で)
         int lifeGainRequiredPoint = GameData.instance.lifeGainRequiredXP;
@@ -517,7 +445,7 @@ public class StageUIManager : MonoBehaviour {
         gainPoint = Mathf.Min(gainPoint, GameData.instance.charaStatus.MaxHp.Value);
 
         // この中で回復処理実行
-        BattleManager.instance.UpdatePlayerHp(gainPoint, EffectType.Heal, false);
+        battleManager.UpdatePlayerHp(gainPoint, EffectType.Heal, false);
 
         // ポップ表示内容更新
         ShowLifeGainPopup();
@@ -527,4 +455,31 @@ public class StageUIManager : MonoBehaviour {
         HideFlipCountGainPopup();
         HideLifeGainPopup();
     }
+
+    // 現在は未使用
+    // ------------------ Action Result Displays ------------------
+
+    //private void SetUpActionResultDisplays() {
+    //    GameData.instance.userData.DefeatedEnemyCount.Subscribe(count => UpdateDisplayDefeatedEnemyCount(count)).AddTo(this);
+    //    GameData.instance.userData.FindTreasureCount.Subscribe(count => UpdateDisplayFindTreasureCount(count)).AddTo(this);
+    //    GameData.instance.userData.BlessingCount.Subscribe(count => UpdateDisplayExploreCount(count)).AddTo(this);
+    //    GameData.instance.userData.MemoriaCount.Subscribe(count => UpdateDisplayUncurseCount(count)).AddTo(this);
+    //}
+
+    //private void UpdateDisplayDefeatedEnemyCount(int count) {
+    //    txtDefeatedEnemyCount.text = count.ToString();
+    //}
+
+    //private void UpdateDisplayFindTreasureCount(int count) {
+    //    txtFindTreasureCount.text = count.ToString();
+    //}
+
+    //private void UpdateDisplayExploreCount(int count) {
+    //    txtExploreCount.text = count.ToString();
+    //}
+
+
+    //private void UpdateDisplayUncurseCount(int count) {
+    //    txtUncurseCount.text = count.ToString();
+    //}
 }

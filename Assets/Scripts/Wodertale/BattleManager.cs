@@ -12,6 +12,15 @@ public enum EntityType {
     Enemy
 }
 
+/// <summary>
+/// ターンの種類
+/// </summary>
+public enum TurnState {
+    None,
+    Player,
+    Enemy,
+    Boss
+}
 
 public enum BattleResultType {
     Win,
@@ -22,8 +31,7 @@ public enum BattleResultType {
     Runaway
 }
 
-public class BattleManager : AbstractSingleton<BattleManager> {
-
+public class BattleManager : MonoBehaviour {
     public RectTransform playerFloatingViewTran;
     public RectTransform enemyFloatingViewTran;
 
@@ -52,6 +60,8 @@ public class BattleManager : AbstractSingleton<BattleManager> {
 
     [SerializeField] private float amplitude = 1.0f, frequency = 1.0f;
 
+    public Subject<Unit> OnSuccessSettlement = new();  // 交渉成功時の購読用
+
     public Subject<(CancellationTokenSource, BattleResultType)> OnBattleStart = new();
     public Subject<BattleResultType> OnBattleEnd = new();
     private Channel<BattleResultType> channel;
@@ -60,48 +70,28 @@ public class BattleManager : AbstractSingleton<BattleManager> {
 
     public SerializableReactiveProperty<int> PlayerShieldHP = new ();
     public SerializableReactiveProperty<int> EnemyShieldHP = new ();
+
     [SerializeField] private int maxShield;
     [SerializeField] private float defaultBattleTime = 5.0f;
-    public float bossBattleTime = 20.0f;
-    public StageUIManager stageUIManager;
+    [SerializeField] private float bossBattleTime = 20.0f;
+
+    private StageUIManager stageUIManager;
+    private CardFactory cardFactory;
+    private EnemyInfoDisplayManager enemyInfoDisplayManager;
+    private FloatingViewGenerator floatingViewGenerator;
+    private PlayerInventoryManager playerInventoryManager;
 
     private int enemyMaxHp = 0;
 
-    public Subject<Unit> OnSuccessSettlement = new();  // 交渉成功時の購読用
 
-
-    protected override void Awake() {
-        base.Awake();
-
-        if (virtualCamera != null) {
-            virtualCameraNoise = (CinemachineBasicMultiChannelPerlin)virtualCamera.GetCinemachineComponent(CinemachineCore.Stage.Noise);
-            //battleEffectSetObj = virtualCamera.transform.GetChild(2).gameObject;
-
-            if(virtualCameraNoise != null) {
-                StopBattleShake();
-            }
-        }   
-    }
-
-    //private void OnEnable() {
-    //    PlayerHP.Subscribe(hp => 
-    //    {
-    //        // UI 更新
-
-    //        CheckEndCondition();
-    //    });
-
-    //    EnemyHP.Subscribe(hp => CheckEndCondition());
-    //}
-
-    //void Start() {
-    //    SetUp();
-    //}
-
-    public void SetUp(StageUIManager stageUIManager) {
+    public void SetUp(StageUIManager stageUIManager, CardFactory cardFactory, EnemyInfoDisplayManager enemyInfoDisplayManager, FloatingViewGenerator floatingViewGenerator, PlayerInventoryManager playerInventoryManager) {
         cts = new CancellationTokenSource();
 
         this.stageUIManager = stageUIManager;
+        this.cardFactory = cardFactory;
+        this.enemyInfoDisplayManager = enemyInfoDisplayManager;
+        this.floatingViewGenerator = floatingViewGenerator;
+        this.playerInventoryManager = playerInventoryManager;
 
         // デバッグ用
         //if (playerItemNoList.Count > 0) {
@@ -121,8 +111,6 @@ public class BattleManager : AbstractSingleton<BattleManager> {
         //    OnBattleStart.Subscribe(_ => item.ExecuteBackPackItem(item.itemData, cts.Token, EntityType.Player).Forget());
         //});
 
-
-
         // 敵用のアイテムを処理
         //enemyBackPackItemList.ForEach(item => item.Hoge(item.itemData, cts.Token, EntityType.Enemy).Forget());
 
@@ -141,6 +129,15 @@ public class BattleManager : AbstractSingleton<BattleManager> {
                 // UI 更新
                 stageUIManager.UpdatePlayerShieldHp(shield);
             }).AddTo(this);
+
+        if (virtualCamera != null) {
+            virtualCameraNoise = (CinemachineBasicMultiChannelPerlin)virtualCamera.GetCinemachineComponent(CinemachineCore.Stage.Noise);
+            //battleEffectSetObj = virtualCamera.transform.GetChild(2).gameObject;
+
+            if (virtualCameraNoise != null) {
+                StopBattleShake();
+            }
+        }
     }
 
     /// <summary>
@@ -149,7 +146,7 @@ public class BattleManager : AbstractSingleton<BattleManager> {
     /// <param name="enemySymbol"></param>
     /// <returns></returns>
     public async UniTask StartBattleAsync(EnemyData enemyData, TurnState turnState) {
-        GameData.instance.CurrentGameState.Value = GameData.GameState.Battle;
+        GameData.instance.CurrentGameState.Value = GameState.Battle;
         battleResultType = BattleResultType.Battle;
 
         // バトル時間設定
@@ -168,7 +165,7 @@ public class BattleManager : AbstractSingleton<BattleManager> {
         List<int> equipItemNoList = enemyData.GetEquipItemNoList();
 
         // 敵の情報表示。未討伐の場合にはシェードをかけたり、名前を不確定名にする
-        EnemyInfoDisplayManager.instance.ShowEnemyInfo(enemyData, equipItemNoList, GameData.GameState.Battle);
+        enemyInfoDisplayManager.ShowEnemyInfo(enemyData, equipItemNoList, GameState.Battle);
 
         // ボス以外は交渉の判定
         if (turnState != TurnState.Boss) {
@@ -187,7 +184,7 @@ public class BattleManager : AbstractSingleton<BattleManager> {
             await UniTask.Delay(1000);
 
             // 敵を非表示
-            EnemyInfoDisplayManager.instance.HideEnemyInfo();
+            enemyInfoDisplayManager.HideEnemyInfo();
         } else {
             // 交渉に失敗している場合にはバトル開始
             enemyMaxHp = enemyData.hp;
@@ -198,7 +195,7 @@ public class BattleManager : AbstractSingleton<BattleManager> {
             EnemyHP
                 .Zip(EnemyHP.Skip(1), (oldValue, newValue) => (oldValue, newValue))
                 .Subscribe(hp => {
-                    EnemyInfoDisplayManager.instance.UpdateDisplayEnemyHp(hp.oldValue, hp.newValue);
+                    enemyInfoDisplayManager.UpdateDisplayEnemyHp(hp.oldValue, hp.newValue);
                     CheckEndCondition();
                 }).AddTo(enemyDisposables);
 
@@ -208,7 +205,7 @@ public class BattleManager : AbstractSingleton<BattleManager> {
             EnemyShieldHP
                 .Subscribe(shield => {
                     // UI 更新
-                    EnemyInfoDisplayManager.instance.UpdateEnemyShieldHp(shield);
+                    enemyInfoDisplayManager.UpdateEnemyShieldHp(shield);
                 }).AddTo(enemyDisposables);
 
             battleResultType = BattleResultType.Battle;
@@ -255,7 +252,7 @@ public class BattleManager : AbstractSingleton<BattleManager> {
 
             await UniTask.Delay(1000);
 
-            EnemyInfoDisplayManager.instance.HideEnemyInfo();
+            enemyInfoDisplayManager.HideEnemyInfo();
 
             PlayerShieldHP.Value = 0;
             EnemyShieldHP.Value = 0;
@@ -269,7 +266,7 @@ public class BattleManager : AbstractSingleton<BattleManager> {
     /// </summary>
     /// <returns></returns>
     private BattleResultType JudgeSettlementEnemy() {
-        float settlementRate = PlayerInventoryManager.instance.GetSettlementRate();
+        float settlementRate = playerInventoryManager.GetSettlementRate();
         //DebugLogger.Log($"settlementRate : {settlementRate}");
 
         float settlementBonus = GameData.instance.charaStatus.GetReactionBonusRate(StatusType.Charm);
@@ -302,6 +299,7 @@ public class BattleManager : AbstractSingleton<BattleManager> {
             DebugLogger.Log("Cancel");
         }
         DebugLogger.Log(battleResultType);
+
         cts = new CancellationTokenSource();
         OnBattleEnd.OnNext(battleResultType);
 
@@ -339,10 +337,10 @@ public class BattleManager : AbstractSingleton<BattleManager> {
             };
 
             // 不要なアイテムを破棄できるようにステートを戻しておく
-            GameData.instance.CurrentGameState.Value = GameData.GameState.Play;
+            GameData.instance.CurrentGameState.Value = GameState.Play;
 
             // 宝箱カードの生成、カードの効果を実行
-            TreasureChestCard treasureChestCard = new(cardData, -1, true);
+            TreasureChestCard treasureChestCard = cardFactory.CreateEnemyDropTreasure(cardData);
 
             if (cts.IsCancellationRequested) {
                 return;
@@ -351,7 +349,7 @@ public class BattleManager : AbstractSingleton<BattleManager> {
             await treasureChestCard.ExecuteCardAsync(cts.Token);
         } else if (battleResultType == BattleResultType.Lose) {
             DebugLogger.Log($"Game Over");
-            GameData.instance.CurrentGameState.Value = GameData.GameState.GameUp;
+            GameData.instance.CurrentGameState.Value = GameState.GameUp;
 
             SoundManager.instance.PlayVoice(VOICE_TYPE.Loose);
             //stageUIManager.ShowRestartMessage();
@@ -360,7 +358,7 @@ public class BattleManager : AbstractSingleton<BattleManager> {
             SceneStateManager.instance.PrepareteNextScene(SceneName.Title);
         } else if (battleResultType == BattleResultType.Timeout) {
             DebugLogger.Log($"Timeout");
-            GameData.instance.CurrentGameState.Value = GameData.GameState.Play;
+            GameData.instance.CurrentGameState.Value = GameState.Play;
         }
     }
 
@@ -390,7 +388,7 @@ public class BattleManager : AbstractSingleton<BattleManager> {
         //}
         PlayerShieldHP.Value = Mathf.Min(PlayerShieldHP.Value + amount, maxShield);
 
-        FloatingView floatingView = (FloatingView)FloatingViewGenerator.instance.GetObjectFromPool(playerFloatingViewTran);
+        FloatingView floatingView = (FloatingView)floatingViewGenerator.GetObjectFromPool(playerFloatingViewTran);
         FloatingViewType floatingViewType = isCritical == true ? FloatingViewType.critical : FloatingViewType.shield;
         floatingView.SetColor(floatingViewType);
         floatingView.SetViewFontSize(floatingViewType);
@@ -407,7 +405,7 @@ public class BattleManager : AbstractSingleton<BattleManager> {
         //}
         EnemyShieldHP.Value = Mathf.Min(EnemyShieldHP.Value + amount, maxShield);
 
-        FloatingView floatingView = (FloatingView)FloatingViewGenerator.instance.GetObjectFromPool(enemyFloatingViewTran);
+        FloatingView floatingView = (FloatingView)floatingViewGenerator.GetObjectFromPool(enemyFloatingViewTran);
         FloatingViewType floatingViewType = isCritical == true ? FloatingViewType.critical : FloatingViewType.shield;
         floatingView.SetColor(floatingViewType);
         floatingView.SetViewFontSize(floatingViewType);
@@ -441,7 +439,7 @@ public class BattleManager : AbstractSingleton<BattleManager> {
 
         if (!isfloatViewOn) return;
 
-        FloatingView floatingView = (FloatingView)FloatingViewGenerator.instance.GetObjectFromPool(playerFloatingViewTran);
+        FloatingView floatingView = (FloatingView)floatingViewGenerator.GetObjectFromPool(playerFloatingViewTran);
         FloatingViewType floatingViewType = isCritical == true ? FloatingViewType.critical
                                           : effectType == EffectType.Heal ? FloatingViewType.heal
                                           : effectType == EffectType.Passive ? FloatingViewType.reaction : FloatingViewType.normalDamage;
@@ -471,7 +469,7 @@ public class BattleManager : AbstractSingleton<BattleManager> {
 
         if (!isfloatViewOn) return;
 
-        FloatingView floatingView = (FloatingView)FloatingViewGenerator.instance.GetObjectFromPool(enemyFloatingViewTran);
+        FloatingView floatingView = (FloatingView)floatingViewGenerator.GetObjectFromPool(enemyFloatingViewTran);
         FloatingViewType floatingViewType = isCritical == true ? FloatingViewType.critical : effectType == EffectType.Heal ? FloatingViewType.heal : FloatingViewType.normalDamage;
         floatingView.SetColor(floatingViewType);
         floatingView.SetViewFontSize(floatingViewType);

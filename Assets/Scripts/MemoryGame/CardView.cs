@@ -1,4 +1,6 @@
-﻿using DG.Tweening;
+﻿using Cysharp.Threading.Tasks;
+using DG.Tweening;
+using System.Threading;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
@@ -68,6 +70,16 @@ public class CardView : PoolBase {
         rectTransform.DOScaleX(0, flipDuration)
             .SetEase(Ease.InQuart)
             .OnComplete(() => Release()).SetLink(gameObject);
+    }
+
+    /// <summary>
+    /// アニメーションが終了するまで待機する形式で、カードを裏返して隠す
+    /// 複数枚のカードを同時に隠す(破棄する)場合などに使用
+    /// </summary>
+    /// <param name="token"></param>
+    /// <returns></returns>
+    public async UniTask PlayHideAnimationAsync(CancellationToken token) {
+        await rectTransform.DOScaleX(0, flipDuration).SetEase(Ease.InQuart).SetLink(gameObject).AsyncWaitForCompletion();
     }
 
     /// <summary>

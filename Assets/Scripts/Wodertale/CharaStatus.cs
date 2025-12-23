@@ -72,7 +72,10 @@ public class CharaStatus {
         return new(50);
     }
 
-
+    /// <summary>
+    /// アイテムによる強化分をステータスに反映
+    /// </summary>
+    /// <param name="itemData"></param>
     public void CalculateCharaStatus(ItemData itemData) {
         for (int i = 0; i < itemData.statusTypes.Length; i++) {
             for (int j = 0; j < statusValueList.Count; j++) {
@@ -81,16 +84,14 @@ public class CharaStatus {
                 }
             }
         }
-
-        if (itemData.effectType == EffectType.Passive) {
-            CalculateMaxHp(itemData.hpBonus);
-        }
     }
 
-
+    /// <summary>
+    /// 最大 Hp の算出
+    /// </summary>
+    /// <param name="hpBonus"></param>
     public void CalculateMaxHp(int hpBonus) {
         MaxHp.Value += hpBonus;
-        BattleManager.instance.UpdatePlayerHp(hpBonus, EffectType.Passive, false);
     }
 
     /// <summary>
