@@ -92,6 +92,13 @@ public class PlayerInventoryManager : MonoBehaviour {
             // アイテムが追加された時の処理
             GameData.instance.charaStatus.CalculateCharaStatus(addEvent.Value.itemData);
 
+            // パッシブの場合、Hp 最大値を加算して、現在 Hp にも反映
+            if (addEvent.Value.itemData.effectType == EffectType.Passive) {
+                GameData.instance.charaStatus.CalculateMaxHp(addEvent.Value.itemData.hpBonus);
+                battleManager.UpdatePlayerHp(addEvent.Value.itemData.hpBonus, EffectType.Passive, false);
+                DebugLogger.Log($"EnhanceItemData　hpBonus : {addEvent.Value.itemData.hpBonus}");
+            }
+
             // リアクション表示更新
             UpdateDisplayReactionsParam();
             //addEvent.Value.SetUpBackPackItem(addEvent.Value.ItemData.Value, BattleManager.instance.Cts.Token);
@@ -330,6 +337,9 @@ public class PlayerInventoryManager : MonoBehaviour {
         // 各ポップを隠す
         HideExpandInventorySizePop();
         stageUIManager.HidePopups();
+
+        // 破棄したアイテムの情報ポップを隠す
+        itemInfoDisplayManager.HideItemInfo();
     }
 
 

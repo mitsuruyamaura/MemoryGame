@@ -43,7 +43,7 @@ public class StageEntryManager : MonoBehaviour {
         battleManager.SetUp(stageUIManager, cardFactory, enemyInfoDisplayManager, floatingViewGenerator, playerInventoryManager);
         trapDisarmQTEManager.SetUp(stageUIManager);
 
-        enemyInfoDisplayManager.Setup(null);
+        enemyInfoDisplayManager.Setup(null, battleManager, playerInventoryManager, floatingViewGenerator, itemInfoDisplayManager);
         floatingViewGenerator.SetUp(gameObject);
         itemInfoDisplayManager.Setup();
 
