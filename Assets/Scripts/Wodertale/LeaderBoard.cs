@@ -31,20 +31,20 @@ public class LeaderBoard : MonoBehaviour {
     /// リーダーボードの設定
     /// </summary>
     /// <param name="saveData"></param>
-    public void SetLeaderBoard(SaveData saveData) {
+    public void SetLeaderBoard(SaveDataDto saveData) {
         canvasGroup.alpha = 1.0f;
 
         // 各種数値の設定 
-        txtTotalSoulPoint.text = (saveData.userData.SoulPoint.Value + saveData.userData.consumeSoulPoint).ToString();
-        txtMemoriaRank.text = saveData.userData.MemoriaRank.Value.ToString();
+        txtTotalSoulPoint.text = (saveData.userData.soulPoint + saveData.userData.consumeSoulPoint).ToString();
+        txtMemoriaRank.text = saveData.userData.memoriaRank.ToString();
         txtInventorySize.text = (saveData.userData.expandInventoryCount + ConstData.DEFAULT__INVENTORY_SIZE).ToString();
 
-        txtDefeatedEnemies.text = saveData.userData.DefeatedEnemyCount.Value.ToString();
-        txtFindTreasures.text = saveData.userData.FindTreasureCount.Value.ToString();
-        txtBlessingCount.text = saveData.userData.BlessingCount.Value.ToString();
-        txtMemoriaCount.text = saveData.userData.MemoriaCount.Value.ToString();
-        txtTrapDisarmCount.text = saveData.userData.TrapDisarmCount.Value.ToString();
-        txtTrapFailureCount.text = saveData.userData.TrapFailureCount.Value.ToString();
+        txtDefeatedEnemies.text = saveData.userData.defeatedEnemyCount.ToString();
+        txtFindTreasures.text = saveData.userData.findTreasureCount.ToString();
+        txtBlessingCount.text = saveData.userData.blessingCount.ToString();
+        txtMemoriaCount.text = saveData.userData.memoriaCount.ToString();
+        txtTrapDisarmCount.text = saveData.userData.trapDisarmCount.ToString();
+        txtTrapFailureCount.text = saveData.userData.trapFailureCount.ToString();
 
         // アイテム一覧作成
         for (int i = 0; i < saveData.itemDataList.Count; i++) {

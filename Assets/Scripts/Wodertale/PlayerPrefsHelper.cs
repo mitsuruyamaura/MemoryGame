@@ -1,20 +1,49 @@
-﻿using UnityEngine;
-using Newtonsoft.Json;
+﻿using ObservableCollections;
+using System;
 using System.Collections.Generic;
-using R3;
+using System.Linq;
+using UnityEngine;
 
+/// <summary>
+/// セーブ用データ保持クラス
+/// このままだと UserData が保存できないので、SaveDataDto に変換してセーブする
+/// 今回はゲーム内では利用せず(復元して継続するデータはない)、リーダーボードでしか使わないのでロード時は使わない
+/// </summary>
 [System.Serializable]
 public class SaveData {
+    public string saveId;
     public UserData userData;
     public List<ItemData> itemDataList = new();
     public List<int> enhanceLevelList = new();
 
     public SaveData() { }
 
-    public SaveData(UserData userData, List<ItemData> itemDataList, List<int> enhanceLevelList) { 
+    public SaveData(string saveId, UserData userData, List<ItemData> itemDataList, List<int> enhanceLevelList) {
+        this.saveId = saveId;
         this.userData = userData;
         this.itemDataList = new(itemDataList);
         this.enhanceLevelList = new(enhanceLevelList);
+    }
+}
+
+/// <summary>
+/// UserData 内の RectiveProperty などが保存できないので、UserDataSave クラスとしてプリミティブ型でセーブするためのクラス
+/// NewtonSoft の JsonConvert クラスを使わないで、JsonUtility クラスで対応する
+/// </summary>
+[Serializable]
+public class SaveDataDto {
+    public string saveId;
+    public UserDataSave userData;
+    public List<ItemData> itemDataList;
+    public List<int> enhanceLevelList;
+
+    public SaveDataDto() { }
+
+    public SaveDataDto(string saveId, UserDataSave userData, List<ItemData> itemDataList, List<int> enhanceLevelList) {
+        this.saveId = saveId;
+        this.userData = userData;
+        this.itemDataList = itemDataList;
+        this.enhanceLevelList = enhanceLevelList;
     }
 }
 
@@ -33,37 +62,6 @@ public static class PlayerPrefsHelper {
     }
 
     /// <summary>
-    /// 指定されたオブジェクトのデータをセーブ
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="key"></param>
-    /// <param name="obj"></param>
-    public static void Save<T>(string key, T obj) {
-        // オブジェクトのデータをJson形式に変換
-        string json = JsonUtility.ToJson(obj);
-
-        PlayerPrefs.SetString(key, json);
-        PlayerPrefs.Save();
-
-        DebugLogger.Log($"{key}をセーブしました");
-    }
-
-    /// <summary>
-    /// 指定されたオブジェクトのデータをロード
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="key"></param>
-    /// <returns></returns>
-    public static T Load<T>(string key) {
-        DebugLogger.Log($"{key}をロードします");
-
-        string json = PlayerPrefs.GetString(key);
-
-        // 読み込む型を指定し、変換して取得
-        return JsonUtility.FromJson<T>(json);
-    }
-
-    /// <summary>
     /// すべてのセーブデータを削除
     /// </summary>
     public static void ClearAllSaveData() {
@@ -71,115 +69,88 @@ public static class PlayerPrefsHelper {
         DebugLogger.Log("すべてのデータを削除しました");
     }
 
-    /// <summary>
-    /// クラスをセーブ
-    /// </summary>
-    public static void SaveGameData(SaveData saveData) {
-        SaveData saveUserData = saveData;
+    /// <summary> /// 指定したデータを削除 /// 複数スロット用のデータ削除メソッド /// </summary>
+    public static void DeleteSaveData(int slotIndex) {
+        if (slotIndex < 0 || slotIndex >= ConstData.MAX_SAVE_SLOTS) {
+            DebugLogger.Log("スロットインデックスが範囲外です");
+            return;
+        }
 
-        //クラスをJSONにシリアライズ
-        string jsonString = JsonConvert.SerializeObject(saveUserData);
-
-        // JSON文字列を保存
-        PlayerPrefs.SetString(ConstData.GAME_DATA_SAVE_KEY, jsonString);
-        PlayerPrefs.Save();
-
-        DebugLogger.Log($"{saveUserData}をセーブしました");
-    }
-
-    /// <summary>
-    /// クラスをロード
-    /// </summary>
-    public static SaveData LoadGameData() {
-        // JSON文字列をロード
-        string jsonString = PlayerPrefs.GetString(ConstData.GAME_DATA_SAVE_KEY);
-
-        // JSON文字列をGameDataクラスにデシリアライズ
-        SaveData loadUserData = new();
-        loadUserData = JsonConvert.DeserializeObject<SaveData>(jsonString);
-        DebugLogger.Log($"{loadUserData}をロードしました");
-
-        return loadUserData;       
+        string key = $"{ConstData.GAME_DATA_SAVE_KEY}{slotIndex}";
+        PlayerPrefs.DeleteKey(key);
+        DebugLogger.Log($"スロット{slotIndex}のデータを削除しました");
     }
 
     /// <summary>
     /// 条件付きセーブ
     /// </summary>
-    public static void ConditionalSave(SaveData newData) {
-        // 1. 空きスロットを探す
-        int emptySlot = -1;
+    public static void ConditionalSave(SaveData gameData) {
+        // SaveData を SaveDataDTO に変換する
+        SaveDataDto newData = ToDto(gameData);
+
+        // セーブ
+        ConditionalSaveInternal(newData);
+    }
+
+    /// <summary>
+    /// セーブ実処理
+    /// </summary>
+    /// <param name="newData"></param>
+    public static void ConditionalSaveInternal(SaveDataDto newData) {
+        List<SaveDataDto> allData = new();
+
+        // すべてのセーブデータをロードして List に追加
         for (int i = 0; i < ConstData.MAX_SAVE_SLOTS; i++) {
-            SaveData existingData = LoadGameData(i);
-
-            if (existingData == null) {
-                // 最初に見つけた空きスロットを記録して終了
-                emptySlot = i;
-                break;
+            SaveDataDto data = LoadGameData(i);
+            if (data != null) {
+                allData.Add(data);
             }
         }
 
-        // 空きスロットがあれば、そこに保存して終了
-        if (emptySlot != -1) {
-            SaveGameData(newData, emptySlot);
-            DebugLogger.Log($"空きスロット{emptySlot}に新規データを保存しました");
-            return;
+        // 新しいセーブデータと同じデータがセーブされている場合には、除外してから追加
+        allData.RemoveAll(loadDate => loadDate.saveId == newData.saveId);
+        allData.Add(newData);
+
+        // 降順(ソウルポイントの高いデータ順、メモリアランクの高い順)に並び替え
+        allData = allData.OrderByDescending(d => d.userData.soulPoint)
+                    .ThenByDescending(d => d.userData.memoriaRank)
+                    .ToList();
+
+        // 降順に並んでいる List 内のデータを3つまで取得
+        if (allData.Count > ConstData.MAX_SAVE_SLOTS) {
+            allData = allData.Take(ConstData.MAX_SAVE_SLOTS).ToList();
         }
 
-        // 2. 上書き対象のスロットを探す(順位が低いものを下のスロットから順に比較)
-        int overwriteIndex = -1;
-        for (int i = ConstData.MAX_SAVE_SLOTS - 1; i >= 0; i--) {
-            SaveData existingData = LoadGameData(i);
-
-            // 条件比較(上書き条件)：SoulPoint が低い、または SoulPoint が同じで MemoriaRank が低い
-            if (newData.userData.SoulPoint.Value < existingData.userData.SoulPoint.Value ||
-                (newData.userData.SoulPoint.Value == existingData.userData.SoulPoint.Value &&
-                 newData.userData.MemoriaRank.Value < existingData.userData.MemoriaRank.Value)) {
-
-                // 上書き対象を記録
-                overwriteIndex = i;
+        for (int i = 0; i < ConstData.MAX_SAVE_SLOTS; i++) {
+            if (i < allData.Count) {
+                SaveGameData(allData[i], i);
+            } else {
+                DeleteSaveData(i); // 空スロット化
             }
         }
-
-        // 上書き対象が見つからなければ終了
-        if (overwriteIndex == -1) {
-            DebugLogger.Log("条件を満たさず、セーブを更新しませんでした");
-            return;
-        }
-
-        // 3. データのシフト処理(下にずらす。常に3番目のスロットが削除対象になる)
-        // 上書き対象のスロットより後ろのデータを1つ下にずらす
-        for (int i = ConstData.MAX_SAVE_SLOTS - 1; i > overwriteIndex; i--) {
-            SaveData tempData = LoadGameData(i - 1); // 1つ前のデータを取得
-            SaveGameData(tempData, i); // 1つ後ろにずらして保存
-        }
-
-        // 4. 上書き対象スロットに新しいデータを保存
-        SaveGameData(newData, overwriteIndex);
-        DebugLogger.Log($"スロット{overwriteIndex}のデータを上書きし、他のデータをシフトしました");
+        PlayerPrefs.Save();
     }
 
     /// <summary>
     /// 複数スロット用のセーブメソッド
     /// </summary>
-    public static void SaveGameData(SaveData saveData, int slotIndex) {
+    public static void SaveGameData(SaveDataDto saveData, int slotIndex) {
         if (slotIndex < 0 || slotIndex >= ConstData.MAX_SAVE_SLOTS) {
             Debug.LogError("スロットインデックスが範囲外です");
             return;
         }
 
         string key = $"{ConstData.GAME_DATA_SAVE_KEY}{slotIndex}";
-        string jsonString = JsonConvert.SerializeObject(saveData);
+        string jsonString = JsonUtility.ToJson(saveData);
 
         PlayerPrefs.SetString(key, jsonString);
-        PlayerPrefs.Save();
-
         DebugLogger.Log($"スロット{slotIndex}にデータをセーブしました");
     }
 
     /// <summary>
     /// 複数スロット用のロードメソッド
     /// </summary>
-    public static SaveData LoadGameData(int slotIndex) {
+    public static SaveDataDto LoadGameData(int slotIndex) {
         if (slotIndex < 0 || slotIndex >= ConstData.MAX_SAVE_SLOTS) {
             DebugLogger.Log("スロットインデックスが範囲外です");
             return null;
@@ -192,7 +163,7 @@ public static class PlayerPrefsHelper {
         }
 
         string jsonString = PlayerPrefs.GetString(key);
-        SaveData loadData = JsonConvert.DeserializeObject<SaveData>(jsonString);
+        SaveDataDto loadData = JsonUtility.FromJson<SaveDataDto>(jsonString);
         DebugLogger.Log($"スロット{slotIndex}からデータをロードしました");
 
         return loadData;
@@ -201,12 +172,12 @@ public static class PlayerPrefsHelper {
     /// <summary>
     /// セーブデータをすべてロードし、指定条件で並び替えて返す
     /// </summary>
-    public static List<SaveData> LoadAllSortedSaveDataList() {
-        List<SaveData> saveDataList = new();
+    public static List<SaveDataDto> LoadAllSortedSaveDataList() {
+        List<SaveDataDto> saveDataList = new();
 
         // 各スロットからデータをロード
         for (int i = 0; i < ConstData.MAX_SAVE_SLOTS; i++) {
-            SaveData data = LoadGameData(i);
+            SaveDataDto data = LoadGameData(i);
             if (data != null) {
                 saveDataList.Add(data);
             }
@@ -217,33 +188,114 @@ public static class PlayerPrefsHelper {
             return saveDataList;
         }
 
-        // 並び替え：SoulPoint → MemoriaRank
-        saveDataList.Sort((a, b) => {
-            // まず SoulPoint で比較
-            int waveComparison = a.userData.SoulPoint.Value.CompareTo(b.userData.SoulPoint.Value);
-            if (waveComparison != 0) {
-                return waveComparison; // SoulPoint が低い方が上位
-            }
-
-            // SoulPoint が同じ場合は MemoriaRank で比較
-            return a.userData.MemoriaRank.Value.CompareTo(b.userData.MemoriaRank.Value); // MemoriaRank が低い方が上位
-        });
+        // 降順に並び替え(セーブ時に並べ替えているので不要)
+        //saveDataList = saveDataList.OrderByDescending(data => data.userData.soulPoint)
+        //                   .ThenByDescending(data => data.userData.memoriaRank)
+        //                   .ToList();
 
         return saveDataList;
     }
 
     /// <summary>
-    /// 指定したデータを削除
-    /// 複数スロット用のデータ削除メソッド
+    /// SaveData → SaveDataDto 変換
     /// </summary>
-    public static void ClearSaveData(int slotIndex) {
-        if (slotIndex < 0 || slotIndex >= ConstData.MAX_SAVE_SLOTS) {
-            DebugLogger.Log("スロットインデックスが範囲外です");
-            return;
+    /// <param name="data"></param>
+    /// <returns></returns>
+    public static SaveDataDto ToDto(SaveData data) {
+        // 新規作成時のみ生成
+        if (string.IsNullOrEmpty(data.saveId)) {
+            data.saveId = Guid.NewGuid().ToString();
         }
 
-        string key = $"{ConstData.GAME_DATA_SAVE_KEY}{slotIndex}";
-        PlayerPrefs.DeleteKey(key);
-        DebugLogger.Log($"スロット{slotIndex}のデータを削除しました");
+        return new SaveDataDto {
+            saveId = data.saveId,
+            userData = ToSave(data.userData),
+            itemDataList = new List<ItemData>(data.itemDataList),
+            enhanceLevelList = new List<int>(data.enhanceLevelList)
+        };
+    }
+
+    /// <summary>
+    /// UserData → UserDataSave 変換
+    /// </summary>
+    /// <param name="data"></param>
+    /// <returns></returns>
+    public static UserDataSave ToSave(UserData data) {
+        return new UserDataSave {
+            flipPoint = data.FlipPoint.Value,
+            memoryStoneCount = data.MemoryStoneCount.Value,
+            floorCount = data.FloorCount.Value,
+            memoriaRank = data.MemoriaRank.Value,
+            soulPoint = data.SoulPoint.Value,
+
+            expandInventoryCount = data.expandInventoryCount,
+            consumeSoulPoint = data.consumeSoulPoint,
+
+            defeatedEnemyCount = data.DefeatedEnemyCount.Value,
+            findTreasureCount = data.FindTreasureCount.Value,
+            blessingCount = data.BlessingCount.Value,
+            memoriaCount = data.MemoriaCount.Value,
+            trapDisarmCount = data.TrapDisarmCount.Value,
+            trapFailureCount = data.TrapFailureCount.Value,
+
+            equipItemList = new List<int>(data.equipItemList),
+            memoryStoneSlotList = new List<int>(data.MemoryStoneSlotList)
+        };
+    }
+
+    /// <summary>
+    /// SaveDataDto → SaveData 変換にして戻す
+    /// 今回は使わない(リーダーボードに表示するだけなので、SaveData に戻す必要がない)
+    /// </summary>
+    /// <param name="slotIndex"></param>
+    /// <returns></returns>
+    public static SaveData LoadGameDataAsGameData(int slotIndex) {
+        SaveDataDto dto = LoadGameData(slotIndex);
+        if (dto == null) return null;
+
+        return FromDto(dto);
+    }
+
+    /// <summary>
+    /// SaveDataDto → SaveData 変換
+    /// </summary>
+    /// <param name="dto"></param>
+    /// <returns></returns>
+    public static SaveData FromDto(SaveDataDto dto) {
+        return new SaveData {
+            saveId = dto.saveId,
+            userData = FromSave(dto.userData),
+            itemDataList = new List<ItemData>(dto.itemDataList),
+            enhanceLevelList = new List<int>(dto.enhanceLevelList)
+        };
+    }
+
+    /// <summary>
+    /// UserDataSave → UserData 変換
+    /// </summary>
+    /// <param name="save"></param>
+    /// <returns></returns>
+    public static UserData FromSave(UserDataSave save) {
+        var data = new UserData();
+        data.FlipPoint.Value = save.flipPoint;
+        data.MemoryStoneCount.Value = save.memoryStoneCount;
+        data.FloorCount.Value = save.floorCount;
+        data.MemoriaRank.Value = save.memoriaRank;
+        data.SoulPoint.Value = save.soulPoint;
+
+        data.expandInventoryCount = save.expandInventoryCount;
+        data.consumeSoulPoint = save.consumeSoulPoint;
+
+        data.DefeatedEnemyCount.Value = save.defeatedEnemyCount;
+        data.FindTreasureCount.Value = save.findTreasureCount;
+        data.BlessingCount.Value = save.blessingCount;
+        data.MemoriaCount.Value = save.memoriaCount;
+        data.TrapDisarmCount.Value = save.trapDisarmCount;
+        data.TrapFailureCount.Value = save.trapFailureCount;
+
+        data.equipItemList = new List<int>(save.equipItemList);
+        data.MemoryStoneSlotList = new ObservableList<int>(save.memoryStoneSlotList);
+
+        return data;
     }
 }

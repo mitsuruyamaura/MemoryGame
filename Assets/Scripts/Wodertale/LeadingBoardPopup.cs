@@ -4,8 +4,7 @@ using R3;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class LeadingBoardPopup : MonoBehaviour
-{
+public class LeadingBoardPopup : MonoBehaviour {
     [SerializeField] private LoadUserDataManager loadUserDataManager;
 
     [SerializeField] private Button btnReturnTitle;
@@ -37,7 +36,6 @@ public class LeadingBoardPopup : MonoBehaviour
         canvasGroup.DOFade(1.0f, duration).SetEase(Ease.InQuart);
         canvasGroup.blocksRaycasts = true;
     }
-
 
     public void ClosePopup(float duration) {
         canvasGroup.blocksRaycasts = false;

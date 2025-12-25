@@ -52,6 +52,10 @@ public class ItemHoverUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     // こちらは Image であっても Collider2D は不要。仮にあっても動作する。
     // RaycastTarget がある UI 要素の上に乗っている場合は反応しないので、マスクされている場合は反応しない。
     public void OnPointerEnter(PointerEventData eventData) {
+        if (GameData.instance == null) {
+            return;
+        }
+
         if (GameData.instance.CurrentGameState.Value != GameState.Play) {
             return;
         }
@@ -60,10 +64,14 @@ public class ItemHoverUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
             return;
         }
 
-        itemInfoDisplayManager.ShowItemInfo(backPackInItem);
+        itemInfoDisplayManager?.ShowItemInfo(backPackInItem);
     }
 
     public void OnPointerExit(PointerEventData eventData) {
-        itemInfoDisplayManager.HideItemInfo();
+        if (GameData.instance == null) {
+            return;
+        }
+
+        itemInfoDisplayManager?.HideItemInfo();
     }
 }

@@ -109,7 +109,8 @@ public class Title : MonoBehaviour {
         btnLeaderBoard.OnClickAsObservable()
             .ThrottleFirst(System.TimeSpan.FromSeconds(2.0f))
             .Subscribe(_ => leadingBoardPopup.OpenPopup()).AddTo(this);
-        
+
+        // LeaderBoard の準備が終ってから活性化
         btnLeaderBoard.interactable = true;
 
         // セーブデータがある場合のみ、リセットボタンを有効化
