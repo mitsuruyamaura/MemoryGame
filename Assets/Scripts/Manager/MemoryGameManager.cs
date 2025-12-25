@@ -610,9 +610,10 @@ public class MemoryGameManager : MonoBehaviour {
             ChangeBackGroundImageGameClear();
 
             // データセーブ
+            string saveId = Guid.NewGuid().ToString();
             List<ItemData> itemDatalist = new(playerInventoryManager.PlayerBackPackItemList.ToList().Select(data => new ItemData(data.itemData)).ToList());
             List<int> enhanceLevelList = playerInventoryManager.PlayerBackPackItemList.ToList().Select(data => data.EnhanceLevel.Value).ToList();
-            SaveData saveData = new(GameData.instance.userData, itemDatalist, enhanceLevelList);
+            SaveData saveData = new(saveId, GameData.instance.userData, itemDatalist, enhanceLevelList);
             PlayerPrefsHelper.ConditionalSave(saveData);
 
             await UniTask.Delay(1000, cancellationToken: cts.Token);

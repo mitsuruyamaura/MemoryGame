@@ -1442,6 +1442,10 @@ PrefabInstance:
       propertyPath: isDontDestroy
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 7125656954279440095, guid: 9399b890523a5c24ca68b4e7de53fdc0, type: 3}
+      propertyPath: constantDataSO
+      value: 
+      objectReference: {fileID: 11400000, guid: e646a86a2bb1ac14290eab98e8793b35, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

@@ -2,9 +2,9 @@
 using UnityEngine;
 
 public class LoadUserDataManager : MonoBehaviour {
-    [SerializeField] private SaveData saveData;
-    [SerializeField] private List<SaveData> saveDataList = new();
-    public List<SaveData> SaveDataList => saveDataList;
+    [SerializeField] private SaveDataDto saveData;
+    [SerializeField] private List<SaveDataDto> saveDataList = new();
+    public List<SaveDataDto> SaveDataList => saveDataList;
 
     /// <summary>
     /// セーブデータのロード

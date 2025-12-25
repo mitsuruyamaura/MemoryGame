@@ -14,7 +14,10 @@ public class TreasureGetExecutor {
     }
 
     public async UniTask ExecuteTreasureGetEventAsync(ItemData itemData, bool isEnemyDrop, CancellationToken token) {
-        GameData.instance.userData.FindTreasureCount.Value++;
+        // 敵のドロップアイテムではなく宝箱カードから入手した場合
+        if (isEnemyDrop) {
+            GameData.instance.userData.FindTreasureCount.Value++;
+        }
 
         // 回収方法で演出分岐
         if (isEnemyDrop) {
