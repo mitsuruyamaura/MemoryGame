@@ -12,7 +12,7 @@ public class TrapExecutor {
 
     private readonly Dictionary<TrapType, ITrap> executorMap;
     private readonly int symbolTypeCount = 4;    // QTEシンボル種類数
-    private readonly float timeLimitSeconds = 5f; // QTE制限時間(秒)
+    private readonly float timeLimitSeconds = 5f; // QTE制限時間(秒)   ConstantData から取得するように変更
 
     public TrapExecutor(BattleManager battleManager, TrapDisarmQTEManager trapDisarmQTEManager) {
         this.battleManager = battleManager;
@@ -22,6 +22,9 @@ public class TrapExecutor {
             { TrapType.Damage, new DamageTrapExecutor(battleManager) },
             { TrapType.FlipCountDown, new FlipCountDownTrapExecutor() },
         };
+
+        float timeLimitFromData = float.Parse(DataBaseManager.instance.GetConstantDataValue("LIMIT_TRAP_DISARM_TIME_SECOND"));
+        timeLimitSeconds = timeLimitFromData;
     }
 
     /// <summary>

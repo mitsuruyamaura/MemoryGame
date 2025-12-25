@@ -1,4 +1,5 @@
 ﻿/// <summary>
+/// ボコスカ用
 /// ContentController としてサーバーから取得する方法もある
 /// </summary>
 public static class ConstData {

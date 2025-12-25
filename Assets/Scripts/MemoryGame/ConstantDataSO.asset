@@ -1,0 +1,59 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4bd6df9dca42a743a77dc8862645aab, type: 3}
+  m_Name: ConstantDataSO
+  m_EditorClassIdentifier: Assembly-CSharp::ConstantDataSO
+  constantDataList:
+  - id: 0
+    key: LIMIT_INVENTORY_SIZE
+    value: 32
+    description: "\u30A4\u30F3\u30D9\u30F3\u30C8\u30EA\u306E\u6700\u5927\u6570"
+  - id: 1
+    key: DEFAULT_INVENTORY_SIZE
+    value: 6
+    description: "\u521D\u671F\u30A4\u30F3\u30D9\u30F3\u30C8\u30EA\u306E\u6700\u5927\u6570"
+  - id: 2
+    key: LAST_FLOOR_COUNT
+    value: 10
+    description: "\u6700\u7D42\u30D5\u30ED\u30A2\u6570"
+  - id: 3
+    key: DEFAULT_MAX_HP
+    value: 200
+    description: "\u521D\u671FHP\u306EMAX"
+  - id: 4
+    key: DEFAULT_FLIP_COUNT
+    value: 20
+    description: "\u521D\u671F\u306E\u3081\u304F\u308C\u308B\u56DE\u6570"
+  - id: 5
+    key: EXPAND_REQUIRED_XP
+    value: 200
+    description: "\u30A4\u30F3\u30D9\u30F3\u30C8\u30EA\u306E\u62E1\u5F35\u306B\u5FC5\u8981\u306A\u30BD\u30A6\u30EB\u30DD\u30A4\u30F3\u30C8\u306E\u57FA\u6E96\u5024"
+  - id: 6
+    key: FLIP_GAIN_REQUIRED_XP
+    value: 100
+    description: "\u3081\u304F\u308C\u308B\u56DE\u6570\u306E\u56DE\u5FA9\u306B\u5FC5\u8981\u306A\u30BD\u30A6\u30EB\u30DD\u30A4\u30F3\u30C8"
+  - id: 7
+    key: LIFE_GAIN_REQUIRED_XP
+    value: 100
+    description: "\u30E9\u30A4\u30D5\u306E\u56DE\u5FA9\u306B\u5FC5\u8981\u306A\u30BD\u30A6\u30EB\u30DD\u30A4\u30F3\u30C8"
+  - id: 8
+    key: RANK_UP_REQUIRED_MEMORY_STONE_COUNT
+    value: 3
+    description: "\u30E9\u30F3\u30AF\u30A2\u30C3\u30D7\u306B\u5FC5\u8981\u306A\u601D\u3044\u51FA\u306E\u65AD\u7247\u306E\u6570"
+  - id: 9
+    key: LIMIT_BATTLE_TIME_SECOND
+    value: 5
+    description: "\u30D0\u30C8\u30EB\u6642\u9593"
+  - id: 10
+    key: LIMIT_TRAP_DISARM_TIME_SECOND
+    value: 5
+    description: "\u7F60\u89E3\u9664\u6642\u9593"

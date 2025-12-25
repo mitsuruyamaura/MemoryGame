@@ -51,8 +51,8 @@ public class GSSReceiver : MonoBehaviour {
             DataBaseManager.instance.itemDataSO.itemDataList =
                 new List<ItemData>(sheetDataslist.Find(x => x.SheetName == SheetName.ItemData).DatasList.Select(x => new ItemData(x)).ToList());
 
-            DataBaseManager.instance.nameDataSO.nameDataList =
-                new List<NameData>(sheetDataslist.Find(x => x.SheetName == SheetName.NameData).DatasList.Select(x => new NameData(x)).ToList());
+            //DataBaseManager.instance.nameDataSO.nameDataList =
+            //    new List<NameData>(sheetDataslist.Find(x => x.SheetName == SheetName.NameData).DatasList.Select(x => new NameData(x)).ToList());
 
             DataBaseManager.instance.enemyDataSO.enemyDatasList =
                 new List<EnemyData>(sheetDataslist.Find(x => x.SheetName == SheetName.EnemyData).DatasList.Select(x => new EnemyData(x)).ToList());
@@ -68,6 +68,9 @@ public class GSSReceiver : MonoBehaviour {
 
             DataBaseManager.instance.blessingDataSO.blessingDataList =
                 new List<BlessingData>(sheetDataslist.Find(x => x.SheetName == SheetName.BlessingData).DatasList.Select(x => new BlessingData(x)).ToList());
+
+            DataBaseManager.instance.constantDataSO.constantDataList =
+                new List<ConstantData>(sheetDataslist.Find(x => x.SheetName == SheetName.ConstantData).DatasList.Select(x => new ConstantData(x)).ToList());
 
             //DataBaseManager.instance.terrainDataSO.terrainDataList =
             //    new List<TerrainData>(sheetDataslist.Find(x => x.SheetName == SheetName.TerrainData).DatasList.Select(x => new TerrainData(x)).ToList());
