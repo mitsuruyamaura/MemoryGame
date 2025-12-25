@@ -24,6 +24,7 @@ public enum SheetName {
     TrapData,
     BlessingData,
     FloorData,
+    ConstantData,
 }
 
 /// <summary>

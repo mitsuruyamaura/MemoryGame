@@ -29,6 +29,7 @@ public class CharaStatus {
         level = 1;
         exp = 0;
         MaxHp.Value = maxHp;
+        //DebugLogger.Log($"MaxHp : {MaxHp.Value}");
 
         statusValueList = new() {
             new(StatusType.Strength, 0),
@@ -67,7 +68,10 @@ public class CharaStatus {
         }
     }
 
-
+    /// <summary>
+    /// PlayFab から新規作成用
+    /// </summary>
+    /// <returns></returns>
     public CharaStatus Create() {
         return new(50);
     }

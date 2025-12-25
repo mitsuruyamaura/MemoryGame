@@ -40,20 +40,20 @@ public class StageEntryManager : MonoBehaviour {
         // カードファクトリーの初期化。各 Executor の生成もここで行われる
         cardFactory = new(memoryGameManager, battleManager, trapDisarmQTEManager, memoryLinkManager, playerInventoryManager, itemInfoDisplayManager);
 
-        battleManager.SetUp(stageUIManager, cardFactory, enemyInfoDisplayManager, floatingViewGenerator, playerInventoryManager);
         trapDisarmQTEManager.SetUp(stageUIManager);
 
         enemyInfoDisplayManager.Setup(null, battleManager, playerInventoryManager, floatingViewGenerator, itemInfoDisplayManager);
         floatingViewGenerator.SetUp(gameObject);
         itemInfoDisplayManager.Setup();
 
-        // UI 初期設定
-        stageUIManager.Setup(GameData.instance.charaStatus.MaxHp.Value, memoryGameManager, battleManager);
-
         memoryLinkManager.Setup();
 
         GameData.instance.Setup(playerInventoryManager);
-        GameData.instance.InitPlayerCombatData();
+
+        battleManager.SetUp(stageUIManager, cardFactory, enemyInfoDisplayManager, floatingViewGenerator, playerInventoryManager);
+
+        // UI 初期設定
+        stageUIManager.Setup(GameData.instance.charaStatus.MaxHp.Value, memoryGameManager, battleManager);
 
         // BackPackInItem のオブジェクトプールの初期化、List の購読などを設定
         playerInventoryManager.Setup(memoryGameManager, stageUIManager, battleManager, floatingViewGenerator, itemInfoDisplayManager);

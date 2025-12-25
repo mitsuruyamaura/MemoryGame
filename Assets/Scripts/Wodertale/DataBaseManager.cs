@@ -6,12 +6,12 @@ public class DataBaseManager : AbstractSingleton<DataBaseManager> {
     public CardTypeSO cardTypeSO;
     public EnemyDataSO enemyDataSO;
     public ItemDataSO itemDataSO;
-    public NameDataSO nameDataSO;
+    //public NameDataSO nameDataSO;
     public MemoryStoneDataSO memoryStoneDataSO;
     public FloorDataSO floorDataSO;
     public TrapDataSO trapDataSO;
     public BlessingDataSO blessingDataSO;
-
+    public ConstantDataSO constantDataSO;
 
     //public List<AbilityItemDataSO> abilityItemDataSOList;
 
@@ -332,11 +332,20 @@ public class DataBaseManager : AbstractSingleton<DataBaseManager> {
     //    return powerSpotDataSO.powerSpotDataList.FirstOrDefault(data => data.no == searchId);
     //}
 
-    public NameData GetRandomNameData() {
-        int index = UnityEngine.Random.Range(0, nameDataSO.nameDataList.Count);
-        return nameDataSO.nameDataList[index];
-    }
+    //public NameData GetRandomNameData() {
+    //    int index = UnityEngine.Random.Range(0, nameDataSO.nameDataList.Count);
+    //    return nameDataSO.nameDataList[index];
+    //}
 
+    /// <summary>
+    /// ConstantData の key から value を取得
+    /// キャストは呼び出し元で行う
+    /// </summary>
+    /// <param name="key"></param>
+    /// <returns></returns>
+    public string GetConstantDataValue(string key) {
+        return constantDataSO.constantDataList.FirstOrDefault(data => data.key == key)?.value;
+    }
 
     //public WaveData GetWaveData(int searchWaveId) {
     //    return waveDataSO.waveDataList.FirstOrDefault(data => data.waveNo == searchWaveId); 

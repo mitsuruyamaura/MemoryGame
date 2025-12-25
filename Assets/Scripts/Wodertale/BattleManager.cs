@@ -72,7 +72,7 @@ public class BattleManager : MonoBehaviour {
     public SerializableReactiveProperty<int> EnemyShieldHP = new ();
 
     [SerializeField] private int maxShield;
-    [SerializeField] private float defaultBattleTime = 5.0f;
+    [SerializeField] private float defaultBattleTime = 5.0f;  // ConstantData から取得するように変更
     [SerializeField] private float bossBattleTime = 20.0f;
 
     private StageUIManager stageUIManager;
@@ -92,6 +92,9 @@ public class BattleManager : MonoBehaviour {
         this.enemyInfoDisplayManager = enemyInfoDisplayManager;
         this.floatingViewGenerator = floatingViewGenerator;
         this.playerInventoryManager = playerInventoryManager;
+
+        float limitBattleTime = float.Parse(DataBaseManager.instance.GetConstantDataValue("LIMIT_BATTLE_TIME_SECOND"));
+        defaultBattleTime = limitBattleTime;
 
         // デバッグ用
         //if (playerItemNoList.Count > 0) {

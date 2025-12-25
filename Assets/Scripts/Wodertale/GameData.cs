@@ -67,7 +67,7 @@ public class GameData : AbstractSingleton<GameData> {
     public SerializableReactiveProperty<int> MatchedPairCount = new(0);   // ペアを揃えた数
 
     private int currentMemoryStoneIndex = 0;
-    private readonly int maxMemoryStoneCount = 3;
+    private int rankUpRequiredMemoryStoneCount = 3;   // ランクアップに必要な思い出の断片の数
 
     public SerializableReactiveProperty<GameState> CurrentGameState = new(GameState.Prepare);
 
@@ -80,15 +80,43 @@ public class GameData : AbstractSingleton<GameData> {
         base.Awake();
 
         DOTween.Init().SetCapacity(1000, 500);
+    }
+
+    public void Setup(PlayerInventoryManager playerInventoryManager) {
+        this.playerInventoryManager = playerInventoryManager;
+
+        // インベントリの上限サイズを設定
+        limitInventorySize = int.Parse(DataBaseManager.instance.GetConstantDataValue("LIMIT_INVENTORY_SIZE"));
+        DebugLogger.Log($"インベントリ上限サイズ: {limitInventorySize}");
+
+        // めくれる回数の初期値を設定
+        initFlipCount = int.Parse(DataBaseManager.instance.GetConstantDataValue("DEFAULT_FLIP_COUNT"));
+        DebugLogger.Log($"初期めくれる回数: {initFlipCount}");
+
+        // 初期の最大HPを設定
+        initMaxHp = int.Parse(DataBaseManager.instance.GetConstantDataValue("DEFAULT_MAX_HP"));
+        DebugLogger.Log($"初期最大HP: {initMaxHp}");
+
+        lastFloorCount = int.Parse(DataBaseManager.instance.GetConstantDataValue("LAST_FLOOR_COUNT"));
+        DebugLogger.Log($"最終階層: {lastFloorCount}");
+
+        expandRequiredXP = int.Parse(DataBaseManager.instance.GetConstantDataValue("EXPAND_REQUIRED_XP"));
+        DebugLogger.Log($"インベントリ拡張に必要な基礎XP: {expandRequiredXP}");
+
+        flipGainRequiredXP = int.Parse(DataBaseManager.instance.GetConstantDataValue("FLIP_GAIN_REQUIRED_XP"));
+        DebugLogger.Log($"めくれる回数回復に必要な基礎XP: {flipGainRequiredXP}");
+
+        lifeGainRequiredXP = int.Parse(DataBaseManager.instance.GetConstantDataValue("LIFE_GAIN_REQUIRED_XP"));
+        DebugLogger.Log($"ライフ回復に必要な基礎XP: {lifeGainRequiredXP}");
+
+        rankUpRequiredMemoryStoneCount = int.Parse(DataBaseManager.instance.GetConstantDataValue("RANK_UP_REQUIRED_MEMORY_STONE_COUNT"));
+        DebugLogger.Log($"ランクアップに必要な思い出の断片の数: {rankUpRequiredMemoryStoneCount}");
 
         // ゲームの初期化
         InitialzeGameData();
         InitUserData();
         InitCharaStatus();
-    }
-
-    public void Setup(PlayerInventoryManager playerInventoryManager) {
-        this.playerInventoryManager = playerInventoryManager;
+        InitPlayerCombatData();
     }
 
     /// <summary>
@@ -96,6 +124,31 @@ public class GameData : AbstractSingleton<GameData> {
     /// </summary>
     private void InitialzeGameData() {
         moveTimeScale = 1.0f;
+    }
+
+    public void InitUserData() {
+        userData = new(initFlipCount);
+
+        // 物理か魔法の効果タイプのコモンアイテムをランダムで2つ取得して装備させる
+        var initItemDataList = DataBaseManager.instance.GetItemDataListByRarity(Rarity.Common).Where(data => data.effectType == EffectType.Physical || data.effectType == EffectType.Magic);
+        getItemNoList = initItemDataList.OrderBy(_ => UnityEngine.Random.value).Take(2).Select(data => data.id).ToList();
+
+        // debug(new で新規インスタンスにしないと参照してしまって重複リストになる)
+        userData.equipItemList = new(getItemNoList);
+    }
+
+    public void InitCharaStatus() {
+        charaStatus = new(initMaxHp);
+        EnchantPoint.Value = GetTotalStatusValues();
+    }
+
+    public void InitPlayerCombatData() {
+        // インベントリサイズを初期化
+        int defaultInventorySize = int.Parse(DataBaseManager.instance.GetConstantDataValue("DEFAULT_INVENTORY_SIZE"));
+        DebugLogger.Log($"初期インベントリサイズ: {defaultInventorySize}");
+        DebugLogger.Log($"初期HP: {initMaxHp}");
+
+        playerCombatData = new(initMaxHp, defaultInventorySize);
     }
 
     /// <summary>
@@ -114,7 +167,7 @@ public class GameData : AbstractSingleton<GameData> {
 
         // UI 用のスロットインデックスを更新
         currentMemoryStoneIndex++;
-        currentMemoryStoneIndex = currentMemoryStoneIndex % maxMemoryStoneCount;
+        currentMemoryStoneIndex = currentMemoryStoneIndex % rankUpRequiredMemoryStoneCount;
 
         // めくれる回数を加算
         userData.FlipPoint.Value += memoryStoneData.addFlipCount;
@@ -138,27 +191,7 @@ public class GameData : AbstractSingleton<GameData> {
     /// </summary>
     /// <returns></returns>
     public bool CheckMemoriaRankUp() {
-        return userData.MemoryStoneCount.Value % maxMemoryStoneCount == 0;
-    }
-
-    public void InitUserData() {
-        userData = new(initFlipCount);
-
-        // 物理か魔法の効果タイプのコモンアイテムをランダムで2つ取得して装備させる
-        var initItemDataList = DataBaseManager.instance.GetItemDataListByRarity(Rarity.Common).Where(data => data.effectType == EffectType.Physical || data.effectType == EffectType.Magic);
-        getItemNoList = initItemDataList.OrderBy(_ => UnityEngine.Random.value).Take(2).Select(data => data.id).ToList();
-
-        // debug(new で新規インスタンスにしないと参照してしまって重複リストになる)
-        userData.equipItemList = new(getItemNoList);
-    }
-
-    public void InitPlayerCombatData() {
-        playerCombatData = new(ConstData.DEFAULT_PLAYER_HP, ConstData.DEFAULT__INVENTORY_SIZE);
-    }
-
-    public void InitCharaStatus() {
-        charaStatus = new(initMaxHp);
-        EnchantPoint.Value = GetTotalStatusValues();
+        return userData.MemoryStoneCount.Value % rankUpRequiredMemoryStoneCount == 0;
     }
 
     /// <summary>
