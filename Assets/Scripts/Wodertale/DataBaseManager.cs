@@ -13,20 +13,13 @@ public class DataBaseManager : AbstractSingleton<DataBaseManager> {
     public BlessingDataSO blessingDataSO;
     public ConstantDataSO constantDataSO;
 
+    public EntryData entryData;           // 選択した難易度の保持用。Title シーン再読み込み時にリセットされる
+
     //public List<AbilityItemDataSO> abilityItemDataSOList;
 
     //// ドロップするトレジャーをすべて入れる
     //public List<AbilityItemDataSO.AbilityItemData> dropItemDatasList = new List<AbilityItemDataSO.AbilityItemData>();
 
-
-    protected override void Awake() {
-        if (instance == null) {
-            instance = this;
-            DontDestroyOnLoad(gameObject);
-        } else {
-            Destroy(gameObject);
-        }
-    }
 
     /// <summary>
     /// CardTypeMaster を ID や Enum から取得
@@ -345,6 +338,14 @@ public class DataBaseManager : AbstractSingleton<DataBaseManager> {
     /// <returns></returns>
     public string GetConstantDataValue(string key) {
         return constantDataSO.constantDataList.FirstOrDefault(data => data.key == key)?.value;
+    }
+
+    /// <summary>
+    /// 選択した難易度のレベルを設定
+    /// </summary>
+    /// <param name="selectLevel"></param>
+    public void SetSelectLevel(int selectLevel) {
+        entryData.selectLevel = selectLevel;
     }
 
     //public WaveData GetWaveData(int searchWaveId) {

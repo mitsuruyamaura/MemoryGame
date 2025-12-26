@@ -21631,6 +21631,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: GameData
       objectReference: {fileID: 0}
+    - target: {fileID: 4722163574315472984, guid: fb9764e6b43fc284da2e5263bb82276e, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4722163574315472990, guid: fb9764e6b43fc284da2e5263bb82276e, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -21685,6 +21689,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4722163574315472991, guid: fb9764e6b43fc284da2e5263bb82276e, type: 3}
       propertyPath: charaStatus.MaxHp.value
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4722163574315472991, guid: fb9764e6b43fc284da2e5263bb82276e, type: 3}
+      propertyPath: getItemNoList.Array.size
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
@@ -40770,7 +40778,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5160fe6bfabdeac4a931fb07377bf2df, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  isDontDestroy: 0
   itemInfoCanvas: {fileID: 1923410984}
   itemInfoViewGenerator: {fileID: 1670440040}
   backpackItemTran: {fileID: 1257287357}
@@ -55347,7 +55354,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -11.25, y: 21.200012}
+  m_AnchoredPosition: {x: -11.2500305, y: 21.200012}
   m_SizeDelta: {x: -130.7, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &4023111113357351616

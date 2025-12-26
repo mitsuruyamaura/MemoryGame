@@ -44,11 +44,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4e67bcd37482e84439ca4dde592e550f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  isDontDestroy: 1
   cardTypeSO: {fileID: 11400000, guid: 42957c5c6b238e14591a9fc21c93918b, type: 2}
   enemyDataSO: {fileID: 11400000, guid: ec81d48725951e04587730e0ea399cbc, type: 2}
   itemDataSO: {fileID: 11400000, guid: 1584c5eb68ceaa34fb39800569032785, type: 2}
-  nameDataSO: {fileID: 11400000, guid: d8b954a8db3b7e0489d8950bab6fe77a, type: 2}
   memoryStoneDataSO: {fileID: 11400000, guid: 7ba7e1b9b05c40641842c3914f71c05a, type: 2}
   floorDataSO: {fileID: 11400000, guid: 1268c0370197e0947b3776010b52e4ca, type: 2}
   trapDataSO: {fileID: 11400000, guid: 63b51a5ea9ccf8f4f8451d3035cf4b8f, type: 2}
   blessingDataSO: {fileID: 11400000, guid: 2e0f25286c362df4b93c1831ff1c0cfb, type: 2}
+  constantDataSO: {fileID: 11400000, guid: e646a86a2bb1ac14290eab98e8793b35, type: 2}
+  entryData: {fileID: 11400000, guid: bdfff16059fdc974a8d3722d6dfcac25, type: 2}

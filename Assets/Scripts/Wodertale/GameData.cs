@@ -97,7 +97,8 @@ public class GameData : AbstractSingleton<GameData> {
         initMaxHp = int.Parse(DataBaseManager.instance.GetConstantDataValue("DEFAULT_MAX_HP"));
         DebugLogger.Log($"初期最大HP: {initMaxHp}");
 
-        lastFloorCount = int.Parse(DataBaseManager.instance.GetConstantDataValue("LAST_FLOOR_COUNT"));
+        // Title シーンで選択した最終階層を設定
+        lastFloorCount = GetLastFloorCountFromDifficulty(DataBaseManager.instance.entryData.selectLevel);
         DebugLogger.Log($"最終階層: {lastFloorCount}");
 
         expandRequiredXP = int.Parse(DataBaseManager.instance.GetConstantDataValue("EXPAND_REQUIRED_XP"));
@@ -149,6 +150,29 @@ public class GameData : AbstractSingleton<GameData> {
         DebugLogger.Log($"初期HP: {initMaxHp}");
 
         playerCombatData = new(initMaxHp, defaultInventorySize);
+    }
+
+    /// <summary>
+    /// 現在未使用
+    /// </summary>
+    /// <param name="selectLevel"></param>
+    public void SetLastFloorCountFromDifficulty(int selectLevel) {
+        lastFloorCount = GetLastFloorCountFromDifficulty(selectLevel);
+        DebugLogger.Log($"最終階層設定: {lastFloorCount}");
+    }
+
+    /// <summary>
+    /// 選択されている難易度から最終フロアの回数を取得
+    /// </summary>
+    /// <param name="selectLevel"></param>
+    /// <returns></returns>
+    private int GetLastFloorCountFromDifficulty(int selectLevel) {
+        return selectLevel switch {
+            0 => int.Parse(DataBaseManager.instance.GetConstantDataValue("TUTORIAL_LAST_FLOOR_COUNT")),
+            1 => int.Parse(DataBaseManager.instance.GetConstantDataValue("NORMAL_LAST_FLOOR_COUNT")),
+            2 => int.Parse(DataBaseManager.instance.GetConstantDataValue("HARD_LAST_FLOOR_COUNT")),
+            _ => int.Parse(DataBaseManager.instance.GetConstantDataValue("TUTORIAL_LAST_FLOOR_COUNT")),
+        };
     }
 
     /// <summary>
@@ -239,7 +263,6 @@ public class GameData : AbstractSingleton<GameData> {
     /// <returns></returns>
     public bool IsInventoryUnderMaxSize() {
         return playerInventoryManager.PlayerBackPackItemList.Count < playerCombatData.MaxInventorySize.Value;
-
     }
 
     /// <summary>

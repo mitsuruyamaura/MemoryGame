@@ -598,6 +598,8 @@ public class MemoryGameManager : MonoBehaviour {
 
         // クリアしたフロアが最終フロアか確認
         if (GameData.instance.userData.FloorCount.Value >= GameData.instance.lastFloorCount) {
+            GameData.instance.CurrentGameState.Value = GameState.GameUp;
+
             // ゲームクリア
             cgSlotSet.blocksRaycasts = false;
             btnRetry.interactable = false;
@@ -1026,9 +1028,11 @@ public class MemoryGameManager : MonoBehaviour {
     }
 
     private void OnDestroy() {
-        foreach (var entry in lookCountMap.Values) {
-            // 動いているものだけ購読解除
-            entry.Item2?.Dispose();
+        if (lookCountMap != null) {
+            foreach (var entry in lookCountMap.Values) {
+                // 動いているものだけ購読解除
+                entry.Item2?.Dispose();
+            }
         }
 
         floorCountDisposable?.Dispose();

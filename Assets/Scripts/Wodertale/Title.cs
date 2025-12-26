@@ -5,32 +5,43 @@ using Cysharp.Threading.Tasks;
 using DG.Tweening;
 
 public class Title : MonoBehaviour {
-
     [SerializeField] private Button btnStart;
     [SerializeField] private Button btnLeaderBoard;
     [SerializeField] private Button btnResetDatas;
     [SerializeField] private Image imgShadeReset;
 
+    [SerializeField] private CanvasGroup cgVolume;
     [SerializeField] private Slider volumeSlider;
     [SerializeField] private Text txtVolumeValue;
+
+    [SerializeField] private CanvasGroup cgLoading;
     [SerializeField] private Text txtLoading;
 
     [SerializeField] private GSSReceiver GSSReceiver;
     [SerializeField] private LoadUserDataManager loadUserDataManager;
     [SerializeField] private LeadingBoardPopup leadingBoardPopup;
 
+    [SerializeField] private Button btnLevelSelect;
+    [SerializeField] private DifficultySelectToggle[] difficultySelectToggles;
+    [SerializeField] private CanvasGroup cgDifficultySelect;
+    protected CompositeDisposable disposables;
+
 
     void Start() {
-        btnLeaderBoard.interactable = false;
-        btnResetDatas.interactable = false;
-
         InitGameData().Forget();
 
-        // TODO 一旦なし
         InitLeaderBoard();
+
+        HideLevelSelectToggles();
     }
 
     private async UniTaskVoid InitGameData() {
+        cgLoading.alpha = 1.0f;
+        cgVolume.alpha = 0;
+
+        btnLeaderBoard.interactable = false;
+        btnResetDatas.interactable = false;
+
         // 先にスライダーの購読を設定しておく(スライダーの Value を設定してしまうとボリュームが初期値とロード値の2回分動いてしまうため)
         volumeSlider.OnValueChangedAsObservable()
             .Subscribe(x => {
@@ -48,9 +59,6 @@ public class Title : MonoBehaviour {
         Tweener tweener = txtLoading.DOFade(0, 0.5f).SetEase(Ease.Linear).SetLoops(-1, LoopType.Yoyo).SetLink(gameObject);
 
         var token = this.GetCancellationTokenOnDestroy();
-
-        btnStart.gameObject.SetActive(false);
-        volumeSlider.gameObject.SetActive(false);
 
         // SO のデータを取得するまで待機
         //await UniTask.WaitUntil(() => GSSReceiver.IsLoading, cancellationToken: token);
@@ -82,10 +90,60 @@ public class Title : MonoBehaviour {
 
         tweener.Kill();
         tweener = null;
-        txtLoading.gameObject.SetActive(false);
+        
+        cgLoading.DOFade(0, 0.5f).SetEase(Ease.Linear).SetLink(gameObject)
+            .OnComplete(() => {
+                cgLoading.blocksRaycasts = false;
+                cgVolume.alpha = 1.0F;
+            });
 
-        btnStart.gameObject.SetActive(true);
-        volumeSlider.gameObject.SetActive(true);
+        // 難易度選択関連
+        disposables = new();
+
+        // ゲームスタートの前に押す難易度選択ボタンの購読
+        btnLevelSelect.OnClickExt(() => ShowLevelSelectToggles(), this).AddTo(this);
+
+        // 難易度選択用のトグル設定
+        for (int i = 0; i < difficultySelectToggles.Length; i++) {
+            int index = i;
+
+            difficultySelectToggles[index].Setup(index);
+            Toggle toggle = difficultySelectToggles[index].Toggle;
+
+            toggle.OnValueChangedAsObservable()
+                .DistinctUntilChanged()
+                .Subscribe(isOn => {
+                    if (isOn) {
+                        // 選択したゲームレベル取得して最終フロア設定
+                        int selectedLevel = difficultySelectToggles[index].Level;
+                        DataBaseManager.instance.SetSelectLevel(selectedLevel);
+
+                        // 文字色の演出
+                        difficultySelectToggles[index].Choose();
+                        Debug.Log($"選択レベル: {selectedLevel}");
+                    } else {
+                        // 文字色の演出を戻す
+                        difficultySelectToggles[index].Unchoose();
+                    }
+                })
+                .AddTo(disposables);
+        }
+    }
+
+    /// <summary>
+    /// 難易度選択用のトグル群表示
+    /// </summary>
+    private void ShowLevelSelectToggles() {
+        cgDifficultySelect.alpha = 1.0f;
+        cgDifficultySelect.blocksRaycasts = true;
+    }
+
+    /// <summary>
+    /// 難易度選択用のトグル群非表示
+    /// </summary>
+    private void HideLevelSelectToggles() {
+        cgDifficultySelect.alpha = 0f;
+        cgDifficultySelect.blocksRaycasts = false;
     }
 
     /// <summary>
