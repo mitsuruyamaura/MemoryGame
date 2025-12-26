@@ -335,14 +335,15 @@ public class StageUIManager : MonoBehaviour {
         txtRestartMessage.gameObject.SetActive(true);
     }
 
+    /// <summary>
+    /// メモリアランクやクラスやスキルなどのデータを管理するポップアップ表示
+    /// </summary>
     public void ShowPlayerInfoListPop() {
         if (GameData.instance.CurrentGameState.Value != GameState.Play) {
             return;
         }
 
         playerInfoListPopup.OpenPopUpAsync(cts.Token).Forget();
-
-
     }
 
     private void HidePlayerInfoListPop() {
