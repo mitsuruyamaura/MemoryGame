@@ -72,6 +72,9 @@ public class GSSReceiver : MonoBehaviour {
             DataBaseManager.instance.constantDataSO.constantDataList =
                 new List<ConstantData>(sheetDataslist.Find(x => x.SheetName == SheetName.ConstantData).DatasList.Select(x => new ConstantData(x)).ToList());
 
+            DataBaseManager.instance.conditionDataSO.conditionDatasList =
+                new List<ConditionData>(sheetDataslist.Find(x => x.SheetName == SheetName.ConditionData).DatasList.Select(x => new ConditionData(x)).ToList());
+
             //DataBaseManager.instance.terrainDataSO.terrainDataList =
             //    new List<TerrainData>(sheetDataslist.Find(x => x.SheetName == SheetName.TerrainData).DatasList.Select(x => new TerrainData(x)).ToList());
 

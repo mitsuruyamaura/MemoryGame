@@ -6,10 +6,14 @@ using UnityEngine.Audio;
 using DG.Tweening;
 
 public enum BGM_TYPE {
-    Stage_0,
-    Boss,
-    Clear,
     Title,
+    Clear,
+    Boss,
+    Stage_0,
+    Stage_1,
+    Stage_2,
+    Stage_3,
+
 }
 
 
@@ -65,8 +69,8 @@ public class SoundManager : AbstractSingleton<SoundManager> {
 	// === AudioClip ===
 	// BGM
 	public BGMDatas[] BGM;
-	// SE
-	public AudioClip[] SE;
+    // SE
+    public AudioClip[] SE;
 	// 音声
 	public AudioClip[] Voice;
 

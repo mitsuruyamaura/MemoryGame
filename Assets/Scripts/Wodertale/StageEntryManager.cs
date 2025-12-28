@@ -17,6 +17,9 @@ public class StageEntryManager : MonoBehaviour {
     [SerializeField] private EnemyInfoDisplayManager enemyInfoDisplayManager;
     [SerializeField] private FloatingViewGenerator floatingViewGenerator;
     [SerializeField] private PlayerInventoryManager playerInventoryManager;
+    [SerializeField] private ConditionManager conditionManager;
+
+    [SerializeField] private ConditionInfoDisplayManager conditionInfoDisplayManager;
 
     private CancellationTokenSource cts;
     private CardFactory cardFactory;
@@ -33,7 +36,8 @@ public class StageEntryManager : MonoBehaviour {
     /// </summary>
     /// <returns></returns>
     private async UniTask InitializeStageAsync() {
-        SoundManager.instance.PlayBGM(BGM_TYPE.Stage_0);
+        int randomStageBgmIndex = Random.Range(3, 7);
+        SoundManager.instance.PlayBGM((BGM_TYPE)randomStageBgmIndex);
 
         cts = new();
 
@@ -57,9 +61,11 @@ public class StageEntryManager : MonoBehaviour {
 
         // BackPackInItem のオブジェクトプールの初期化、List の購読などを設定
         playerInventoryManager.Setup(memoryGameManager, stageUIManager, battleManager, floatingViewGenerator, itemInfoDisplayManager);
+        
+        conditionManager.Setup(conditionInfoDisplayManager);
 
         GameData.instance.CurrentGameState.Value = GameState.Play;
 
-        await memoryGameManager.SetUpAsync(cardFactory, battleManager, playerInventoryManager);
+        await memoryGameManager.SetUpAsync(cardFactory, battleManager, playerInventoryManager, conditionManager);
     }
 }
