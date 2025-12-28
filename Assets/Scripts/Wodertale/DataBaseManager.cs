@@ -12,6 +12,7 @@ public class DataBaseManager : AbstractSingleton<DataBaseManager> {
     public TrapDataSO trapDataSO;
     public BlessingDataSO blessingDataSO;
     public ConstantDataSO constantDataSO;
+    public ConditionDataSO conditionDataSO;
 
     public EntryData entryData;           // 選択した難易度の保持用。Title シーン再読み込み時にリセットされる
 
@@ -288,13 +289,21 @@ public class DataBaseManager : AbstractSingleton<DataBaseManager> {
         return Resources.Load<Sprite>("Item/" + searchItemId);
     }
 
-    public Sprite GetBlessingImage(int searchBlessingId) {
-        return Resources.Load<Sprite>("Blessing/" + searchBlessingId);
+    public Sprite GetBlessingImage(int blessingId) {
+        return Resources.Load<Sprite>("Blessing/" + blessingId);
     }
 
 
     public Sprite GetEnemyIcon(int enemyId) {
         return Resources.Load<Sprite>("Enemy/" + enemyId);
+    }
+
+    public Sprite GetConditionIcon(int conditionId) {
+        return Resources.Load<Sprite>("Condition/" + conditionId);
+    }
+
+    public Sprite GetTrapIcon(int trapId) {
+        return Resources.Load<Sprite>("Trap/" + trapId);
     }
 
 

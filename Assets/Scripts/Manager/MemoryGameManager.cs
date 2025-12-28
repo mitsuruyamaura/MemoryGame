@@ -80,9 +80,11 @@ public class MemoryGameManager : MonoBehaviour {
     private Subject<Unit> onFloorCardsCreated = new();
     private IDisposable floorCountDisposable;    // 灰色だが使っている
     private IDisposable cardCreateDisposable;
+    private IDisposable turnEndDisposable;
 
     private CardFactory cardFactory;
     private PlayerInventoryManager playerInventoryManager;
+    private ConditionManager conditionManager;
 
     // デバッグ用
     //private async void Start() {
@@ -94,9 +96,10 @@ public class MemoryGameManager : MonoBehaviour {
     /// ステージ初期設定
     /// </summary>
     /// <returns></returns>
-    public async UniTask SetUpAsync(CardFactory cardFactory, BattleManager battleManager, PlayerInventoryManager playerInventoryManager) {
+    public async UniTask SetUpAsync(CardFactory cardFactory, BattleManager battleManager, PlayerInventoryManager playerInventoryManager, ConditionManager conditionManager) {
         this.cardFactory = cardFactory;
         this.playerInventoryManager = playerInventoryManager;
+        this.conditionManager = conditionManager;
 
         // 各初期化処理
         cts = new();
@@ -191,12 +194,17 @@ public class MemoryGameManager : MonoBehaviour {
             } else if (count % changeFloorCount == 0) {
                 // 一定フロアごとに背景変更
                 RandomChangeBackGroundImage();
+
+                SetRandomBGM();
             }
         }).AddTo(this);
 
         // フロアが進んでカードがすべて生成されたときの購読処理
         cardCreateDisposable = onFloorCardsCreated
             .Subscribe(_ => RefreshAllFaceUpCards()).AddTo(this);
+
+        // ターン終了時にコンディションの残り強度を更新
+        turnEndDisposable = onTurnEnd.Subscribe(_ => conditionManager.UpdateConditionRemainingPowers()).AddTo(this);
 
         // デバッグ用リセット機能
         this.UpdateAsObservable()
@@ -539,15 +547,15 @@ public class MemoryGameManager : MonoBehaviour {
 
             firstSelectedCardView = null;
             inputLocked = false;
+
+            // 2回続けてカードをめくったので、ターン終了を知らせる
+            onTurnEnd.OnNext(default);
         }
 
         // 最終フロアではなく、階段フラグが立っている場合には、再度階段ボタンを有効化
         if (GameData.instance.lastFloorCount != GameData.instance.userData.FloorCount.Value && GameData.instance.userData.CanUseStairs.Value == true) {
             btnStairs.interactable = true;
         }
-
-        // ターン終了を知らせる
-        onTurnEnd.OnNext(default);
     }
 
     public IMasterData CreateCardData(CardEventType type, FloorData floorData) {
@@ -999,6 +1007,14 @@ public class MemoryGameManager : MonoBehaviour {
                 imgBackGround.sprite = spriteBackGrounds[newIndex];
                 imgBackGround.DOFade(1.0f, 0.5f).SetEase(Ease.Linear);
             }).SetLink(gameObject);
+    }
+
+    /// <summary>
+    /// BGM ランダム変更
+    /// </summary>
+    public void SetRandomBGM() {
+        int randomStageBgmIndex = UnityEngine.Random.Range(3, 7);
+        SoundManager.instance.PlayBGM((BGM_TYPE)randomStageBgmIndex);
     }
 
     /// <summary>

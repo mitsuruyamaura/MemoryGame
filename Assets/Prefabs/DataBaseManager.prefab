@@ -53,4 +53,5 @@ MonoBehaviour:
   trapDataSO: {fileID: 11400000, guid: 63b51a5ea9ccf8f4f8451d3035cf4b8f, type: 2}
   blessingDataSO: {fileID: 11400000, guid: 2e0f25286c362df4b93c1831ff1c0cfb, type: 2}
   constantDataSO: {fileID: 11400000, guid: e646a86a2bb1ac14290eab98e8793b35, type: 2}
+  conditionDataSO: {fileID: 11400000, guid: ee479803e2c4ae245b160393ebfd5499, type: 2}
   entryData: {fileID: 11400000, guid: bdfff16059fdc974a8d3722d6dfcac25, type: 2}

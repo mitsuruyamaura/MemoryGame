@@ -1,42 +1,69 @@
-﻿using System;
-using R3;
+﻿using R3;
+using System;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
 
+/// <summary>
+/// コンディションの表示 UI
+/// </summary>
 public class ConditionIndicator : PoolBase, IPoolable {
+    [SerializeField] protected Image imgIcon;
+    [SerializeField] protected Text txtRemainingPower;
+    [SerializeField] protected Text txtStackCount;
+    [SerializeField] protected ConditionHoverUI conditionHoverUI;
 
-    [SerializeField] private Image imgIcon;
-    [SerializeField] private Text txtDuration;
-    private UnityAction<ConditionIndicator> releasedAction;
-
+    protected ConditionProgressData conditionProgressData;
+    protected UnityAction<ConditionIndicator> releasedAction;
+    protected IDisposable stackCountDisposable;
 
     /// <summary>
     /// 初期設定
     /// </summary>
-    /// <param name="conditionData"></param>
-    /// <param name="playerCondition"></param>
+    /// <param name="conditionInfoDisplayManager"></param>
+    /// <param name="conditionProgressData"></param>
     /// <param name="releasedAction">ConditionManager の ReleaseIndicator メソッド</param>
-    public void SetUpIndiator(ConditionData conditionData, PlayerConditionBase playerCondition, UnityAction<ConditionIndicator> releasedAction) {
+    public void SetUpIndiator(ConditionInfoDisplayManager conditionInfoDisplayManager, ConditionProgressData conditionProgressData, UnityAction<ConditionIndicator> releasedAction) {
         isReleased = false;
-        imgIcon.sprite = conditionData.conditionIconSprite;
+
+        Sprite sprite = DataBaseManager.instance.GetConditionIcon(conditionProgressData.ConditionData.id);
+        if (sprite != null) {
+            imgIcon.sprite = sprite;
+        }
+
+        this.conditionProgressData = conditionProgressData;
         this.releasedAction = releasedAction;
 
-        disposable = playerCondition.ConditionDuration.Subscribe(duration => UpdateDuration(duration));
+        disposable = conditionProgressData.RemainingPower.Subscribe(newRemainingPower => UpdateDisplayRemainingPower(newRemainingPower));
+        stackCountDisposable = conditionProgressData.StackCount.Subscribe(newStackCount => UpdateDisplayStackCount(newStackCount));
+
+        conditionHoverUI.Setup(conditionInfoDisplayManager, conditionProgressData);
     }
 
     /// <summary>
-    /// 残り時間の表示更新
+    /// 残り強度の表示更新
     /// </summary>
-    /// <param name="duration"></param>
-    public void UpdateDuration(int duration) {
-        if (duration <= 0) {
+    /// <param name="remainingPower"></param>
+    public void UpdateDisplayRemainingPower(int remainingPower) {
+        if (remainingPower <= 0) {
             Release();
             return;
         }
 
-        txtDuration.text = duration.ToString();
+        txtRemainingPower.text = remainingPower.ToString();
     }
+
+    /// <summary>
+    /// スタック数の表示更新
+    /// </summary>
+    /// <param name="newStackCount"></param>
+    protected void UpdateDisplayStackCount(int newStackCount) {
+        txtStackCount.text = newStackCount.ToString();
+    }
+
+
+    public bool HasCondition(ConditionProgressData target) => conditionProgressData == target;
+
 
     public override void Release() {
         if (isReleased) {
@@ -52,9 +79,11 @@ public class ConditionIndicator : PoolBase, IPoolable {
 
             // 一旦 Content の配下から抜く。
             // そうしないと、オブジェクトプールのあった位置に再表示されるため、新しく追加したものの位置が正しく表示されない
-            transform.SetParent(ConditionManager.instance.transform);
+            transform.SetParent(GameData.instance.transform);
 
             disposable?.Dispose();
+            stackCountDisposable?.Dispose();
+
             objectPool.Release(this);
         }
     }

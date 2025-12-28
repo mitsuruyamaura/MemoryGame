@@ -25,6 +25,5 @@ public class EffectManager : AbstractSingleton<EffectManager> {
     public GameObject destroyEffectPrefab;
     public BossEffect bossEffectPrefab;
 
-    // 共通
-    public FloatingMessageControler floatingMessagePrefab;
+
 }
