@@ -41,12 +41,13 @@ public class Title : MonoBehaviour {
 
         btnLeaderBoard.interactable = false;
         btnResetDatas.interactable = false;
+        btnStart.interactable = false;
 
         // 先にスライダーの購読を設定しておく(スライダーの Value を設定してしまうとボリュームが初期値とロード値の2回分動いてしまうため)
         volumeSlider.OnValueChangedAsObservable()
             .Subscribe(x => {
-                 SoundManager.instance.SetLinearVolumeToMixerGroup(ConstData.MASTER_AUDIO_NAME, x);
-               　UpdateVolumeValue(x);
+                SoundManager.instance.SetLinearVolumeToMixerGroup(ConstData.MASTER_AUDIO_NAME, x);
+                UpdateVolumeValue(x);
             }).AddTo(gameObject);
 
         // セーブされている BGMボリューム値があるか確認
@@ -85,12 +86,12 @@ public class Title : MonoBehaviour {
             .Subscribe(_ => {
                 // 現在の BGM のボリューム値をセーブしてからシーン遷移
                 PlayerPrefs.SetFloat(ConstData.BGM_VOLUME, volumeSlider.value);
-                SceneStateManager.instance.PrepareteNextScene(SceneName.Stage); 
+                SceneStateManager.instance.PrepareteNextScene(SceneName.Stage);
             }).AddTo(this);
 
         tweener.Kill();
         tweener = null;
-        
+
         cgLoading.DOFade(0, 0.5f).SetEase(Ease.Linear).SetLink(gameObject)
             .OnComplete(() => {
                 cgLoading.blocksRaycasts = false;
@@ -121,6 +122,9 @@ public class Title : MonoBehaviour {
                         // 文字色の演出
                         difficultySelectToggles[index].Choose();
                         Debug.Log($"選択レベル: {selectedLevel}");
+
+                        // ゲームスタートボタンの活性化(目線誘導)
+                        ActivateGameStartBtn();
                     } else {
                         // 文字色の演出を戻す
                         difficultySelectToggles[index].Unchoose();
@@ -131,9 +135,19 @@ public class Title : MonoBehaviour {
     }
 
     /// <summary>
+    /// ゲームスタートボタンの活性化
+    /// </summary>
+    private void ActivateGameStartBtn() {
+        btnStart.interactable = true;
+        btnStart.transform.DOShakeScale(0.25f, 0.2f).SetEase(Ease.InQuart).SetLink(gameObject);
+    }
+
+    /// <summary>
     /// 難易度選択用のトグル群表示
     /// </summary>
     private void ShowLevelSelectToggles() {
+        btnLevelSelect.gameObject.SetActive(false);
+
         cgDifficultySelect.alpha = 1.0f;
         cgDifficultySelect.blocksRaycasts = true;
     }

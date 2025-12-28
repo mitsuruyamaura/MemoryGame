@@ -1,6 +1,15 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// 難易度の種類
+/// </summary>
+public enum DifficultyType {
+    Tutorial,
+    Normal,
+    Hard
+}
+
 public class LeaderBoard : MonoBehaviour { 
     [SerializeField] private CanvasGroup canvasGroup;
 
@@ -15,6 +24,8 @@ public class LeaderBoard : MonoBehaviour {
     [SerializeField] private Text txtMemoriaCount;
     [SerializeField] private Text txtTrapDisarmCount;
     [SerializeField] private Text txtTrapFailureCount;
+
+    [SerializeField] private Text txtSelectLevel;
 
     [SerializeField] private Transform contentTran;
     [SerializeField] private BackPackInItem backPackInItemPrefab;
@@ -45,6 +56,8 @@ public class LeaderBoard : MonoBehaviour {
         txtMemoriaCount.text = saveData.userData.memoriaCount.ToString();
         txtTrapDisarmCount.text = saveData.userData.trapDisarmCount.ToString();
         txtTrapFailureCount.text = saveData.userData.trapFailureCount.ToString();
+
+        txtSelectLevel.text = ((DifficultyType)saveData.userData.selectLevel).ToString();
 
         // アイテム一覧作成
         for (int i = 0; i < saveData.itemDataList.Count; i++) {

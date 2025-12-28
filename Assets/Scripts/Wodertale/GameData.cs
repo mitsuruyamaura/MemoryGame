@@ -56,8 +56,6 @@ public class GameData : AbstractSingleton<GameData> {
     public List<int> defeatEnemyNoList = new();   // 倒したことのある敵のリスト
     public List<int> getItemNoList = new();       // 獲得したことのあるアイテムのリスト
 
-    public List<PlayerConditionBase> conditionList = new();
-
     [SerializeField] private Transform conditionEffectTran;
 
     public SerializableReactiveProperty<int> EnchantPoint = new(0);
@@ -128,7 +126,8 @@ public class GameData : AbstractSingleton<GameData> {
     }
 
     public void InitUserData() {
-        userData = new(initFlipCount);
+        int selectLevel = DataBaseManager.instance.entryData.selectLevel;
+        userData = new(initFlipCount, selectLevel);
 
         // 物理か魔法の効果タイプのコモンアイテムをランダムで2つ取得して装備させる
         var initItemDataList = DataBaseManager.instance.GetItemDataListByRarity(Rarity.Common).Where(data => data.effectType == EffectType.Physical || data.effectType == EffectType.Magic);
@@ -263,44 +262,5 @@ public class GameData : AbstractSingleton<GameData> {
     /// <returns></returns>
     public bool IsInventoryUnderMaxSize() {
         return playerInventoryManager.PlayerBackPackItemList.Count < playerCombatData.MaxInventorySize.Value;
-    }
-
-    /// <summary>
-    /// 現在のコンディションの状態の残り時間を更新
-    /// </summary>
-    public void UpdateConditionDuration(ConditionData conditionData) {
-        //for (int i = 0; i < conditionList.Count; i++) {
-        //    conditionList[i].CalcDuration();
-        //}
-
-        conditionList.FirstOrDefault(data => data.GetConditionType() == conditionData.conditionType)
-            .ExtentionCondition(conditionData.duration, conditionData.conditionValue);
-    }
-
-    /// <summary>
-    /// コンディションを追加
-    /// </summary>
-    /// <param name="playerCondition"></param>
-    public void AddConditionList(PlayerConditionBase playerCondition) {
-        conditionList.Add(playerCondition);
-    }
-
-    /// <summary>
-    /// コンディションを削除
-    /// </summary>
-    public void RemoveConditionList(PlayerConditionBase playerCondition) {
-        conditionList.Remove(playerCondition);
-
-        // エフェクト削除
-        //Destroy(playerCondition);
-    }
-
-    /// <summary>
-    /// 引数に指定されたコンディションが付与されているか確認
-    /// </summary>
-    /// <param name="checkConditionType"></param>
-    /// <returns></returns>
-    public bool JudgeConditionType(ConditionType checkConditionType) {
-        return conditionList.Exists(condition => condition.GetConditionType() == checkConditionType);
     }
 }
