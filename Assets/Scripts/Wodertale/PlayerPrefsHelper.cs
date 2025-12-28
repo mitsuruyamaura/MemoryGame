@@ -97,33 +97,33 @@ public static class PlayerPrefsHelper {
     /// </summary>
     /// <param name="newData"></param>
     public static void ConditionalSaveInternal(SaveDataDto newData) {
-        List<SaveDataDto> allData = new();
+        List<SaveDataDto> allDataList = new();
 
         // すべてのセーブデータをロードして List に追加
         for (int i = 0; i < ConstData.MAX_SAVE_SLOTS; i++) {
             SaveDataDto data = LoadGameData(i);
             if (data != null) {
-                allData.Add(data);
+                allDataList.Add(data);
             }
         }
 
         // 新しいセーブデータと同じデータがセーブされている場合には、除外してから追加
-        allData.RemoveAll(loadDate => loadDate.saveId == newData.saveId);
-        allData.Add(newData);
+        allDataList.RemoveAll(loadDate => loadDate.saveId == newData.saveId);
+        allDataList.Add(newData);
 
         // 降順(ソウルポイントの高いデータ順、メモリアランクの高い順)に並び替え
-        allData = allData.OrderByDescending(d => d.userData.soulPoint)
+        allDataList = allDataList.OrderByDescending(d => d.userData.soulPoint)
                     .ThenByDescending(d => d.userData.memoriaRank)
                     .ToList();
 
         // 降順に並んでいる List 内のデータを3つまで取得
-        if (allData.Count > ConstData.MAX_SAVE_SLOTS) {
-            allData = allData.Take(ConstData.MAX_SAVE_SLOTS).ToList();
+        if (allDataList.Count > ConstData.MAX_SAVE_SLOTS) {
+            allDataList = allDataList.Take(ConstData.MAX_SAVE_SLOTS).ToList();
         }
 
         for (int i = 0; i < ConstData.MAX_SAVE_SLOTS; i++) {
-            if (i < allData.Count) {
-                SaveGameData(allData[i], i);
+            if (i < allDataList.Count) {
+                SaveGameData(allDataList[i], i);
             } else {
                 DeleteSaveData(i); // 空スロット化
             }
@@ -188,11 +188,6 @@ public static class PlayerPrefsHelper {
             return saveDataList;
         }
 
-        // 降順に並び替え(セーブ時に並べ替えているので不要)
-        //saveDataList = saveDataList.OrderByDescending(data => data.userData.soulPoint)
-        //                   .ThenByDescending(data => data.userData.memoriaRank)
-        //                   .ToList();
-
         return saveDataList;
     }
 
@@ -239,7 +234,9 @@ public static class PlayerPrefsHelper {
             trapFailureCount = data.TrapFailureCount.Value,
 
             equipItemList = new List<int>(data.equipItemList),
-            memoryStoneSlotList = new List<int>(data.MemoryStoneSlotList)
+            memoryStoneSlotList = new List<int>(data.MemoryStoneSlotList),
+
+            selectLevel = data.selectLevel
         };
     }
 
@@ -295,6 +292,8 @@ public static class PlayerPrefsHelper {
 
         data.equipItemList = new List<int>(save.equipItemList);
         data.MemoryStoneSlotList = new ObservableList<int>(save.memoryStoneSlotList);
+
+        data.selectLevel = save.selectLevel;
 
         return data;
     }

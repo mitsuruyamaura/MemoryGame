@@ -21,9 +21,13 @@ public class UserData {
     public SerializableReactiveProperty<int> TrapDisarmCount = new(0);        // 解除した罠の数
     public SerializableReactiveProperty<int> TrapFailureCount = new(0);       // 罠にかかった数
 
+    public SerializableReactiveProperty<int> DebuffRecoveryPower = new(0);    // デバフの治癒力
+
     public List<int> equipItemList = new();                    // 装備しているアイテムのリスト(アイテムNo)。初期装備としてランダムに2つ装備する
 
     public ObservableList<int> MemoryStoneSlotList = new();    // 思い出の秘石を獲得した際にセットするためのリスト。3つでリセット
+
+    public int selectLevel;
 
 
     /// <summary>
@@ -45,10 +49,12 @@ public class UserData {
         TrapDisarmCount.Value = 0;
         TrapFailureCount.Value = 0;
 
+        DebuffRecoveryPower.Value = 0;
+
         equipItemList.Clear();
     }
 
-    public UserData(int flipCount) {
+    public UserData(int flipCount, int selectLevel) {
         SoulPoint.Value = 0;
         FlipPoint.Value = flipCount;
         MemoriaRank.Value = 0;
@@ -64,6 +70,10 @@ public class UserData {
         TrapDisarmCount.Value = 0;
         TrapFailureCount.Value = 0;
 
+        DebuffRecoveryPower.Value = 0;
+
         equipItemList.Clear();
+
+        this.selectLevel = selectLevel;
     }
 }

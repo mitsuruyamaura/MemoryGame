@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+
 /// <summary>
 /// UserData のセーブ用クラス
 /// RectiveProperty などの形式ではセーブできないので、これを使う
@@ -23,4 +24,6 @@ public class UserDataSave {
 
     public List<int> equipItemList;
     public List<int> memoryStoneSlotList;
+
+    public int selectLevel;
 }
