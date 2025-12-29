@@ -311,6 +311,10 @@ public class DataBaseManager : AbstractSingleton<DataBaseManager> {
         return enemyDataSO.enemyDatasList.FirstOrDefault(data => data.enemyNo == searchEnemyId);
     }
 
+    public ConditionData GetConditionData(ConditionType searchConditionType) {
+        return conditionDataSO.conditionDatasList.FirstOrDefault(data => data.conditionType == searchConditionType);
+    }
+
     /// <summary>
     /// Rarity で抽出した敵の List を戻す
     /// </summary>

@@ -702,7 +702,7 @@ public class BackPackInItem : PoolBase {
         };
 
         // 加算
-        GameData.instance.userData.SoulPoint.Value += price;
+        GameData.instance.CalcSoulPoint(price);
     }
 
     public override void Release() {

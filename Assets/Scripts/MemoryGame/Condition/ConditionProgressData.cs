@@ -21,9 +21,11 @@ public class ConditionProgressData {
     protected IDisposable disposable;
     protected UnityAction<ConditionProgressData> onExpiredAction;
     protected CancellationToken token;
+    protected IConditionEffect conditionEffect;
+    public IConditionEffect ConditionEffect => conditionEffect;
 
 
-    public ConditionProgressData(ConditionData conditionData, float conditionPowerMultiplier, int stackCount, UnityAction<ConditionProgressData> onExpiredAction, CancellationToken token) {
+    public ConditionProgressData(ConditionData conditionData, float conditionPowerMultiplier, int stackCount, UnityAction<ConditionProgressData> onExpiredAction, IConditionEffect conditionEffect, CancellationToken token) {
         this.conditionData = conditionData;
 
         int remainingPower = CalcRemainingPower(this.conditionData.conditionPower, conditionPowerMultiplier);
@@ -33,6 +35,7 @@ public class ConditionProgressData {
         conditionValue = this.conditionData.value;
 
         this.onExpiredAction = onExpiredAction;
+        this.conditionEffect = conditionEffect;
         this.token = token;
     }
 

@@ -386,12 +386,12 @@ public class StageUIManager : MonoBehaviour {
     private void GainFlipCount() {
         // ポイント消費
         int flipGainRequiredPoint = GameData.instance.flipGainRequiredXP;
-        GameData.instance.userData.SoulPoint.Value -= flipGainRequiredPoint;
+        GameData.instance.CalcSoulPoint(-flipGainRequiredPoint);
 
         // 消費ポイントの累計を更新
         GameData.instance.userData.consumeSoulPoint += flipGainRequiredPoint;
 
-        GameData.instance.userData.FlipPoint.Value += flipGainPoint;
+        GameData.instance.CalcFlipPoint(flipGainPoint);
 
         // ポップ表示内容更新
         ShowFlipCountGainPopup();
@@ -432,7 +432,7 @@ public class StageUIManager : MonoBehaviour {
     private void GainLife() {
         // ポイント消費
         int lifeGainRequiredPoint = GameData.instance.lifeGainRequiredXP;
-        GameData.instance.userData.SoulPoint.Value -= lifeGainRequiredPoint;
+        GameData.instance.CalcSoulPoint(-lifeGainRequiredPoint);
 
         // 消費ポイントの累計を更新
         GameData.instance.userData.consumeSoulPoint += lifeGainRequiredPoint;

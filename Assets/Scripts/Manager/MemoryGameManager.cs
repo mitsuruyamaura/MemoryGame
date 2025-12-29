@@ -539,8 +539,11 @@ public class MemoryGameManager : MonoBehaviour {
 
                 await UniTask.Delay((int)(flipDuration * 1000));
 
-                // ペアにならなかった(お手付きした)ので、めくれる回数の減算
-                GameData.instance.userData.FlipPoint.Value--;
+                // ペアにならなかった(お手付きした)ので、めくれる回数の減算 
+                GameData.instance.CalcFlipPoint(-1);
+
+                // コンディションの効果を適用(猛毒、散漫)
+                conditionManager.ApplyMissteps();
 
                 GameData.instance.ComboPairCount.Value = 0;
             }
@@ -646,8 +649,9 @@ public class MemoryGameManager : MonoBehaviour {
         //DebugLogger.Log($"currentFloorData : {currentFloorData.minFloorCount} / {currentFloorData.clearFlipBonus}");
 
         int bonusFlipPoint = GameData.instance.MatchedPairCount.Value / 2;
-        GameData.instance.userData.FlipPoint.Value += bonusFlipPoint;
         DebugLogger.Log($"bonusFlipPoint : {bonusFlipPoint}");
+
+        GameData.instance.CalcFlipPoint(bonusFlipPoint);
 
         ResetFloorState();
 
@@ -738,7 +742,7 @@ public class MemoryGameManager : MonoBehaviour {
         }
         //DebugLogger.Log($"comboBonusPoint : {comboBonusPoint}");
 
-        GameData.instance.userData.SoulPoint.Value += comboBonusPoint;
+        GameData.instance.CalcSoulPoint(comboBonusPoint);
     }
 
     /// <summary>
@@ -1042,6 +1046,11 @@ public class MemoryGameManager : MonoBehaviour {
                 imgBackGround.DOFade(1.0f, 0.5f).SetEase(Ease.Linear);
             }).SetLink(gameObject);
     }
+
+    public float GetConditionPowerMultiplierByFloor() {
+        return currentFloorData.conditionPowerMultiplier;
+    }
+
 
     private void OnDestroy() {
         if (lookCountMap != null) {

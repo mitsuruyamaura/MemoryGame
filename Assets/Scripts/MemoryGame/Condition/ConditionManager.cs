@@ -14,11 +14,14 @@ public class ConditionManager : MonoBehaviour {
     [SerializeField] private Transform indicatorTran;
 
     protected ConditionInfoDisplayManager conditionInfoDisplayManager;
-    protected CancellationTokenSource cts;
+    protected ConditionEffectFactory conditionEffectFactory;
 
-    public void Setup(ConditionInfoDisplayManager conditionInfoDisplayManager) {
+    protected CancellationToken token;
+
+    public void Setup(ConditionInfoDisplayManager conditionInfoDisplayManager, ConditionEffectFactory conditionEffectFactory, CancellationToken token) {
         this.conditionInfoDisplayManager = conditionInfoDisplayManager;
-        cts = new();
+        this.conditionEffectFactory = conditionEffectFactory;
+        this.token = token;
 
         indicatorGenerator.SetUp();
     }
@@ -38,8 +41,11 @@ public class ConditionManager : MonoBehaviour {
             return;
         }
 
+        // コンディションの効果用クラスの生成
+        IConditionEffect conditionEffect = conditionEffectFactory.Create(conditionData.conditionType);
+
         // コンディション生成
-        ConditionProgressData conditionProgressData = new(conditionData, conditionPowerMultiplier, stackCount, RemoveConditionList, cts.Token);
+        ConditionProgressData conditionProgressData = new(conditionData, conditionPowerMultiplier, stackCount, RemoveConditionList, conditionEffect, token);
         conditionProgressDataList.Add(conditionProgressData);
 
         // インジケーター生成
@@ -110,5 +116,42 @@ public class ConditionManager : MonoBehaviour {
         } else {
             SoundManager.instance.PlaySE(SE_TYPE.Debuff);
         }
+    }
+
+    /// <summary>
+    /// お手付きのタイミングで実行される
+    /// 主に猛毒と散漫を処理する
+    /// </summary>
+    public void ApplyMissteps() {
+        foreach (ConditionProgressData condition in conditionProgressDataList) {
+            condition.ConditionEffect?.OnMisstep(condition);
+        }
+    }
+
+    /// <summary>
+    /// ソウルポイント獲得のタイミングで実行される
+    /// 主に幻覚を処理する
+    /// </summary>
+    /// <param name="baseExp"></param>
+    /// <returns></returns>
+    public int ApplyExpModifiers(int baseExp) {
+        int exp = baseExp;
+        foreach (ConditionProgressData condition in conditionProgressDataList) {
+            if (condition is IExpModifier modifier) {
+                exp = modifier.ModifyExp(exp);
+            }
+        }
+        return exp;
+    }
+
+
+    public int ApplyFlipPointModifiers(int baseFlipPoint) {
+        int flipPoint = baseFlipPoint;
+        foreach (ConditionProgressData condition in conditionProgressDataList) {
+            if (condition is IFlipPointModifier modifier) {
+                flipPoint = modifier.ModifyFlipPoint(flipPoint);
+            }
+        }
+        return flipPoint;
     }
 }

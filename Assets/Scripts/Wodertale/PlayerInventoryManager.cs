@@ -539,7 +539,7 @@ public class PlayerInventoryManager : MonoBehaviour {
             DebugLogger.Log($"expandRequiredPoint : {expandRequiredPoint}");
 
             // ポイント消費
-            GameData.instance.userData.SoulPoint.Value -= expandRequiredPoint;
+            GameData.instance.CalcSoulPoint(-expandRequiredPoint);
 
             // 消費ポイントの累計を更新
             GameData.instance.userData.consumeSoulPoint += expandRequiredPoint;
