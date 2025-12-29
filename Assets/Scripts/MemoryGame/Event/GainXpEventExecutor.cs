@@ -6,7 +6,8 @@ using System.Threading;
 /// </summary>
 public class GainXpEventExecutor : IEventExecutor {
     public async UniTask ExecuteAsync(BlessingData blessingData, CancellationToken token) {
-        GameData.instance.userData.SoulPoint.Value += (int)blessingData.value;
+        int soulPoint = (int)blessingData.value;
+        GameData.instance.CalcSoulPoint(soulPoint);
 
         // TODO SE
 

@@ -31,7 +31,7 @@ public enum BattleResultType {
     Runaway
 }
 
-public class BattleManager : MonoBehaviour {
+public class BattleManager : MonoBehaviour, IPoisonDamageApplier {
     public RectTransform playerFloatingViewTran;
     public RectTransform enemyFloatingViewTran;
 
@@ -328,7 +328,7 @@ public class BattleManager : MonoBehaviour {
             GameData.instance.userData.DefeatedEnemyCount.Value++;
 
             // 経験値獲得
-            GameData.instance.userData.SoulPoint.Value += enemyData.exp;
+            GameData.instance.CalcSoulPoint(enemyData.exp);
 
             // 敵のレアリティから同レアリティのアイテムテータを抽選
             ItemData itemData = DataBaseManager.instance.GetRandomItemByEnemyDrop(enemyData.rarity);
@@ -539,5 +539,14 @@ public class BattleManager : MonoBehaviour {
         SetBattleResultType(BattleResultType.Lose);
         stageUIManager.ShowBattleState(battleResultType);
         await BattleResultAsync(null);
+    }
+
+    /// <summary>
+    /// 毒ダメージ
+    /// 現在は未使用(参照1だが、それはインターフェース分)
+    /// </summary>
+    /// <param name="damage"></param>
+    public void ApplyPoisonDamage(int damage) {
+        UpdatePlayerHp(damage, EffectType.Magic, false);
     }
 }

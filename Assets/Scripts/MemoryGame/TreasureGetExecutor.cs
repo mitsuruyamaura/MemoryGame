@@ -46,8 +46,9 @@ public class TreasureGetExecutor {
             itemInfoDisplayManager.InventoryMaxInfo();
             DebugLogger.Log("バッグがいっぱい");
 
-            // ポイント半分獲得
-            GameData.instance.userData.SoulPoint.Value += itemData.price / 2;
+            // ポイント半分獲得            
+            int soulPoint = itemData.price / 2;
+            GameData.instance.CalcSoulPoint(soulPoint);
 
             // 獲得できずに終了
             return;

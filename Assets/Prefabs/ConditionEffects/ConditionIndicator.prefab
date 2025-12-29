@@ -170,6 +170,7 @@ MonoBehaviour:
   imgIcon: {fileID: 79984387759036849}
   txtRemainingPower: {fileID: 1205452546730021920}
   txtStackCount: {fileID: 2723852020791531803}
+  conditionHoverUI: {fileID: 2739436553535404375}
 --- !u!114 &2739436553535404375
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -1,0 +1,7 @@
+﻿/// <summary>
+/// ダメージ処理の抽象化用
+/// 今回は使わない
+/// </summary>
+public interface IDamageCalculator {
+    int CalculateDamage(TrapData trapData, BattleManager battleManager);
+}

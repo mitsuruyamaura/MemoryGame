@@ -72,6 +72,7 @@ public class GameData : AbstractSingleton<GameData> {
     public PlayFabServer playFabServer;       // ログインするゲームサーバー
 
     private PlayerInventoryManager playerInventoryManager;
+    private ConditionManager conditionManager;
 
 
     protected override void Awake() {
@@ -80,8 +81,9 @@ public class GameData : AbstractSingleton<GameData> {
         DOTween.Init().SetCapacity(1000, 500);
     }
 
-    public void Setup(PlayerInventoryManager playerInventoryManager) {
+    public void Setup(PlayerInventoryManager playerInventoryManager, ConditionManager conditionManager) {
         this.playerInventoryManager = playerInventoryManager;
+        this.conditionManager = conditionManager;
 
         // インベントリの上限サイズを設定
         limitInventorySize = int.Parse(DataBaseManager.instance.GetConstantDataValue("LIMIT_INVENTORY_SIZE"));
@@ -193,7 +195,7 @@ public class GameData : AbstractSingleton<GameData> {
         currentMemoryStoneIndex = currentMemoryStoneIndex % rankUpRequiredMemoryStoneCount;
 
         // めくれる回数を加算
-        userData.FlipPoint.Value += memoryStoneData.addFlipCount;
+        CalcFlipPoint(memoryStoneData.addFlipCount);
 
         // ランクアップの確認
         bool isRankUp = CheckMemoriaRankUp();
@@ -262,5 +264,25 @@ public class GameData : AbstractSingleton<GameData> {
     /// <returns></returns>
     public bool IsInventoryUnderMaxSize() {
         return playerInventoryManager.PlayerBackPackItemList.Count < playerCombatData.MaxInventorySize.Value;
+    }
+
+    /// <summary>
+    /// めくれる回数の増減
+    /// バフ・デバフがある場合にはそちらを適用した値で計算する
+    /// </summary>
+    /// <param name="basePoint"></param>
+    public void CalcFlipPoint(int basePoint) {
+        int finalPoint = conditionManager.ApplyFlipPointModifiers(basePoint);
+        userData.FlipPoint.Value = Mathf.Max(userData.FlipPoint.Value + finalPoint, 0);
+    }
+
+    /// <summary>
+    /// ソウルポイントの増減
+    /// バフ・デバフがある場合にはそちらを適用した値で計算する
+    /// </summary>
+    /// <param name="baseSoulPoint"></param>
+    public void CalcSoulPoint(int baseSoulPoint) {
+        int soulPoint = conditionManager.ApplyExpModifiers(baseSoulPoint);
+        userData.SoulPoint.Value = Mathf.Max(userData.SoulPoint.Value + soulPoint, 0);
     }
 }

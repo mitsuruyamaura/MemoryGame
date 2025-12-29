@@ -15,18 +15,18 @@ public class CardFactory {
     private TreasureGetExecutor treasureGetExecutor;         // 宝箱獲得実行処理クラス
     private EventExecutor eventExecutor;
 
-    public CardFactory(MemoryGameManager memoryGameManager, BattleManager battleManager, TrapDisarmQTEManager trapDisarmQTEManager, MemoryLinkManager memoryLinkManager, PlayerInventoryManager playerInventoryManager, ItemInfoDisplayManager itemInfoDisplayManager) {
-        InitExecutors(memoryGameManager, battleManager, trapDisarmQTEManager, memoryLinkManager, playerInventoryManager, itemInfoDisplayManager);
+    public CardFactory(MemoryGameManager memoryGameManager, BattleManager battleManager, TrapDisarmQTEManager trapDisarmQTEManager, MemoryLinkManager memoryLinkManager, PlayerInventoryManager playerInventoryManager, ItemInfoDisplayManager itemInfoDisplayManager, ConditionManager conditionManager) {
+        InitExecutors(memoryGameManager, battleManager, trapDisarmQTEManager, memoryLinkManager, playerInventoryManager, itemInfoDisplayManager, conditionManager);
     }
 
     /// <summary>
     /// 各カードの実行処理クラスの初期化
     /// コンストラクタで呼び出して依存性を注入
     /// </summary>
-    public void InitExecutors(MemoryGameManager memoryGameManager, BattleManager battleManager, TrapDisarmQTEManager trapDisarmQTEManager, MemoryLinkManager memoryLinkManager, PlayerInventoryManager playerInventoryManager, ItemInfoDisplayManager itemInfoDisplayManager) {
+    public void InitExecutors(MemoryGameManager memoryGameManager, BattleManager battleManager, TrapDisarmQTEManager trapDisarmQTEManager, MemoryLinkManager memoryLinkManager, PlayerInventoryManager playerInventoryManager, ItemInfoDisplayManager itemInfoDisplayManager, ConditionManager conditionManager) {
         // 各 Executor 生成
         battleExecutor = new BattleExecutor(battleManager);
-        trapExecutor = new TrapExecutor(battleManager, trapDisarmQTEManager);
+        trapExecutor = new TrapExecutor(battleManager, trapDisarmQTEManager, conditionManager, memoryGameManager);
         memoriaRankUpExecutor = new MemoriaRankUpExecutor(memoryLinkManager);
         treasureGetExecutor = new TreasureGetExecutor(itemInfoDisplayManager, playerInventoryManager);
         eventExecutor = new EventExecutor(battleManager, memoryGameManager, playerInventoryManager);
