@@ -1,4 +1,4 @@
-﻿public enum TrapType {
+﻿public enum TrapActionType {
     None,
     Damage,
     ItemDebuff,

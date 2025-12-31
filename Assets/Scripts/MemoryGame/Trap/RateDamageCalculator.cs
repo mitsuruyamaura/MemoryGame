@@ -5,7 +5,7 @@
 /// 今回は使わない
 /// </summary>
 public class RateDamageCalculator : IDamageCalculator {
-    public int CalculateDamage(TrapData trapData, BattleManager battleManager) {
+    public int CalculateDamage(TrapActionData trapData, BattleManager battleManager) {
         int maxHp = GameData.instance.charaStatus.MaxHp.Value;
         int currentHp = battleManager.PlayerHP.Value;
 

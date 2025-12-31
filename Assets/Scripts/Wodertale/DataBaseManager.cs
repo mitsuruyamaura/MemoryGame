@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class DataBaseManager : AbstractSingleton<DataBaseManager> {
     public CardTypeSO cardTypeSO;
@@ -13,6 +14,8 @@ public class DataBaseManager : AbstractSingleton<DataBaseManager> {
     public BlessingDataSO blessingDataSO;
     public ConstantDataSO constantDataSO;
     public ConditionDataSO conditionDataSO;
+    public TrapActionDataSO trapActionDataSO;
+
 
     public EntryData entryData;           // 選択した難易度の保持用。Title シーン再読み込み時にリセットされる
 
@@ -120,7 +123,12 @@ public class DataBaseManager : AbstractSingleton<DataBaseManager> {
         return rarityItemDataList[index];
     }
 
-
+    /// <summary>
+    /// 抽選されたレアリティ内からランダムなトラップを取得
+    /// </summary>
+    /// <param name="trapRarities"></param>
+    /// <param name="trapRates"></param>
+    /// <returns></returns>
     public TrapData GetRandomTrapByRarity(Rarity[] trapRarities, int[] trapRates) {
         if (trapRarities == null || trapRates == null ||
             trapRarities.Length != trapRates.Length || trapRarities.Length == 0) {
@@ -313,6 +321,13 @@ public class DataBaseManager : AbstractSingleton<DataBaseManager> {
 
     public ConditionData GetConditionData(ConditionType searchConditionType) {
         return conditionDataSO.conditionDatasList.FirstOrDefault(data => data.conditionType == searchConditionType);
+    }
+
+    public List<TrapActionData> GetTrapActionDataList(int searchTrapId) {
+        return trapActionDataSO.trapActionDataList
+                   .Where(data => data.trapId == searchTrapId)
+                   .OrderBy(data => data.order)
+                   .ToList();
     }
 
     /// <summary>
