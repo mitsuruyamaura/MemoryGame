@@ -6663,11 +6663,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1316648244105173245, guid: cb476e1158d9694498fde272f5fd3582, type: 3}
       propertyPath: sheetDatas.Array.size
-      value: 8
+      value: 9
       objectReference: {fileID: 0}
     - target: {fileID: 1316648244105173245, guid: cb476e1158d9694498fde272f5fd3582, type: 3}
       propertyPath: sheetDatas.Array.data[7].SheetName
       value: 16
+      objectReference: {fileID: 0}
+    - target: {fileID: 1316648244105173245, guid: cb476e1158d9694498fde272f5fd3582, type: 3}
+      propertyPath: sheetDatas.Array.data[8].SheetName
+      value: 17
       objectReference: {fileID: 0}
     - target: {fileID: 6862144718862645949, guid: cb476e1158d9694498fde272f5fd3582, type: 3}
       propertyPath: m_Name
