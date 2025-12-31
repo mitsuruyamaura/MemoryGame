@@ -12,7 +12,7 @@ public class TrapExecutor {
     private ConditionManager conditionManager;
     private MemoryGameManager memoryGameManager;
 
-    private readonly Dictionary<TrapType, ITrap> executorMap;
+    private readonly Dictionary<TrapActionType, ITrapEffect> executorMap;
     private readonly int symbolTypeCount = 4;    // QTEシンボル種類数
     private readonly float timeLimitSeconds = 5f; // QTE制限時間(秒)   ConstantData から取得するように変更
 
@@ -23,9 +23,9 @@ public class TrapExecutor {
         this.memoryGameManager = memoryGameManager;
 
         executorMap = new() {
-            { TrapType.Damage, new DamageTrapExecutor(battleManager) },
-            { TrapType.FlipCountDown, new FlipCountDownTrapExecutor() },
-            { TrapType.PlayerDebuff, new PlayerDebuffTrapExecutor(conditionManager, memoryGameManager)},
+            { TrapActionType.Damage, new DamageTrapExecutor(battleManager) },
+            { TrapActionType.FlipCountDown, new FlipCountDownTrapExecutor() },
+            { TrapActionType.PlayerDebuff, new PlayerDebuffTrapExecutor(conditionManager, memoryGameManager)},
         };
 
         float timeLimitFromData = float.Parse(DataBaseManager.instance.GetConstantDataValue("LIMIT_TRAP_DISARM_TIME_SECOND"));
@@ -54,21 +54,19 @@ public class TrapExecutor {
         } else {
             DebugLogger.Log("トラップ解除失敗。それぞれのトラップを実行");
 
-            // 複数の効果を適用する場合、これを復活させる
-            //foreach (var action in trapData.actions) {
+            // トラップ内の複数の効果を順番に適用する
+            foreach (TrapActionData trapActionData in trapData.trapActionDataList) {
 
-                // マッピングされている TrapType から、トラップ用のインスタンスを見つけて生成
-                if (executorMap.TryGetValue(trapData.type, out var trapExecutor)) {
-                    DebugLogger.Log($"TrapType: {trapData.type}");
-                    await trapExecutor.ExecuteAsync(trapData, token);
+                // マッピングされている TrapActionType から、トラップ用のインスタンスを見つけて生成
+                if (executorMap.TryGetValue(trapActionData.trapActionType, out var trapExecutor)) {
+                    DebugLogger.Log($"TrapActionType: {trapActionData.trapActionType}");
+                    await trapExecutor.ExecuteTrapEffectAsync(trapActionData, token);
                 } else {
-                    DebugLogger.Log($"未登録のTrapType: {trapData.type}");
+                    DebugLogger.Log($"未登録のTrapType: {trapActionData.trapActionType}");
                 }
-            //}
-
+            }
             GameData.instance.userData.TrapFailureCount.Value++;
         }
-
         GameData.instance.CurrentGameState.Value = GameState.Play;
     }
 

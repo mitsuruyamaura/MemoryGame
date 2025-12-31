@@ -5,24 +5,24 @@ using UnityEngine;
 /// <summary>
 /// ダメージ罠実行クラス
 /// </summary>
-public class DamageTrapExecutor : ITrap {
+public class DamageTrapExecutor : ITrapEffect {
     private BattleManager battleManager;
     public DamageTrapExecutor(BattleManager battleManager) {
         this.battleManager = battleManager;
     }
 
-    public async UniTask ExecuteAsync(TrapData trapData, CancellationToken token) {
-        DebugLogger.Log(trapData.id);
+    public async UniTask ExecuteTrapEffectAsync(TrapActionData trapActionData, CancellationToken token) {
+        DebugLogger.Log(trapActionData.trapId);
 
-        if (trapData.trapDamageType == TrapDamageType.SetRemainingHpRate) {
+        if (trapActionData.trapDamageType == TrapDamageType.SetRemainingHpRate) {
             // ダメージ = 残り HP が指定％ になるようにする
-            int delta = CalcSetRemainingHpRateDamage(trapData);
+            int delta = CalcSetRemainingHpRateDamage(trapActionData);
 
             // 指定 ％ 残すので、シールド適用なしで処理する
             battleManager.UpdatePlayerHp(delta, EffectType.Magic, false);
         } else {
             // 最大 Hp に指定割合をかけてダメージを算出
-            int damage = CalcMaxHpRateDamage(trapData);
+            int damage = CalcMaxHpRateDamage(trapActionData);
 
             // ダメージ(シールド適用可能)
             battleManager.UpdatePlayerHp(-damage, EffectType.Physical, false);
@@ -39,10 +39,10 @@ public class DamageTrapExecutor : ITrap {
     /// <summary>
     /// 最大 Hp に指定割合をかけてダメージを算出
     /// </summary>
-    /// <param name="trapData"></param>
+    /// <param name="trapActionData"></param>
     /// <returns></returns>
-    private int CalcMaxHpRateDamage(TrapData trapData) {
-        float damageRate = trapData.value;
+    private int CalcMaxHpRateDamage(TrapActionData trapActionData) {
+        float damageRate = trapActionData.value;
 
         // 最大 Hp に指定割合をかけてダメージを算出
         int damage = Mathf.FloorToInt(GameData.instance.charaStatus.MaxHp.Value * damageRate);
@@ -54,12 +54,12 @@ public class DamageTrapExecutor : ITrap {
     /// <summary>
     /// ダメージ = 残り HP が指定％ になるようにする(シールド適用なしで使う)
     /// </summary>
-    /// <param name="trapData"></param>
+    /// <param name="trapActionData"></param>
     /// <returns></returns>
-    private int CalcSetRemainingHpRateDamage(TrapData trapData) {
+    private int CalcSetRemainingHpRateDamage(TrapActionData trapActionData) {
         int maxHp = GameData.instance.charaStatus.MaxHp.Value;
         int currentHp = battleManager.PlayerHP.Value;
-        float damageRate = trapData.value;
+        float damageRate = trapActionData.value;
 
         // 目標HP(処理後のHP)を計算
         int targetHp = Mathf.FloorToInt(maxHp * (1f - damageRate));

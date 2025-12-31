@@ -26,6 +26,7 @@ public enum SheetName {
     FloorData,
     ConstantData,
     ConditionData,
+    TrapActionData,
 
 }
 

@@ -4,7 +4,7 @@ using System.Threading;
 /// <summary>
 /// デバフのコンディション付与トラップの実行クラス
 /// </summary>
-public class PlayerDebuffTrapExecutor : ITrap {
+public class PlayerDebuffTrapExecutor : ITrapEffect {
     private ConditionManager conditionManager;
     private MemoryGameManager memoryGameManager;
 
@@ -13,8 +13,8 @@ public class PlayerDebuffTrapExecutor : ITrap {
         this.memoryGameManager = memoryGameManager;
     }
 
-    public async UniTask ExecuteAsync(TrapData trapData, CancellationToken token) {
-        ConditionData conditionData = DataBaseManager.instance.GetConditionData(trapData.conditionType);
+    public async UniTask ExecuteTrapEffectAsync(TrapActionData trapActionData, CancellationToken token) {
+        ConditionData conditionData = DataBaseManager.instance.GetConditionData(trapActionData.conditionType);
         float conditionPowerMultiplier = memoryGameManager.GetConditionPowerMultiplierByFloor();
         conditionManager.AddConditionList(conditionData, conditionPowerMultiplier, 1);
 

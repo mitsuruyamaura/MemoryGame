@@ -3,5 +3,5 @@
 /// 今回は使わない
 /// </summary>
 public interface IDamageCalculator {
-    int CalculateDamage(TrapData trapData, BattleManager battleManager);
+    int CalculateDamage(TrapActionData trapData, BattleManager battleManager);
 }

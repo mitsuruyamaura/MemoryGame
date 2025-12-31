@@ -63,6 +63,9 @@ public class GSSReceiver : MonoBehaviour {
             DataBaseManager.instance.floorDataSO.floorDataList =
                 new List<FloorData>(sheetDataslist.Find(x => x.SheetName == SheetName.FloorData).DatasList.Select(x => new FloorData(x)).ToList());
 
+            DataBaseManager.instance.trapActionDataSO.trapActionDataList =
+                new List<TrapActionData>(sheetDataslist.Find(x => x.SheetName == SheetName.TrapActionData).DatasList.Select(x => new TrapActionData(x)).ToList());
+
             DataBaseManager.instance.trapDataSO.trapDataList =
                 new List<TrapData>(sheetDataslist.Find(x => x.SheetName == SheetName.TrapData).DatasList.Select(x => new TrapData(x)).ToList());
 
