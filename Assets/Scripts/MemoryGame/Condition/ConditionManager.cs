@@ -45,7 +45,7 @@ public class ConditionManager : MonoBehaviour {
         IConditionEffect conditionEffect = conditionEffectFactory.Create(conditionData.conditionType);
 
         // コンディション生成
-        ConditionProgressData conditionProgressData = new(conditionData, conditionPowerMultiplier, stackCount, RemoveConditionList, conditionEffect, token);
+        ConditionProgressData conditionProgressData = new(conditionData, conditionPowerMultiplier, stackCount, conditionEffect, token);
         conditionProgressDataList.Add(conditionProgressData);
 
         // インジケーター生成
@@ -75,8 +75,13 @@ public class ConditionManager : MonoBehaviour {
         // 治癒力の値を取得
         int recoveryPower = GameData.instance.userData.DebuffRecoveryPower.Value;
 
-        // 各コンディションの強度から治癒力分だけ減算。強度 0 以下になったら自動的にリムーブが実行される
-        conditionProgressDataList.ForEach(data => data?.AddRemainingPower(recoveryPower));
+        // 各コンディションの強度から治癒力分だけ減算。強度 0 以下になったらリムーブする
+        for(int i = conditionProgressDataList.Count -1; i >= 0; i--) {
+            bool isExpired = conditionProgressDataList[i].UpdateRemainingPower(recoveryPower);
+            if (isExpired) {
+                conditionProgressDataList.RemoveAt(i);
+            }
+        }
     }
 
     /// <summary>

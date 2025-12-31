@@ -17,7 +17,7 @@ public class DamageEffect : IConditionEffect {
         float damageRate = data.ConditionData.value * data.StackCount.Value;
         int damage = Mathf.FloorToInt(GameData.instance.charaStatus.MaxHp.Value * damageRate);
 
-        battleManager.UpdatePlayerHp(damage, EffectType.Magic, false);
+        battleManager.UpdatePlayerHp(-damage, EffectType.Magic, false);
     }
 
     public void OnTurnEnd(ConditionProgressData data) {}
