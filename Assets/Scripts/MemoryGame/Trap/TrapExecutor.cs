@@ -56,15 +56,15 @@ public class TrapExecutor {
         } else {
             DebugLogger.Log("トラップ解除失敗。それぞれのトラップを実行");
 
+            // 画面表示
+            await itemInfoDisplayManager.ShowTrapInfoAsync(trapData, token);
+
             // トラップ内の複数の効果を順番に適用する
             foreach (TrapActionData trapActionData in trapData.trapActionDataList) {
 
                 // マッピングされている TrapActionType から、トラップ用のインスタンスを見つけて生成
                 if (executorMap.TryGetValue(trapActionData.trapActionType, out var trapExecutor)) {
                     DebugLogger.Log($"TrapActionType: {trapActionData.trapActionType}");
-
-                    // 画面表示
-                    await itemInfoDisplayManager.ShowTrapInfoAsync(trapData, token);
 
                     // 効果適用
                     await trapExecutor.ExecuteTrapEffectAsync(trapActionData, token);
