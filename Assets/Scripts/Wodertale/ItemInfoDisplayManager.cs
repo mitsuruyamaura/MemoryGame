@@ -27,6 +27,9 @@ public class ItemInfoDisplayManager : MonoBehaviour {
     [SerializeField] private InfoViewGenerator blessingInfoViewGenerator;
     [SerializeField] private Transform blessingInfoViewTran;
 
+    [SerializeField] private InfoViewGenerator trapInfoViewGenerator;
+    [SerializeField] private Transform trapInfoViewTran;
+
     public bool isTreasureShow;
 
     private IDisposable disposable;
@@ -40,6 +43,7 @@ public class ItemInfoDisplayManager : MonoBehaviour {
 
         itemInfoViewGenerator.InitObjectPool();
         blessingInfoViewGenerator.InitObjectPool();
+        trapInfoViewGenerator.InitObjectPool();
 
         txtInventoryMaxInfo.DOFade(0, 0).SetLink(gameObject);
     }
@@ -191,6 +195,34 @@ public class ItemInfoDisplayManager : MonoBehaviour {
         await UniTask.WaitUntil(() => isTouch == true, cancellationToken: token);
 
         blessingInfoView?.Release();
+        disposable.Dispose();
+        cgFilter.blocksRaycasts = false;
+        cgFilter.alpha = 0f;
+
+        HideItemInfo();
+    }
+
+    /// <summary>
+    /// 罠解除に失敗した際のトラップカード獲得時の画面表示
+    /// </summary>
+    /// <param name="trapData"></param>
+    /// <param name="token"></param>
+    /// <returns></returns>
+    public async UniTask ShowTrapInfoAsync(TrapData trapData, CancellationToken token) {
+        // トラップカードの情報表示
+        TrapInfoView trapInfoView = (TrapInfoView)trapInfoViewGenerator.GetObjectFromPool(trapInfoViewTran);
+        trapInfoView.ShowTrapInfo(trapData);
+
+        // 画面タップするまで待機(ほかの UI には触らないようにする)
+        bool isTouch = false;
+        cgFilter.blocksRaycasts = true;
+        cgFilter.alpha = 1.0f;
+
+        disposable = btnFilter.OnClickExt(() => isTouch = true, this);
+
+        await UniTask.WaitUntil(() => isTouch == true, cancellationToken: token);
+
+        trapInfoView?.Release();
         disposable.Dispose();
         cgFilter.blocksRaycasts = false;
         cgFilter.alpha = 0f;

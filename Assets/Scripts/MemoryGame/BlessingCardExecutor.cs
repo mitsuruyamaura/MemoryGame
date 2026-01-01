@@ -20,6 +20,8 @@ public class BlessingCardExecutor : ICardExecutor {
         if (card.cardData.masterData is BlessingData blessingData) {
             // 画面表示
             await itemInfoDisplayManager.ShowBlessingInfoAsync(blessingData, token);
+
+            // 効果適用
             await eventExecutor.ExecuteEventAsync(blessingData, token);
         }
     }
