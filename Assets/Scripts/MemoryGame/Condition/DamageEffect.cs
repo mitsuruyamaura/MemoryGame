@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Cysharp.Threading.Tasks;
+using UnityEngine;
 
 /// <summary>
 /// ダメージを与える効果
@@ -18,6 +19,11 @@ public class DamageEffect : IConditionEffect {
         int damage = Mathf.FloorToInt(GameData.instance.charaStatus.MaxHp.Value * damageRate);
 
         battleManager.UpdatePlayerHp(-damage, EffectType.Magic, false);
+
+        // Hp が 0 になったらゲームオーバー
+        if (battleManager.PlayerHP.Value <= 0) {
+            battleManager.ForceGameEndAsync().Forget();
+        }
     }
 
     public void OnTurnEnd(ConditionProgressData data) {}
