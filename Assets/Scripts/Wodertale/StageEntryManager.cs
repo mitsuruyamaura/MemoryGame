@@ -54,7 +54,7 @@ public class StageEntryManager : MonoBehaviour {
 
         memoryLinkManager.Setup();
 
-        GameData.instance.Setup(playerInventoryManager, conditionManager);
+        GameData.instance.Setup(playerInventoryManager, conditionManager, floatingViewGenerator);
 
         battleManager.SetUp(stageUIManager, cardFactory, enemyInfoDisplayManager, floatingViewGenerator, playerInventoryManager);
 

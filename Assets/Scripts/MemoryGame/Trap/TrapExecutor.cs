@@ -11,16 +11,18 @@ public class TrapExecutor {
     private TrapDisarmQTEManager trapDisarmQTEManager;
     private ConditionManager conditionManager;
     private MemoryGameManager memoryGameManager;
+    private ItemInfoDisplayManager itemInfoDisplayManager;
 
     private readonly Dictionary<TrapActionType, ITrapEffect> executorMap;
     private readonly int symbolTypeCount = 4;    // QTEシンボル種類数
     private readonly float timeLimitSeconds = 5f; // QTE制限時間(秒)   ConstantData から取得するように変更
 
-    public TrapExecutor(BattleManager battleManager, TrapDisarmQTEManager trapDisarmQTEManager, ConditionManager conditionManager, MemoryGameManager memoryGameManager) {
+    public TrapExecutor(BattleManager battleManager, TrapDisarmQTEManager trapDisarmQTEManager, ConditionManager conditionManager, MemoryGameManager memoryGameManager, ItemInfoDisplayManager itemInfoDisplayManager) {
         this.battleManager = battleManager;
         this.trapDisarmQTEManager = trapDisarmQTEManager;
         this.conditionManager = conditionManager;
         this.memoryGameManager = memoryGameManager;
+        this.itemInfoDisplayManager = itemInfoDisplayManager;
 
         executorMap = new() {
             { TrapActionType.Damage, new DamageTrapExecutor(battleManager) },
@@ -60,6 +62,11 @@ public class TrapExecutor {
                 // マッピングされている TrapActionType から、トラップ用のインスタンスを見つけて生成
                 if (executorMap.TryGetValue(trapActionData.trapActionType, out var trapExecutor)) {
                     DebugLogger.Log($"TrapActionType: {trapActionData.trapActionType}");
+
+                    // 画面表示
+                    await itemInfoDisplayManager.ShowTrapInfoAsync(trapData, token);
+
+                    // 効果適用
                     await trapExecutor.ExecuteTrapEffectAsync(trapActionData, token);
                 } else {
                     DebugLogger.Log($"未登録のTrapType: {trapActionData.trapActionType}");

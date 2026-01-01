@@ -26,7 +26,7 @@ public class CardFactory {
     public void InitExecutors(MemoryGameManager memoryGameManager, BattleManager battleManager, TrapDisarmQTEManager trapDisarmQTEManager, MemoryLinkManager memoryLinkManager, PlayerInventoryManager playerInventoryManager, ItemInfoDisplayManager itemInfoDisplayManager, ConditionManager conditionManager) {
         // 各 Executor 生成
         battleExecutor = new BattleExecutor(battleManager);
-        trapExecutor = new TrapExecutor(battleManager, trapDisarmQTEManager, conditionManager, memoryGameManager);
+        trapExecutor = new TrapExecutor(battleManager, trapDisarmQTEManager, conditionManager, memoryGameManager, itemInfoDisplayManager);
         memoriaRankUpExecutor = new MemoriaRankUpExecutor(memoryLinkManager);
         treasureGetExecutor = new TreasureGetExecutor(itemInfoDisplayManager, playerInventoryManager);
         eventExecutor = new EventExecutor(battleManager, memoryGameManager, playerInventoryManager);

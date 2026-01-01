@@ -215,6 +215,41 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 326303}
   m_CullTransparentMesh: 1
+--- !u!1 &4663020
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4663021}
+  m_Layer: 5
+  m_Name: TrapInfoViewTran
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &4663021
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4663020}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 295031296}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &8618922
 GameObject:
   m_ObjectHideFlags: 0
@@ -9119,6 +9154,7 @@ RectTransform:
   - {fileID: 1349598667}
   - {fileID: 536009499}
   - {fileID: 2122026277}
+  - {fileID: 4663021}
   - {fileID: 353101979}
   - {fileID: 1257287357}
   m_Father: {fileID: 0}
@@ -18983,7 +19019,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 276495858}
   m_HandleRect: {fileID: 276495857}
   m_Direction: 0
-  m_Value: 0
+  m_Value: 1
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -22058,6 +22094,14 @@ PrefabInstance:
       propertyPath: getItemNoList.Array.size
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4722163574315472991, guid: fb9764e6b43fc284da2e5263bb82276e, type: 3}
+      propertyPath: flipPointFloatingViewTran
+      value: 
+      objectReference: {fileID: 2115808728}
+    - target: {fileID: 4722163574315472991, guid: fb9764e6b43fc284da2e5263bb82276e, type: 3}
+      propertyPath: soulPointFloatingViewTran
+      value: 
+      objectReference: {fileID: 1184593130}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -27269,6 +27313,7 @@ RectTransform:
   - {fileID: 95672055}
   - {fileID: 1699756564}
   - {fileID: 1998298702}
+  - {fileID: 2115808728}
   m_Father: {fileID: 6985294761353623262}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
@@ -28254,6 +28299,7 @@ RectTransform:
   - {fileID: 249478005}
   - {fileID: 992013797}
   - {fileID: 625249512}
+  - {fileID: 1184593130}
   m_Father: {fileID: 6985294761353623262}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
@@ -28869,6 +28915,41 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
+--- !u!1 &1184593129
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1184593130}
+  m_Layer: 5
+  m_Name: FloatingViewTran_soul
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1184593130
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1184593129}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1162225600}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: -273, y: 0}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1187334776
 GameObject:
   m_ObjectHideFlags: 0
@@ -40217,7 +40298,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -292}
+  m_AnchoredPosition: {x: 0, y: -434}
   m_SizeDelta: {x: 4000, y: 300}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1632545618
@@ -41220,6 +41301,7 @@ GameObject:
   - component: {fileID: 1670440042}
   - component: {fileID: 1670440041}
   - component: {fileID: 1670440040}
+  - component: {fileID: 1670440044}
   m_Layer: 0
   m_Name: ItemInfoDisplayManager
   m_TagString: Untagged
@@ -41284,6 +41366,8 @@ MonoBehaviour:
   txtInventoryMaxInfo: {fileID: 1953483849}
   blessingInfoViewGenerator: {fileID: 1670440041}
   blessingInfoViewTran: {fileID: 2122026277}
+  trapInfoViewGenerator: {fileID: 1670440044}
+  trapInfoViewTran: {fileID: 4663021}
   isTreasureShow: 0
 --- !u!4 &1670440043
 Transform:
@@ -41300,6 +41384,20 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1670440044
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1670440039}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9437e19182258e34ea0861341ca3d9f3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InfoViewGenerator
+  initialPoolSize: 5
+  objectPoolPrefab: {fileID: 1395906440979918706, guid: 9dd5ba13c7db5544882eab1aa631a677, type: 3}
 --- !u!1 &1670680435
 GameObject:
   m_ObjectHideFlags: 0
@@ -54165,6 +54263,41 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2114746169}
   m_CullTransparentMesh: 1
+--- !u!1 &2115808727
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2115808728}
+  m_Layer: 5
+  m_Name: FloatingViewTran_flip
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &2115808728
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2115808727}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1107409557}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 39.8, y: 32.4}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &2118575062
 GameObject:
   m_ObjectHideFlags: 0
@@ -56027,7 +56160,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -11.2499695, y: 21.200012}
+  m_AnchoredPosition: {x: -11.2500305, y: 21.200012}
   m_SizeDelta: {x: -130.7, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &4023111113357351616

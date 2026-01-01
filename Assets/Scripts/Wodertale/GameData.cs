@@ -3,6 +3,7 @@ using UnityEngine;
 using R3;
 using DG.Tweening;
 using System.Linq;
+using Cysharp.Threading.Tasks;
 
 /// <summary>
 /// インベントリ用のアイテムデータ
@@ -57,6 +58,8 @@ public class GameData : AbstractSingleton<GameData> {
     public List<int> getItemNoList = new();       // 獲得したことのあるアイテムのリスト
 
     [SerializeField] private Transform conditionEffectTran;
+    [SerializeField] private Transform flipPointFloatingViewTran;
+    [SerializeField] private Transform soulPointFloatingViewTran;
 
     public SerializableReactiveProperty<int> EnchantPoint = new(0);
     public int consumeEnchantPoint;
@@ -73,6 +76,7 @@ public class GameData : AbstractSingleton<GameData> {
 
     private PlayerInventoryManager playerInventoryManager;
     private ConditionManager conditionManager;
+    private FloatingViewGenerator floatingViewGenerator;
 
 
     protected override void Awake() {
@@ -81,9 +85,10 @@ public class GameData : AbstractSingleton<GameData> {
         DOTween.Init().SetCapacity(1000, 500);
     }
 
-    public void Setup(PlayerInventoryManager playerInventoryManager, ConditionManager conditionManager) {
+    public void Setup(PlayerInventoryManager playerInventoryManager, ConditionManager conditionManager, FloatingViewGenerator floatingViewGenerator) {
         this.playerInventoryManager = playerInventoryManager;
         this.conditionManager = conditionManager;
+        this.floatingViewGenerator = floatingViewGenerator;
 
         // インベントリの上限サイズを設定
         limitInventorySize = int.Parse(DataBaseManager.instance.GetConstantDataValue("LIMIT_INVENTORY_SIZE"));
@@ -274,6 +279,12 @@ public class GameData : AbstractSingleton<GameData> {
     public void CalcFlipPoint(int basePoint) {
         int finalPoint = conditionManager.ApplyFlipPointModifiers(basePoint);
         userData.FlipPoint.Value = Mathf.Max(userData.FlipPoint.Value + finalPoint, 0);
+
+        FloatingView floatingView = (FloatingView)floatingViewGenerator.GetObjectFromPool(flipPointFloatingViewTran);
+        FloatingViewType floatingViewType = finalPoint > 0 ? FloatingViewType.heal: FloatingViewType.normalDamage;
+        floatingView.SetColor(floatingViewType);
+        floatingView.SetViewFontSize(floatingViewType);
+        floatingView.UpdateText(finalPoint.ToString()).Forget();
     }
 
     /// <summary>
@@ -284,5 +295,11 @@ public class GameData : AbstractSingleton<GameData> {
     public void CalcSoulPoint(int baseSoulPoint) {
         int soulPoint = conditionManager.ApplyExpModifiers(baseSoulPoint);
         userData.SoulPoint.Value = Mathf.Max(userData.SoulPoint.Value + soulPoint, 0);
+
+        FloatingView floatingView = (FloatingView)floatingViewGenerator.GetObjectFromPool(soulPointFloatingViewTran);
+        FloatingViewType floatingViewType = soulPoint > 0 ? FloatingViewType.heal : FloatingViewType.normalDamage;
+        floatingView.SetColor(floatingViewType);
+        floatingView.SetViewFontSize(floatingViewType);
+        floatingView.UpdateText(soulPoint.ToString()).Forget();
     }
 }
