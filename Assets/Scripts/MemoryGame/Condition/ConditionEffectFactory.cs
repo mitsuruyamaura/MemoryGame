@@ -12,6 +12,8 @@ public class ConditionEffectFactory {
         return conditionType switch {
             ConditionType.Poison => new DamageEffect(battleManager),
             ConditionType.Distraction => new SubtractFlipCountEffect(),
+            ConditionType.Hallucination => new NoFlipCountEffect(),
+            ConditionType.Seal => new NoExpEffect(),
             _ => null
         };
     }

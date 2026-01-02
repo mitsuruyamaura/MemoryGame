@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using NUnit.Framework.Interfaces;
+using System.Text;
+using UnityEngine;
 using UnityEngine.UI;
 
 public class ItemInfoView : InfoViewBase {
@@ -38,11 +40,21 @@ public class ItemInfoView : InfoViewBase {
             txtDescs[0].text += "クリティカル率 : " + backPackInItem.itemData.criticalRate.ToString("F1") + " %\n";  // CriticalRate
             txtDescs[0].text += "クリティカルダメージ率 : " + backPackInItem.itemData.criticalDamageRate.ToString("F1") + " %\n";  // CriticalDamage
         } else {
-            txtDescs[0].text += $"パリィ 成功率 : {backPackInItem.itemData.parryRate.ToString("F2")} %\n";
-            txtDescs[0].text += $"ダメージ吸収 成功率 : {backPackInItem.itemData.absorptionRate.ToString("F2")} %\n";
-            txtDescs[0].text += $"ダメージ反射 成功率 : {backPackInItem.itemData.reflectionRate.ToString("F2")} %\n";
-            txtDescs[0].text += $"交渉 成功率 : {backPackInItem.itemData.settlementRate.ToString("F2")} %\n";
-            txtDescs[0].text += $"罠回避 成功率 : {backPackInItem.itemData.tAvoid.ToString("F2")} %\n";
+            StringBuilder sb = new();
+
+            AppendIfNotZero(sb, "受流し 成功率", backPackInItem.itemData.parryRate);
+            AppendIfNotZero(sb, "ダメージ吸収 成功率", backPackInItem.itemData.absorptionRate);
+            AppendIfNotZero(sb, "ダメージ反射 成功率", backPackInItem.itemData.reflectionRate);
+            AppendIfNotZero(sb, "交渉 成功率", backPackInItem.itemData.settlementRate);
+            AppendIfNotZero(sb, "治癒力", backPackInItem.itemData.recoveryPower);
+
+            AppendIfNotZero(sb, "幻覚 抵抗率", backPackInItem.itemData.hallucinationResist);
+            AppendIfNotZero(sb, "猛毒 抵抗率", backPackInItem.itemData.poisonResist);
+            AppendIfNotZero(sb, "散漫 抵抗率", backPackInItem.itemData.distractionResist);
+            AppendIfNotZero(sb, "封印 抵抗率", backPackInItem.itemData.sealResist);
+            AppendIfNotZero(sb, "呪い 抵抗率", backPackInItem.itemData.curseResist);
+
+            txtDescs[0].text += sb.ToString();
         }
 
         string valueName = backPackInItem.itemData.effectType switch {
@@ -125,11 +137,21 @@ public class ItemInfoView : InfoViewBase {
             txtDescs[0].text += "クリティカル率 : " + itemData.criticalRate.ToString("F1") + " %\n";  // CriticalRate
             txtDescs[0].text += "クリティカルダメージ率 : " + itemData.criticalDamageRate.ToString("F1") + " %\n";  // CriticalDamage
         } else {
-            txtDescs[0].text += $"パリィ 成功率 : {itemData.parryRate.ToString("F2")} %\n";
-            txtDescs[0].text += $"ダメージ吸収 成功率 : {itemData.absorptionRate.ToString("F2")} %\n";
-            txtDescs[0].text += $"ダメージ反射 成功率 : {itemData.reflectionRate.ToString("F2")} %\n";
-            txtDescs[0].text += $"交渉 成功率 : {itemData.settlementRate.ToString("F2")} %\n";
-            txtDescs[0].text += $"罠回避 成功率 : {itemData.tAvoid.ToString("F2")} %\n";
+            StringBuilder sb = new();
+
+            AppendIfNotZero(sb, "受流し 成功率", itemData.parryRate);
+            AppendIfNotZero(sb, "ダメージ吸収 成功率", itemData.absorptionRate);
+            AppendIfNotZero(sb, "ダメージ反射 成功率", itemData.reflectionRate);
+            AppendIfNotZero(sb, "交渉 成功率", itemData.settlementRate);
+            AppendIfNotZero(sb, "治癒力", itemData.recoveryPower);
+
+            AppendIfNotZero(sb, "幻覚 抵抗率", itemData.hallucinationResist);
+            AppendIfNotZero(sb, "猛毒 抵抗率", itemData.poisonResist);
+            AppendIfNotZero(sb, "散漫 抵抗率", itemData.distractionResist);
+            AppendIfNotZero(sb, "封印 抵抗率", itemData.sealResist);
+            AppendIfNotZero(sb, "呪い 抵抗率", itemData.curseResist);
+
+            txtDescs[0].text += sb.ToString();
         }
 
         string valueName = itemData.effectType switch {
@@ -179,5 +201,21 @@ public class ItemInfoView : InfoViewBase {
         }
 
         cg.alpha = 1;
+    }
+
+    /// <summary>
+    /// 0 以外の値をラベルを付けて表示
+    /// </summary>
+    /// <param name="sb"></param>
+    /// <param name="label"></param>
+    /// <param name="value"></param>
+    /// <param name="format"></param>
+    /// <param name="suffix"></param>
+    private void AppendIfNotZero(StringBuilder sb, string label, float value, string format = "F2", string suffix = " %") {
+        if (Mathf.Approximately(value, 0f)) {
+            return; 
+        }
+
+        sb.AppendLine($"{label} : {value.ToString(format)}{suffix}");
     }
 }

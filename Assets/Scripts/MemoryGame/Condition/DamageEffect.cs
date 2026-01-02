@@ -2,7 +2,7 @@
 using UnityEngine;
 
 /// <summary>
-/// ダメージを与える効果
+/// 継続的にダメージを与える効果
 /// 主に猛毒などのコンディションで利用する
 /// </summary>
 public class DamageEffect : IConditionEffect {

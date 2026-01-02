@@ -24,6 +24,7 @@ public class CharaStatus {
     public long exp;
     public SerializableReactiveProperty<int> MaxHp = new();
     public List<StatusValue> statusValueList = new();
+    public ResistanceValues resistanceValues = new();
 
     public CharaStatus(int maxHp) {
         level = 1;
@@ -38,6 +39,8 @@ public class CharaStatus {
             new(StatusType.Charm, 0),
             new(StatusType.Luck, 0)
         };
+
+        resistanceValues = new();
     }
 
     public CharaStatus(List<int> values) {
@@ -111,5 +114,15 @@ public class CharaStatus {
             StatusType.Charm => statusValueList[3].statusValue.Value / ConstData.REACTION_BASE,         // 交渉
             _ => 0
         };
+    }
+
+    /// <summary>
+    /// 全抵抗値の更新
+    /// </summary>
+    /// <param name="itemDataList"></param>
+    /// <returns></returns>
+    public ResistanceValues UpdateResistanceValues(List<ItemData> itemDataList) {
+        resistanceValues = ResistanceMapper.RebuildResistanceValues(itemDataList);
+        return resistanceValues;
     }
 }

@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 
 /// <summary>
-/// 集中力を減算する効果
+/// 継続的に集中力を減算する効果
 /// 主に散漫のコンディションで利用する
 /// </summary>
 public class SubtractFlipCountEffect : IConditionEffect {
