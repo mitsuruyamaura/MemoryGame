@@ -507,7 +507,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Seal
+  m_Text: Curse
 --- !u!222 &18454038
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -955,7 +955,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 47.999985}
+  m_AnchoredPosition: {x: 0, y: 65}
   m_SizeDelta: {x: 400, y: 84}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &37657222
@@ -2260,7 +2260,7 @@ GameObject:
   m_Component:
   - component: {fileID: 89399171}
   m_Layer: 5
-  m_Name: STR_Set
+  m_Name: HallucinationResist_Set
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2941,7 +2941,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 140, y: -3.8}
+  m_AnchoredPosition: {x: 153.1, y: -3.8}
   m_SizeDelta: {x: 500, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &109888203
@@ -2993,7 +2993,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: "(\u5C01\u5370)"
+  m_Text: "(\u546A\u3044)"
 --- !u!222 &109888205
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -3175,7 +3175,7 @@ GameObject:
   m_Component:
   - component: {fileID: 115507567}
   m_Layer: 5
-  m_Name: INT_Set
+  m_Name: Absorb_Set
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4093,7 +4093,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 156.7, y: -3.8}
+  m_AnchoredPosition: {x: 139.2, y: -3.8}
   m_SizeDelta: {x: 500, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &155771710
@@ -4145,7 +4145,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: "(\u546A\u3044)"
+  m_Text: "(\u5C01\u5370)"
 --- !u!222 &155771712
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -7195,7 +7195,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 6097fb6891fbcf64e890d13028911c36, type: 3}
+  m_Sprite: {fileID: 21300000, guid: c56aac2f90aad45419d1931427544e7f, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -7785,7 +7785,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 160, y: 0.4}
+  m_AnchoredPosition: {x: 208.2, y: 0.4}
   m_SizeDelta: {x: 500, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &252275802
@@ -7837,7 +7837,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: "(\u731B\u6BD2)"
+  m_Text: "(\u5E7B\u899A)"
 --- !u!222 &252275804
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -9394,7 +9394,7 @@ GameObject:
   - component: {fileID: 317526026}
   - component: {fileID: 317526025}
   m_Layer: 5
-  m_Name: txtSettle
+  m_Name: txtCurseResist
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -13204,7 +13204,7 @@ GameObject:
   m_Component:
   - component: {fileID: 513878551}
   m_Layer: 5
-  m_Name: CHA_Set (1)
+  m_Name: CurseResist_Set
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -13320,7 +13320,7 @@ GameObject:
   m_Component:
   - component: {fileID: 521237671}
   m_Layer: 5
-  m_Name: STR_Set
+  m_Name: Parry_Set
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -16958,7 +16958,7 @@ GameObject:
   m_Component:
   - component: {fileID: 672695670}
   m_Layer: 5
-  m_Name: CHA_Set
+  m_Name: Settle_Set
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -17765,7 +17765,7 @@ GameObject:
   m_Component:
   - component: {fileID: 701211983}
   m_Layer: 5
-  m_Name: DEX_Set
+  m_Name: Reflect_Set
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -20563,7 +20563,7 @@ GameObject:
   m_Component:
   - component: {fileID: 823309434}
   m_Layer: 5
-  m_Name: INT_Set
+  m_Name: PoisonResist_Set
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -23748,7 +23748,7 @@ GameObject:
   - component: {fileID: 965400620}
   - component: {fileID: 965400619}
   m_Layer: 5
-  m_Name: txtAbsorb
+  m_Name: txtPoisonResist
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -24711,7 +24711,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1854532305}
   m_HandleRect: {fileID: 1854532304}
   m_Direction: 2
-  m_Value: 0
+  m_Value: 1
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -33620,7 +33620,9 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Dazzle
+  m_Text: 'Poison
+
+'
 --- !u!222 &1392605300
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -34475,7 +34477,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: a510097c991fff64e8bf509bd1c18afc, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 3c3d3ac6151888f4d8bb09e7d7be8668, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -35404,7 +35406,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1457402074
 RectTransform:
   m_ObjectHideFlags: 0
@@ -37842,7 +37844,7 @@ GameObject:
   - component: {fileID: 1559435021}
   - component: {fileID: 1559435020}
   m_Layer: 5
-  m_Name: txtSettle
+  m_Name: txtRecovery
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -38465,7 +38467,7 @@ GameObject:
   - component: {fileID: 1582218527}
   - component: {fileID: 1582218526}
   m_Layer: 5
-  m_Name: txtSettle
+  m_Name: txtSealResist
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -38801,7 +38803,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: c56aac2f90aad45419d1931427544e7f, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 6097fb6891fbcf64e890d13028911c36, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -38832,7 +38834,7 @@ GameObject:
   - component: {fileID: 1591143044}
   - component: {fileID: 1591143043}
   m_Layer: 5
-  m_Name: txtReflect
+  m_Name: txtDistractionResist
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -39496,6 +39498,12 @@ MonoBehaviour:
   txtAbsorb: {fileID: 791524536}
   txtReflect: {fileID: 730582230}
   txtSettle: {fileID: 1837386314}
+  txtRecovery: {fileID: 1559435021}
+  txtHallucinationResist: {fileID: 1665704461}
+  txtPoisonResist: {fileID: 965400620}
+  txtDistractionResist: {fileID: 1591143044}
+  txtSealResist: {fileID: 1582218527}
+  txtCurseResist: {fileID: 317526026}
   txtNextSize: {fileID: 825866590}
   txtSizeInfo: {fileID: 326306}
   btnShowExpandInventoryPop: {fileID: 1989763077}
@@ -40230,7 +40238,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1631105156}
   m_Layer: 5
-  m_Name: CHA_Set
+  m_Name: SealResist_Set
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -41054,7 +41062,7 @@ GameObject:
   - component: {fileID: 1665704461}
   - component: {fileID: 1665704460}
   m_Layer: 5
-  m_Name: txtParry
+  m_Name: txtHallucinationResist
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -41857,7 +41865,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 3c3d3ac6151888f4d8bb09e7d7be8668, type: 3}
+  m_Sprite: {fileID: 21300000, guid: a510097c991fff64e8bf509bd1c18afc, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -42987,7 +42995,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 166.9, y: -0.8}
+  m_AnchoredPosition: {x: 162.5, y: -0.8}
   m_SizeDelta: {x: 500, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1718174742
@@ -43039,7 +43047,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: "(\u5E7B\u60D1)"
+  m_Text: "(\u731B\u6BD2)"
 --- !u!222 &1718174744
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -43862,7 +43870,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1743426729}
   m_Layer: 5
-  m_Name: DEX_Set
+  m_Name: DistractionResist_Set
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -45651,7 +45659,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: 'Poison
+  m_Text: 'Hallucinate
 
 '
 --- !u!222 &1786587112
@@ -47477,7 +47485,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Curse
+  m_Text: Seal
 --- !u!222 &1851920161
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -51606,7 +51614,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2005939027}
   m_Layer: 5
-  m_Name: CHA_Set (1)
+  m_Name: Recovery_Set
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -56037,7 +56045,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3219821969172430033}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
@@ -56216,8 +56224,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 400, y: 180}
+  m_AnchoredPosition: {x: 0, y: -36.12}
+  m_SizeDelta: {x: 400, y: 107.77}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!224 &5116131266064846519
 RectTransform:

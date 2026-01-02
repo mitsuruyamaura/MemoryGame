@@ -85,7 +85,7 @@ public enum BuffDebuffType {
 }
 
 [System.Serializable]
-public class ItemData : IMasterData, IInfoView, IHasIcon {
+public class ItemData : IMasterData, IInfoView, IHasIcon, IResistanceSource {
     public int id;
     public string itemName;
     public Rarity rarity;
@@ -114,20 +114,17 @@ public class ItemData : IMasterData, IInfoView, IHasIcon {
     public int durability;                 // 耐久値。バトルごとに減少
     public EquipmentType equipmentType;
 
-    public float reflectionRate;           // リアクション性能。ダメージ半分反射
     public float parryRate;                // ダメージ 0 受け流し
+    public float reflectionRate;           // リアクション性能。ダメージ半分反射
     public float absorptionRate;           // ダメージ半分吸収
     public float settlementRate;           // 交渉
+    public float recoveryPower;            // 治癒力
 
-    public float tAvoid;                   // 罠回避
-    public float tRelease;                 // 罠自動解除
-
-    public float poisonResist;             // 毒耐性
-    public float dazzleResist;             // 幻惑耐性
-    public float weaknessResist;           // 衰弱耐性
-    public float curseResist;              // 呪い耐性
-
-    public float resilience;               // 自然治癒
+    public float hallucinationResist;      // 幻覚耐性
+    public float poisonResist;             // 猛毒耐性
+    public float distractionResist;        // 散漫耐性 
+    public float sealResist;               // 封印耐性
+    public float curseResist;              // 呪詛耐性
 
     public float criticalDamageRate;       // クリティカルの倍率ボーナス
 
@@ -136,6 +133,16 @@ public class ItemData : IMasterData, IInfoView, IHasIcon {
     public string Name => itemName;
 
     public string Description => description;
+
+    public float HallucinationResist => hallucinationResist;
+
+    public float PoisonResist => poisonResist;
+
+    public float DistractionResist => distractionResist;
+
+    public float SealResist => sealResist;
+
+    public float CurseResist => curseResist;
 
     public Sprite GetIcon() {
         return Resources.Load<Sprite>("Item/" + Id);
@@ -178,20 +185,17 @@ public class ItemData : IMasterData, IInfoView, IHasIcon {
         durability = otherItemData.durability;
         equipmentType = otherItemData.equipmentType;
 
-        reflectionRate = otherItemData.reflectionRate;
         parryRate = otherItemData.parryRate;
+        reflectionRate = otherItemData.reflectionRate;
         absorptionRate = otherItemData.absorptionRate;
         settlementRate = otherItemData.settlementRate;
+        recoveryPower = otherItemData.recoveryPower;
 
-        tAvoid = otherItemData.tAvoid;
-        tRelease = otherItemData.tRelease;
-
+        hallucinationResist = otherItemData.hallucinationResist;
         poisonResist = otherItemData.poisonResist;
-        dazzleResist = otherItemData.dazzleResist;
-        weaknessResist = otherItemData.weaknessResist;
+        distractionResist = otherItemData.distractionResist;
+        sealResist = otherItemData.sealResist;
         curseResist = otherItemData.curseResist;
-
-        resilience = otherItemData.resilience;
 
         criticalDamageRate = otherItemData.criticalDamageRate;
     }
@@ -224,22 +228,19 @@ public class ItemData : IMasterData, IInfoView, IHasIcon {
         durability = int.Parse(datas[19]);
         equipmentType = (EquipmentType)Enum.Parse(typeof(EquipmentType), datas[20]);
 
-        reflectionRate = float.Parse(datas[21]);
-        parryRate = float.Parse(datas[22]);
+        parryRate = float.Parse(datas[21]);
+        reflectionRate = float.Parse(datas[22]);
         absorptionRate = float.Parse(datas[23]);
         settlementRate = float.Parse(datas[24]);
+        recoveryPower = float.Parse(datas[25]);
 
-        tAvoid = float.Parse(datas[25]);
-        tRelease = float.Parse(datas[26]);
-
+        hallucinationResist = float.Parse(datas[26]);
         poisonResist = float.Parse(datas[27]);
-        dazzleResist = float.Parse(datas[28]);
-        weaknessResist = float.Parse(datas[29]);
+        distractionResist = float.Parse(datas[28]);
+        sealResist = float.Parse(datas[29]);
         curseResist = float.Parse(datas[30]);
 
-        resilience = float.Parse(datas[31]);
-
-        criticalDamageRate = float.Parse(datas[32]);
+        criticalDamageRate = float.Parse(datas[31]);
     }
 
 

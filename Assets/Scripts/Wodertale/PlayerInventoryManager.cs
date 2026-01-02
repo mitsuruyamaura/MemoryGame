@@ -28,6 +28,16 @@ public class PlayerInventoryManager : MonoBehaviour {
     [SerializeField] private Text txtAbsorb;
     [SerializeField] private Text txtReflect;
     [SerializeField] private Text txtSettle;
+    [SerializeField] private Text txtRecovery;
+
+    [SerializeField] private Text txtHallucinationResist;
+    [SerializeField] private Text txtPoisonResist;
+    [SerializeField] private Text txtDistractionResist;
+    [SerializeField] private Text txtSealResist;
+    [SerializeField] private Text txtCurseResist;
+
+    private Dictionary<ConditionType, Text> resistTextMap;
+
 
     [SerializeField] private Text txtNextSize;                         // 現在のインベントリサイズと次のサイズを表示
     [SerializeField] private Text txtSizeInfo;                         // 拡張ボタンの上に表示するメッセージ。XP 値か、不足と出す
@@ -83,6 +93,16 @@ public class PlayerInventoryManager : MonoBehaviour {
 
         playerBackPackItemTran = stageUIManager.PlayerBackPackItemTran;
 
+        // 表示用マッピング
+        resistTextMap = new Dictionary<ConditionType, Text> {
+            { ConditionType.Hallucination, txtHallucinationResist },
+            { ConditionType.Poison,        txtPoisonResist },
+            { ConditionType.Distraction,   txtDistractionResist },
+            { ConditionType.Seal,          txtSealResist },
+            { ConditionType.Curse,         txtCurseResist },
+        };
+
+
         backPackItemGenerator.InitObjectPool();
 
         disposables = new CompositeDisposable();
@@ -102,6 +122,13 @@ public class PlayerInventoryManager : MonoBehaviour {
             // リアクション表示更新
             UpdateDisplayReactionsParam();
             //addEvent.Value.SetUpBackPackItem(addEvent.Value.ItemData.Value, BattleManager.instance.Cts.Token);
+
+            // 抵抗値の更新
+            List<ItemData> itemDataList = PlayerBackPackItemList.Select(item => item?.itemData).ToList();
+            ResistanceValues resistanceValues = GameData.instance.charaStatus.UpdateResistanceValues(itemDataList);
+
+            // 抵抗値の画面表示
+            UpdateResistanceView(resistanceValues);
         }).AddTo(disposables);
 
         PlayerBackPackItemList.ObserveRemove().Subscribe(removeEvent => {
@@ -111,6 +138,13 @@ public class PlayerInventoryManager : MonoBehaviour {
 
             // リアクション表示更新
             UpdateDisplayReactionsParam();
+
+            // 抵抗値の更新
+            List<ItemData> itemDataList = PlayerBackPackItemList.Select(item => item?.itemData).ToList();
+            ResistanceValues resistanceValues = GameData.instance.charaStatus.UpdateResistanceValues(itemDataList);
+
+            // 抵抗値の画面表示
+            UpdateResistanceView(resistanceValues);
 
             //removeEvent.Value.Release(); // 必要に応じてリソースを解放
         }).AddTo(disposables);
@@ -429,27 +463,11 @@ public class PlayerInventoryManager : MonoBehaviour {
     }
 
     /// <summary>
-    /// 所持しているアイテム内の交渉成功率の合計値を戻す
-    /// </summary>
-    /// <returns></returns>
-    public float GetSettlementRate() {
-        return PlayerBackPackItemList.Select(data => data.itemData.settlementRate).Sum();
-    }
-
-    /// <summary>
     /// 所持しているアイテム内の受け流し(パリィ)成功率の合計値を戻す
     /// </summary>
     /// <returns></returns>
     public float GetParryRate() {
         return PlayerBackPackItemList.Select(data => data.itemData.parryRate).Sum();
-    }
-
-    /// <summary>
-    /// 所持しているアイテム内のダメージ反射の成功率の合計値を戻す
-    /// </summary>
-    /// <returns></returns>
-    public float GetReflectionRate() {
-        return PlayerBackPackItemList.Select(data => data.itemData.reflectionRate).Sum();
     }
 
     /// <summary>
@@ -461,24 +479,86 @@ public class PlayerInventoryManager : MonoBehaviour {
     }
 
     /// <summary>
+    /// 所持しているアイテム内のダメージ反射の成功率の合計値を戻す
+    /// </summary>
+    /// <returns></returns>
+    public float GetReflectionRate() {
+        return PlayerBackPackItemList.Select(data => data.itemData.reflectionRate).Sum();
+    }
+
+    /// <summary>
+    /// 所持しているアイテム内の交渉成功率の合計値を戻す
+    /// </summary>
+    /// <returns></returns>
+    public float GetSettlementRate() {
+        return PlayerBackPackItemList.Select(data => data.itemData.settlementRate).Sum();
+    }
+
+    /// <summary>
+    /// 所持しているアイテム内の治癒力の合計値を戻す
+    /// </summary>
+    /// <returns></returns>
+    public float GetRecavoryPowerByItems() {
+        return PlayerBackPackItemList.Select(data => data.itemData.recoveryPower).Sum();
+    }
+
+    /// <summary>
     /// リアクション数値の画面反映
     /// </summary>
     public void UpdateDisplayReactionsParam() {
         float itemTotalParryRate = GetParryRate();
-        float bonusParryRate = GameData.instance.charaStatus.GetReactionBonusRate(StatusType.Strength);
-        txtParry.text = (itemTotalParryRate + bonusParryRate).ToString("F2");
+        //float bonusParryRate = GameData.instance.charaStatus.GetReactionBonusRate(StatusType.Strength);
+        //txtParry.text = FormatPercent(itemTotalParryRate + bonusParryRate);
+        txtParry.text = FormatPercent(itemTotalParryRate);
 
         float itemTotalAbsorbRate = GetAbsorptionRate();
-        float bonusAbsorbRate = GameData.instance.charaStatus.GetReactionBonusRate(StatusType.Intelligence);
-        txtAbsorb.text = (itemTotalAbsorbRate + bonusAbsorbRate).ToString("F2");
+        //float bonusAbsorbRate = GameData.instance.charaStatus.GetReactionBonusRate(StatusType.Intelligence);
+        //txtAbsorb.text = FormatPercent(itemTotalAbsorbRate + bonusAbsorbRate);
+        txtAbsorb.text = FormatPercent(itemTotalAbsorbRate);
 
         float itemTotalReflectRate = GetReflectionRate();
-        float bonusReflectRate = GameData.instance.charaStatus.GetReactionBonusRate(StatusType.Dexterity);
-        txtReflect.text = (itemTotalReflectRate + bonusReflectRate).ToString("F2");
+        //float bonusReflectRate = GameData.instance.charaStatus.GetReactionBonusRate(StatusType.Dexterity);
+        //txtReflect.text = FormatPercent(itemTotalReflectRate + bonusReflectRate);
+        txtReflect.text = FormatPercent(itemTotalReflectRate);
 
         float itemTotalSettleRate = GetSettlementRate();
-        float bonusSettleRate = GameData.instance.charaStatus.GetReactionBonusRate(StatusType.Charm);
-        txtSettle.text = (itemTotalSettleRate + bonusSettleRate).ToString("F2");
+        //float bonusSettleRate = GameData.instance.charaStatus.GetReactionBonusRate(StatusType.Charm);
+        //txtSettle.text = FormatPercent(itemTotalSettleRate + bonusSettleRate);
+        txtSettle.text = FormatPercent(itemTotalSettleRate);
+
+        float itemTotalRecoveryPower = GetRecavoryPowerByItems();
+        //float bonusRecovery = GameData.instance.charaStatus.GetReactionBonusRate(StatusType.Charm);
+        //txtRecovery.text = FormatPercent(itemTotalRecovery + bonusRecovery);
+
+        float recoveryPower = GameData.instance.defaultRecoveryPower;
+        txtRecovery.text = (itemTotalRecoveryPower + recoveryPower).ToString();
+    }
+
+    /// <summary>
+    /// 抵抗値の画面表示更新
+    /// </summary>
+    /// <param name="values"></param>
+    public void UpdateResistanceView(ResistanceValues values) {
+        foreach (var pair in resistTextMap) {
+            ConditionType conditionType = pair.Key;
+            Text text = pair.Value;
+
+            float resistValue = values.Get(conditionType);
+            if (resistValue > 0) {
+                text.text = FormatPercent(resistValue);
+            } else {
+                text.text = $"0.00";
+            }
+        }
+    }
+
+    /// <summary>
+    /// 小数点第2位までの文字列作成
+    /// </summary>
+    /// <param name="value"></param>
+    /// <returns></returns>
+    private string FormatPercent(float value) {
+        return $"{value:F2}";
     }
 
     /// <summary>

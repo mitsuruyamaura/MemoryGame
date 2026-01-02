@@ -72,11 +72,14 @@ public class ConditionManager : MonoBehaviour {
     /// 毎ターン終了時に実行される
     /// </summary>
     public void UpdateConditionRemainingPowers() {
-        // 治癒力の値を取得
-        int recoveryPower = GameData.instance.userData.DebuffRecoveryPower.Value;
+        // デバッグ用治癒力の値を取得
+        //int recoveryPower = GameData.instance.userData.DebuffRecoveryPower.Value;
+
+        // 治癒力の最新値を取得(アイテムと基本値の合計値)
+        int recoveryPower = GameData.instance.GetTotalRecoveryPower();
 
         // 各コンディションの強度から治癒力分だけ減算。強度 0 以下になったらリムーブする
-        for(int i = conditionProgressDataList.Count -1; i >= 0; i--) {
+        for (int i = conditionProgressDataList.Count -1; i >= 0; i--) {
             bool isExpired = conditionProgressDataList[i].UpdateRemainingPower(recoveryPower);
             if (isExpired) {
                 conditionProgressDataList.RemoveAt(i);
@@ -135,7 +138,7 @@ public class ConditionManager : MonoBehaviour {
 
     /// <summary>
     /// ソウルポイント獲得のタイミングで実行される
-    /// 主に幻覚を処理する
+    /// 主に封印を処理する
     /// </summary>
     /// <param name="baseExp"></param>
     /// <returns></returns>
@@ -149,7 +152,12 @@ public class ConditionManager : MonoBehaviour {
         return exp;
     }
 
-
+    /// <summary>
+    /// 集中力加算のタイミングで実行される
+    /// 主に幻覚を処理する
+    /// </summary>
+    /// <param name="baseFlipPoint"></param>
+    /// <returns></returns>
     public int ApplyFlipPointModifiers(int baseFlipPoint) {
         int flipPoint = baseFlipPoint;
         foreach (ConditionProgressData condition in conditionProgressDataList) {

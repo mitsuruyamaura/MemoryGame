@@ -47,6 +47,7 @@ public class GameData : AbstractSingleton<GameData> {
     public int lifeGainRequiredXP = 100;               // ライフの回復に必要な基礎値
 
     public int lastFloorCount = 50;                    // 最終階層
+    public float defaultRecoveryPower = 0;             // 初期治癒力
 
     public CombatData playerCombatData;           // プレイヤーの戦闘データ。この中に Hp などが含まれる
     public CombatData enemyCombatData;
@@ -117,6 +118,9 @@ public class GameData : AbstractSingleton<GameData> {
 
         rankUpRequiredMemoryStoneCount = int.Parse(DataBaseManager.instance.GetConstantDataValue("RANK_UP_REQUIRED_MEMORY_STONE_COUNT"));
         DebugLogger.Log($"ランクアップに必要な思い出の断片の数: {rankUpRequiredMemoryStoneCount}");
+
+        defaultRecoveryPower = float.Parse(DataBaseManager.instance.GetConstantDataValue("DEFAULT_RECOVERY_POWER"));
+        DebugLogger.Log($"治癒力: {defaultRecoveryPower}");
 
         // ゲームの初期化
         InitialzeGameData();
@@ -301,5 +305,15 @@ public class GameData : AbstractSingleton<GameData> {
         floatingView.SetColor(floatingViewType);
         floatingView.SetViewFontSize(floatingViewType);
         floatingView.UpdateText(soulPoint.ToString()).Forget();
+    }
+
+    /// <summary>
+    /// 治癒力の最新のトータル値を計算して取得
+    /// </summary>
+    /// <returns></returns>
+    public int GetTotalRecoveryPower() {
+        float itemRecoveryPower = playerInventoryManager.GetRecavoryPowerByItems();
+        float totalRecoveryPower = itemRecoveryPower + defaultRecoveryPower;
+        return (int)totalRecoveryPower;
     }
 }
