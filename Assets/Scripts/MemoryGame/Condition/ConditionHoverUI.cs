@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class ConditionHoverUI : MonoBehaviour {
+public class ConditionHoverUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler {
     private ConditionInfoDisplayManager conditionInfoDisplayManager;
     private ConditionProgressData conditionProgressData;
 

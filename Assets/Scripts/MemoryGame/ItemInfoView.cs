@@ -35,10 +35,14 @@ public class ItemInfoView : InfoViewBase {
         //txtDescs[0].text = $"ItemType : {backPackInItem.itemData.itemType}\n";
 
         if (backPackInItem.itemData.effectType != EffectType.Passive) {
-            txtDescs[0].text += "クールタイム : " + backPackInItem.itemData.coolTime.ToString("F2") + " s\n";  // CoolTime
-            txtDescs[0].text += "命中率 : " + backPackInItem.itemData.accuracy.ToString("F1") + " %\n";  // Accuracy
-            txtDescs[0].text += "クリティカル率 : " + backPackInItem.itemData.criticalRate.ToString("F1") + " %\n";  // CriticalRate
-            txtDescs[0].text += "クリティカルダメージ率 : " + backPackInItem.itemData.criticalDamageRate.ToString("F1") + " %\n";  // CriticalDamage
+            StringBuilder sb = new();
+
+            AppendIfNotZero(sb, "クールタイム", backPackInItem.itemData.coolTime, "F2", "s");
+            AppendIfNotZero(sb, "命中率", backPackInItem.itemData.accuracy, "F1");
+            AppendIfNotZero(sb, "クリティカル率", backPackInItem.itemData.criticalRate, "F1");
+            AppendIfNotZero(sb, "クリティカルダメージ率", backPackInItem.itemData.criticalDamageRate, "F1");
+
+            txtDescs[0].text += sb.ToString();
         } else {
             StringBuilder sb = new();
 
@@ -46,7 +50,7 @@ public class ItemInfoView : InfoViewBase {
             AppendIfNotZero(sb, "ダメージ吸収 成功率", backPackInItem.itemData.absorptionRate);
             AppendIfNotZero(sb, "ダメージ反射 成功率", backPackInItem.itemData.reflectionRate);
             AppendIfNotZero(sb, "交渉 成功率", backPackInItem.itemData.settlementRate);
-            AppendIfNotZero(sb, "治癒力", backPackInItem.itemData.recoveryPower);
+            AppendIfNotZero(sb, "治癒力", backPackInItem.itemData.recoveryPower, suffix: "");
 
             AppendIfNotZero(sb, "幻覚 抵抗率", backPackInItem.itemData.hallucinationResist);
             AppendIfNotZero(sb, "猛毒 抵抗率", backPackInItem.itemData.poisonResist);
@@ -132,10 +136,14 @@ public class ItemInfoView : InfoViewBase {
         //txtDescs[0].text = $"ItemType : {itemData.itemType}\n";
 
         if (itemData.effectType != EffectType.Passive) {
-            txtDescs[0].text += "クールタイム : " + itemData.coolTime.ToString("F2") + " s\n";  // CoolTime
-            txtDescs[0].text += "命中率 : " + itemData.accuracy.ToString("F1") + " %\n";  // Accuracy
-            txtDescs[0].text += "クリティカル率 : " + itemData.criticalRate.ToString("F1") + " %\n";  // CriticalRate
-            txtDescs[0].text += "クリティカルダメージ率 : " + itemData.criticalDamageRate.ToString("F1") + " %\n";  // CriticalDamage
+            StringBuilder sb = new();
+
+            AppendIfNotZero(sb, "クールタイム", itemData.coolTime, "F2", "s");
+            AppendIfNotZero(sb, "命中率", itemData.accuracy, "F1");
+            AppendIfNotZero(sb, "クリティカル率", itemData.criticalRate, "F1");
+            AppendIfNotZero(sb, "クリティカルダメージ率", itemData.criticalDamageRate, "F1");
+
+            txtDescs[0].text += sb.ToString();
         } else {
             StringBuilder sb = new();
 
@@ -143,7 +151,7 @@ public class ItemInfoView : InfoViewBase {
             AppendIfNotZero(sb, "ダメージ吸収 成功率", itemData.absorptionRate);
             AppendIfNotZero(sb, "ダメージ反射 成功率", itemData.reflectionRate);
             AppendIfNotZero(sb, "交渉 成功率", itemData.settlementRate);
-            AppendIfNotZero(sb, "治癒力", itemData.recoveryPower);
+            AppendIfNotZero(sb, "治癒力", itemData.recoveryPower, suffix: "");
 
             AppendIfNotZero(sb, "幻覚 抵抗率", itemData.hallucinationResist);
             AppendIfNotZero(sb, "猛毒 抵抗率", itemData.poisonResist);
