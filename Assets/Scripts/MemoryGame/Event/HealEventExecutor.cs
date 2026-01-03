@@ -7,8 +7,11 @@ using UnityEngine;
 /// </summary>
 public class HealEventExecutor : IEventExecutor {
     private BattleManager battleManager;
-    public HealEventExecutor(BattleManager battleManager) {
+    private ConditionManager conditionManager;
+
+    public HealEventExecutor(BattleManager battleManager, ConditionManager conditionManager) {
         this.battleManager = battleManager;
+        this.conditionManager = conditionManager;
     }
 
     public async UniTask ExecuteAsync(BlessingData blessingData, CancellationToken token) {
@@ -26,6 +29,9 @@ public class HealEventExecutor : IEventExecutor {
             // Hp 最大値以上なら、シールドに加算
             battleManager.UpdatePlayerShieldHp(healPower, false);
         }
+
+        // 全デバフ解除
+        conditionManager.RemoveAllDebuffs();
 
         SoundManager.instance.PlaySE(SE_TYPE.Heal);
         await UniTask.Yield(token);

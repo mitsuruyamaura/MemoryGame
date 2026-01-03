@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using UnityEngine;
@@ -87,6 +88,30 @@ public class ConditionManager : MonoBehaviour {
         }
     }
 
+    public void RemoveCondition(ConditionType type) {
+        RemoveByPredicate(progressData => progressData.ConditionData.conditionType == type);
+    }
+
+    public void RemoveAllDebuffs() {
+        RemoveByPredicate(progressData => progressData.ConditionData.conditionPolarity == ConditionPolarity.Negative);
+    }
+
+    public void RemoveAllBuffs() {
+        RemoveByPredicate(progressData => progressData.ConditionData.conditionPolarity == ConditionPolarity.Positive);
+    }
+
+    public void RemoveAll() {
+        RemoveByPredicate(_ => true);
+    }
+
+    private void RemoveByPredicate(Func<ConditionProgressData, bool> predicate) {
+        for (int i = conditionProgressDataList.Count - 1; i >= 0; i--) {
+            if (predicate(conditionProgressDataList[i])) {
+                conditionProgressDataList.RemoveAt(i);
+            }
+        }
+    }
+
     /// <summary>
     /// コンディションを削除。一緒にインジケーターも削除
     /// </summary>
@@ -110,7 +135,7 @@ public class ConditionManager : MonoBehaviour {
     }
 
     /// <summary>
-    /// 終了した Condition をリストから削除
+    /// 終了した ConditionIndicator をリストから削除
     /// </summary>
     /// <param name="conditionIndicator"></param>
     private void ReleaseIndicator(ConditionIndicator conditionIndicator) {

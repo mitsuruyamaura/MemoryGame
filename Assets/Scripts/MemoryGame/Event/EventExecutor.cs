@@ -8,20 +8,20 @@ using System.Threading;
 public class EventExecutor {
     private readonly Dictionary<BlessingType, IEventExecutor> executorMap;
 
-    public EventExecutor(BattleManager battleManager, MemoryGameManager memoryGameManager, PlayerInventoryManager playerInventoryManager) {
+    public EventExecutor(BattleManager battleManager, MemoryGameManager memoryGameManager, PlayerInventoryManager playerInventoryManager, ConditionManager conditionManager) {
         // 各 Executor 生成と、利用する Executor の依存性注入
         executorMap = new() {
-            { BlessingType.Heal, new HealEventExecutor(battleManager) },
-            { BlessingType.HealAll, new HealAllEventExecutor(battleManager) },
+            { BlessingType.Heal, new HealEventExecutor(battleManager, conditionManager) },
+            { BlessingType.HealAll, new HealAllEventExecutor(battleManager, conditionManager, memoryGameManager) },
             { BlessingType.EnhanceResist, new EnhanceResistEventExecutor(battleManager) },
-            { BlessingType.EnhanceItem, new EnhanceItemEventExecutor(playerInventoryManager) },
+            { BlessingType.EnhanceItem, new EnhanceItemEventExecutor(playerInventoryManager, conditionManager) },
             { BlessingType.DestroyCard, new DestroyCardEventExecutor(memoryGameManager) },
             { BlessingType.Look, new LookCardEventExecutor(memoryGameManager) },
             { BlessingType.Reload, new ReloadEventExecutor() },
             { BlessingType.GainXp, new GainXpEventExecutor() },
             { BlessingType.ClassRankUp, new ClassRankUpEventExecutor() },
             { BlessingType.InventorySizeUp, new InventorySizeUpEventExecutor() },
-            { BlessingType.EnhanceRandomItems, new EnhanceRandomItemsExecutor(playerInventoryManager) },
+            { BlessingType.EnhanceRandomItems, new EnhanceRandomItemsExecutor(playerInventoryManager, conditionManager) },
 
         };
     }

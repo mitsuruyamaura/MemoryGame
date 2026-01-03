@@ -6,11 +6,18 @@ using System.Threading;
 /// </summary>
 public class EnhanceItemEventExecutor : IEventExecutor {
     private PlayerInventoryManager playerInventoryManager;
-    public EnhanceItemEventExecutor(PlayerInventoryManager playerInventoryManager) {
+    private ConditionManager conditionManager;
+
+    public EnhanceItemEventExecutor(PlayerInventoryManager playerInventoryManager, ConditionManager conditionManager) {
         this.playerInventoryManager = playerInventoryManager;
+        this.conditionManager = conditionManager;
     }
 
     public async UniTask ExecuteAsync(BlessingData blessingData, CancellationToken token) {
+        // 呪詛解除
+        conditionManager.RemoveCondition(ConditionType.Curse);
+
+        // アイテム強化
         playerInventoryManager.EnhanceItem(blessingData);
         await UniTask.Yield(token);
     }
