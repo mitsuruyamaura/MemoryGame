@@ -29,7 +29,7 @@ public class CardFactory {
         trapExecutor = new TrapExecutor(battleManager, trapDisarmQTEManager, conditionManager, memoryGameManager, itemInfoDisplayManager);
         memoriaRankUpExecutor = new MemoriaRankUpExecutor(memoryLinkManager);
         treasureGetExecutor = new TreasureGetExecutor(itemInfoDisplayManager, playerInventoryManager);
-        eventExecutor = new EventExecutor(battleManager, memoryGameManager, playerInventoryManager);
+        eventExecutor = new EventExecutor(battleManager, memoryGameManager, playerInventoryManager, conditionManager);
 
         // 各カード用の Executor 生成と、利用する Executor の依存性注入
         enemyCardExecutor = new EnemyCardExecutor(battleExecutor);

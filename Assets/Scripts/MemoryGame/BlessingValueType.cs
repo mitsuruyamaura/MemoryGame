@@ -9,5 +9,6 @@
     Class,
     Event,
     Key,
+    Fortitude,
 
 }

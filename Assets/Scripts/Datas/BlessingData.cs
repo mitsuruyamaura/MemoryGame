@@ -57,4 +57,12 @@ public class BlessingData : IMasterData, IInfoView, IHasIcon {
         DebugLogger.Log($"Unknown BlessingVlaueType: {typeStr}");
         return BlessingValueType.None;
     }
+
+    public bool TryGetConditionType(out ConditionType conditionType) {
+        return BlessingValueTypeMapper.TryToCondition(valueType, out conditionType);
+    }
+
+    public bool TryGetCardType(out CardEventType cardType) {
+        return BlessingValueTypeMapper.TryToCard(valueType, out cardType);
+    }
 }

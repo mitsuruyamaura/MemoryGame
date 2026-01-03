@@ -6,9 +6,13 @@ using System.Threading;
 /// </summary>
 public class HealAllEventExecutor : IEventExecutor {
     private BattleManager battleManager;
+    private ConditionManager conditionManager;
+    private MemoryGameManager memoryGameManager;
 
-    public HealAllEventExecutor(BattleManager battleManager) {
+    public HealAllEventExecutor(BattleManager battleManager, ConditionManager conditionManager, MemoryGameManager memoryGameManager) {
         this.battleManager = battleManager;
+        this.conditionManager = conditionManager;
+        this.memoryGameManager = memoryGameManager;
     }
 
     public async UniTask ExecuteAsync(BlessingData blessingData, CancellationToken token) {
@@ -25,11 +29,18 @@ public class HealAllEventExecutor : IEventExecutor {
             battleManager.UpdatePlayerShieldHp(healPower, false);
         }
 
-        // TODO デバフ解除
-
+        // 全デバフ解除
+        conditionManager.RemoveAllDebuffs();
 
         // TODO ステータスバフ
+        if (blessingData.TryGetConditionType(out var conditionType)) {
 
+            ConditionData conditionData = DataBaseManager.instance.GetConditionData(conditionType);
+            float conditionPowerMultiplier = memoryGameManager.GetConditionPowerMultiplierByFloor();
+
+            conditionManager.AddConditionList(conditionData, conditionPowerMultiplier, 1);
+        }
+        
 
         SoundManager.instance.PlaySE(SE_TYPE.Heal);
 

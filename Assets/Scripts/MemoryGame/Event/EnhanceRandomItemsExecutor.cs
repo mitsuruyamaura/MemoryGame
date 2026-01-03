@@ -6,11 +6,17 @@ using System.Threading;
 /// </summary>
 public class EnhanceRandomItemsExecutor : IEventExecutor {
     private PlayerInventoryManager playerInventoryManager;
-    public EnhanceRandomItemsExecutor(PlayerInventoryManager playerInventoryManager) {
+    private ConditionManager conditionManager;
+
+    public EnhanceRandomItemsExecutor(PlayerInventoryManager playerInventoryManager, ConditionManager conditionManager) {
         this.playerInventoryManager = playerInventoryManager;
+        this.conditionManager = conditionManager;
     }
 
     public async UniTask ExecuteAsync(BlessingData blessingData, CancellationToken token) {
+        // 呪詛解除
+        conditionManager.RemoveCondition(ConditionType.Curse);
+
         playerInventoryManager.EnhanceRandomItems(blessingData);
         await UniTask.Yield(token);
     }
