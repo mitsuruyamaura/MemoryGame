@@ -17,11 +17,16 @@ public class ConditionManager : MonoBehaviour {
     protected ConditionInfoDisplayManager conditionInfoDisplayManager;
     protected ConditionEffectFactory conditionEffectFactory;
 
+    protected StageUIManager stageUIManager;
+
     protected CancellationToken token;
 
-    public void Setup(ConditionInfoDisplayManager conditionInfoDisplayManager, ConditionEffectFactory conditionEffectFactory, CancellationToken token) {
+
+    public void Setup(ConditionInfoDisplayManager conditionInfoDisplayManager, ConditionEffectFactory conditionEffectFactory, StageUIManager stageUIManager, CancellationToken token) {
         this.conditionInfoDisplayManager = conditionInfoDisplayManager;
         this.conditionEffectFactory = conditionEffectFactory;
+        this.stageUIManager = stageUIManager;
+
         this.token = token;
 
         indicatorGenerator.SetUp();
@@ -43,14 +48,35 @@ public class ConditionManager : MonoBehaviour {
         }
 
         // コンディションの効果用クラスの生成
-        IConditionEffect conditionEffect = conditionEffectFactory.Create(conditionData.conditionType);
+        IConditionEffect conditionEffect = conditionEffectFactory.CreateEffect(conditionData.conditionType);
+        ConditionContext context = new(stageUIManager, this);
 
-        // コンディション生成
-        ConditionProgressData conditionProgressData = new(conditionData, conditionPowerMultiplier, stackCount, conditionEffect, token);
+        // コンディション管理データ生成
+        ConditionProgressData conditionProgressData = new(conditionData, conditionPowerMultiplier, stackCount, conditionEffect, context, token);
+        
+        // コンディション付与時の追加効果があれば実行する
+        if (conditionProgressData.ConditionEffect is IOnConditionEnter enter) {
+            enter.OnEnter(conditionProgressData);
+        }
+
         conditionProgressDataList.Add(conditionProgressData);
 
         // インジケーター生成
         GenerateConditionIndicator(conditionProgressData);
+
+        // 複数の効果を使いたい場合。現在未使用
+        //{
+        //    List<IConditionEffect> conditionEffectList = conditionEffectFactory.CreateEffects(conditionData.conditionType);
+
+        //    // コンディション生成
+        //    foreach (IConditionEffect conditionEffect in conditionEffectList) {
+        //        ConditionProgressData conditionProgressData = new(conditionData, conditionPowerMultiplier, stackCount, conditionEffect, token);
+        //        conditionProgressDataList.Add(conditionProgressData);
+
+        //        // インジケーター生成
+        //        GenerateConditionIndicator(conditionProgressData);
+        //    }
+        //}
     }
 
     private ConditionProgressData FindCondition(ConditionData conditionData) {
@@ -83,30 +109,56 @@ public class ConditionManager : MonoBehaviour {
         for (int i = conditionProgressDataList.Count -1; i >= 0; i--) {
             bool isExpired = conditionProgressDataList[i].UpdateRemainingPower(recoveryPower);
             if (isExpired) {
+                // 削除時の効果がある場合には実行する
+                if (conditionProgressDataList[i].ConditionEffect is IOnConditionExit exit) {
+                    exit.OnExit(conditionProgressDataList[i]);
+                }
                 conditionProgressDataList.RemoveAt(i);
             }
         }
     }
 
+    /// <summary>
+    /// 対象のコンディションを削除
+    /// </summary>
+    /// <param name="type"></param>
     public void RemoveCondition(ConditionType type) {
         RemoveByPredicate(progressData => progressData.ConditionData.conditionType == type);
     }
 
+    /// <summary>
+    /// すべてのデバフを削除
+    /// </summary>
     public void RemoveAllDebuffs() {
         RemoveByPredicate(progressData => progressData.ConditionData.conditionPolarity == ConditionPolarity.Negative);
     }
 
+    /// <summary>
+    /// すべてのバフを削除
+    /// </summary>
     public void RemoveAllBuffs() {
         RemoveByPredicate(progressData => progressData.ConditionData.conditionPolarity == ConditionPolarity.Positive);
     }
 
+    /// <summary>
+    /// すべてのコンディションを削除
+    /// </summary>
     public void RemoveAll() {
         RemoveByPredicate(_ => true);
     }
-
+    
+    /// <summary>
+    /// コンディションの削除処理
+    /// predicate の中身に応じて処理する
+    /// </summary>
+    /// <param name="predicate"></param>
     private void RemoveByPredicate(Func<ConditionProgressData, bool> predicate) {
         for (int i = conditionProgressDataList.Count - 1; i >= 0; i--) {
             if (predicate(conditionProgressDataList[i])) {
+                // 削除時の効果がある場合には実行する
+                if (conditionProgressDataList[i].ConditionEffect is IOnConditionExit exit) {
+                    exit.OnExit(conditionProgressDataList[i]);
+                }
                 conditionProgressDataList.RemoveAt(i);
             }
         }
@@ -114,6 +166,7 @@ public class ConditionManager : MonoBehaviour {
 
     /// <summary>
     /// コンディションを削除。一緒にインジケーターも削除
+    /// 現在未使用
     /// </summary>
     public void RemoveConditionList(ConditionProgressData conditionProgressData) {
         conditionProgressDataList.Remove(conditionProgressData);
@@ -191,5 +244,34 @@ public class ConditionManager : MonoBehaviour {
             }
         }
         return flipPoint;
+    }
+
+    /// <summary>
+    /// アイテム使用可能か判定
+    /// </summary>
+    /// <returns>true ならアイテムボタンが押せる状態になる</returns>
+    public bool CanUseItem() {
+        foreach (ConditionProgressData condition in conditionProgressDataList) {
+            if (condition.ConditionEffect is IRestrictItemUse restrict) {
+                if (!restrict.CanUseItem()) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /// <summary>
+    /// アイテム獲得可能か判定
+    /// </summary>
+    /// <returns>true ならアイテムが獲得できる</returns>
+    public bool CanObtainItem() {
+        foreach (ConditionProgressData condition in conditionProgressDataList) {
+            if (condition.ConditionEffect is IRestrictItemObtain restrict) {
+                if (!restrict.CanObtainItem())
+                    return false;
+            }
+        }
+        return true;
     }
 }

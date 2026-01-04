@@ -39,6 +39,7 @@ public class BackPackInItem : PoolBase {
     private BattleManager battleManager;
     private FloatingViewGenerator floatingViewGenerator;
     private PlayerInventoryManager playerInventoryManager;
+    private ConditionManager conditionManager;
 
     private Tweener tweener;
     private Subject<Unit> onCancel = new Subject<Unit>();
@@ -69,10 +70,11 @@ public class BackPackInItem : PoolBase {
     /// <param name="battleManager"></param>
     /// <param name="itemData"></param>
     /// <param name="entityType"></param>
-    public void SetUpBackPackItem(BattleManager battleManager, FloatingViewGenerator floatingViewGenerator, PlayerInventoryManager playerInventoryManager, ItemInfoDisplayManager itemInfoDisplayManager, ItemData itemData, EntityType entityType = EntityType.Player) {
+    public void SetUpBackPackItem(BattleManager battleManager, FloatingViewGenerator floatingViewGenerator, PlayerInventoryManager playerInventoryManager, ConditionManager conditionManager, ItemInfoDisplayManager itemInfoDisplayManager, ItemData itemData, EntityType entityType = EntityType.Player) {
         this.battleManager = battleManager;
         this.floatingViewGenerator = floatingViewGenerator;
         this.playerInventoryManager = playerInventoryManager;
+        this.conditionManager = conditionManager;
 
         itemHoverUI.Setup(this, itemInfoDisplayManager);
 
@@ -154,6 +156,7 @@ public class BackPackInItem : PoolBase {
         // 使用停止ボタンの設定
         disuseButtonSubscribe = btnDisuse.OnClickAsObservable()
             .Where(_ => GameData.instance.CurrentGameState.Value == GameState.Play)
+            .Where(_ => conditionManager.CanUseItem())  // 使用停止ボタンの活性化切り替え。デバフの効果がなく、アイテム使用可能なら True
             .ThrottleFirst(TimeSpan.FromSeconds(0.25f))
             .Subscribe(_ => ChangeDisuseshade());
 

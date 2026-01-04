@@ -44,11 +44,11 @@ public class StageEntryManager : MonoBehaviour {
         cts = new();
 
         // カードファクトリーの初期化。各 Executor の生成もここで行われる
-        cardFactory = new(memoryGameManager, battleManager, trapDisarmQTEManager, memoryLinkManager, playerInventoryManager, itemInfoDisplayManager, conditionManager);
+        cardFactory = new(memoryGameManager, battleManager, trapDisarmQTEManager, memoryLinkManager, playerInventoryManager, itemInfoDisplayManager, conditionManager, stageUIManager);
 
         trapDisarmQTEManager.SetUp(stageUIManager);
 
-        enemyInfoDisplayManager.Setup(null, battleManager, playerInventoryManager, floatingViewGenerator, itemInfoDisplayManager);
+        enemyInfoDisplayManager.Setup(null, battleManager, playerInventoryManager, floatingViewGenerator, itemInfoDisplayManager, conditionManager);
         floatingViewGenerator.SetUp(gameObject);
         itemInfoDisplayManager.Setup();
         conditionInfoDisplayManager.Setup();
@@ -63,13 +63,13 @@ public class StageEntryManager : MonoBehaviour {
         stageUIManager.Setup(GameData.instance.charaStatus.MaxHp.Value, memoryGameManager, battleManager);
 
         // BackPackInItem のオブジェクトプールの初期化、List の購読などを設定
-        playerInventoryManager.Setup(memoryGameManager, stageUIManager, battleManager, floatingViewGenerator, itemInfoDisplayManager);
+        playerInventoryManager.Setup(memoryGameManager, stageUIManager, battleManager, floatingViewGenerator, itemInfoDisplayManager, conditionManager);
 
         // コンディションの効果用のファクトリークラスを生成
         conditionEffectFactory = new(battleManager);
 
         // コンディションの管理クラスの初期設定
-        conditionManager.Setup(conditionInfoDisplayManager, conditionEffectFactory, cts.Token);
+        conditionManager.Setup(conditionInfoDisplayManager, conditionEffectFactory, stageUIManager, cts.Token);
 
         GameData.instance.CurrentGameState.Value = GameState.Play;
 

@@ -70,9 +70,14 @@ public class StageUIManager : MonoBehaviour {
     [SerializeField] private Transform playerBackPackItemTran;
     public Transform PlayerBackPackItemTran => playerBackPackItemTran;
 
+    [SerializeField] private CanvasGroup cgItemRestrictionShade;
+
+
     private string SuccessSettlementMessage = "平和的解決に成功しました!!";
     private string SuccessTrapMessage = "罠の解除に成功しました!!";
     private string FailureTrapMessage = "罠の解除に失敗しました...";
+
+    private string UnobtainableItemMessage = "呪いにより、アイテム獲得できません";
 
     private float defaultTime;                   // バトルのデフォルト時間
     private float sliderAnimeDuration = 0.5f;
@@ -106,6 +111,7 @@ public class StageUIManager : MonoBehaviour {
 
         HideTimeCanvas();
         HideBattleState(null);
+        HideItemLockShade();
 
         GameData.instance.userData.SoulPoint
             .Zip(GameData.instance.userData.SoulPoint.Skip(1), (prevPoint, nextPoint) => (prevPoint, nextPoint))
@@ -329,6 +335,20 @@ public class StageUIManager : MonoBehaviour {
     }
 
     /// <summary>
+    /// デバフによりアイテムが獲得できないときのメッセージ表示
+    /// </summary>
+    public void UnobtainableItemInfo() {
+        txtTrapInfo.text = UnobtainableItemMessage;
+
+        // 点滅させて表示
+        Sequence sequence = DOTween.Sequence();
+        sequence.SetLink(gameObject);
+        sequence.Append(txtTrapInfo.DOFade(1.0f, 0.8f).SetEase(Ease.Linear)).SetLoops(2, LoopType.Yoyo);
+        sequence.Append(txtTrapInfo.DOFade(0f, 0f).SetEase(Ease.Linear)).OnComplete(() => txtTrapInfo.DOFade(0f, 0f));  // 消えないことがあるので念のため
+    }
+
+
+    /// <summary>
     /// ゲームオーバー、クリア時に表示する、タイトルへ戻すためのメッセージ
     /// </summary>
     public void ShowRestartMessage() {
@@ -451,6 +471,23 @@ public class StageUIManager : MonoBehaviour {
         // ポップ表示内容更新
         ShowLifeGainPopup();
     }
+
+    /// <summary>
+    /// 呪詛効果時のアイテムロック演出表示
+    /// </summary>
+    public void ShowItemLockShade() {
+        cgItemRestrictionShade.alpha = 1.0f;
+        cgItemRestrictionShade.blocksRaycasts = true;
+    }
+
+    /// <summary>
+    /// アイテムロック演出非常時
+    /// </summary>
+    public void HideItemLockShade() {
+        cgItemRestrictionShade.alpha = 0;
+        cgItemRestrictionShade.blocksRaycasts = false;
+    }
+
 
     public void HidePopups() {
         HideFlipCountGainPopup();
