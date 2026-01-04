@@ -58,6 +58,7 @@ public class PlayerInventoryManager : MonoBehaviour {
     private BattleManager battleManager;
     private FloatingViewGenerator floatingViewGenerator;
     private ItemInfoDisplayManager itemInfoDisplayManager;
+    private ConditionManager conditionManager;
 
     //protected override void Awake() {
     //base.Awake();
@@ -85,11 +86,12 @@ public class PlayerInventoryManager : MonoBehaviour {
     //}
 
 
-    public void Setup(MemoryGameManager memoryGameManager, StageUIManager stageUIManager, BattleManager battleManager, FloatingViewGenerator floatingViewGenerator, ItemInfoDisplayManager itemInfoDisplayManager) {
+    public void Setup(MemoryGameManager memoryGameManager, StageUIManager stageUIManager, BattleManager battleManager, FloatingViewGenerator floatingViewGenerator, ItemInfoDisplayManager itemInfoDisplayManager, ConditionManager conditionManager) {
         this.stageUIManager = stageUIManager;
         this.battleManager = battleManager;
         this.floatingViewGenerator = floatingViewGenerator;
         this.itemInfoDisplayManager = itemInfoDisplayManager;
+        this.conditionManager = conditionManager;
 
         playerBackPackItemTran = stageUIManager.PlayerBackPackItemTran;
 
@@ -208,7 +210,7 @@ public class PlayerInventoryManager : MonoBehaviour {
         for (int i = 0; i < GameData.instance.userData.equipItemList.Count; i++) {
             BackPackInItem backPackInItem = (BackPackInItem)backPackItemGenerator.GetObjectFromPool(playerBackPackItemTran);
             ItemData itemData = DataBaseManager.instance.GetItemData(GameData.instance.userData.equipItemList[i]);
-            backPackInItem.SetUpBackPackItem(battleManager, floatingViewGenerator, this, itemInfoDisplayManager, itemData, EntityType.Player);
+            backPackInItem.SetUpBackPackItem(battleManager, floatingViewGenerator, this, conditionManager, itemInfoDisplayManager, itemData, EntityType.Player);
             AddItem(backPackInItem);
         }
     }
@@ -241,7 +243,7 @@ public class PlayerInventoryManager : MonoBehaviour {
 
         // 新規アイテムの場合には追加
         backPackInItem = (BackPackInItem)backPackItemGenerator.GetObjectFromPool(playerBackPackItemTran);
-        backPackInItem.SetUpBackPackItem(battleManager, floatingViewGenerator, this, itemInfoDisplayManager, itemData, EntityType.Player);
+        backPackInItem.SetUpBackPackItem(battleManager, floatingViewGenerator, this, conditionManager, itemInfoDisplayManager, itemData, EntityType.Player);
         PlayerBackPackItemList.Add(backPackInItem);
 
         GameData.instance.userData.equipItemList.Add(itemData.id);

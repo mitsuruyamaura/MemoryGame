@@ -25,17 +25,19 @@ public class EnemyInfoDisplayManager : MonoBehaviour {
     private PlayerInventoryManager playerInventoryManager;
     private FloatingViewGenerator floatingViewGenerator;
     private ItemInfoDisplayManager itemInfoDisplayManager;
+    private ConditionManager conditionManager;
 
     // バフデバフ表示
 
 
-    public void Setup(Transform enemyBackPackItemTran, BattleManager battleManager, PlayerInventoryManager playerInventoryManager, FloatingViewGenerator floatingViewGenerator, ItemInfoDisplayManager itemInfoDisplayManager) {
+    public void Setup(Transform enemyBackPackItemTran, BattleManager battleManager, PlayerInventoryManager playerInventoryManager, FloatingViewGenerator floatingViewGenerator, ItemInfoDisplayManager itemInfoDisplayManager, ConditionManager conditionManager) {
         this.enemyBackPackItemTran = enemyBackPackItemTran;  // 敵の装備品アイテム表示用トランスフォーム設定。現在は使っていないので null をもらっている 
         
         this.battleManager = battleManager;
         this.playerInventoryManager = playerInventoryManager;
         this.floatingViewGenerator = floatingViewGenerator;
         this.itemInfoDisplayManager = itemInfoDisplayManager;
+        this.conditionManager = conditionManager;
 
         HideEnemyInfo();
     }
@@ -121,7 +123,7 @@ public class EnemyInfoDisplayManager : MonoBehaviour {
 
             // バトル時のみ購読設定
             if (gameState == GameState.Battle) {
-                backPackInItem.SetUpBackPackItem(battleManager, floatingViewGenerator, playerInventoryManager, itemInfoDisplayManager, itemData, EntityType.Enemy);
+                backPackInItem.SetUpBackPackItem(battleManager, floatingViewGenerator, playerInventoryManager, conditionManager, itemInfoDisplayManager, itemData, EntityType.Enemy);
             } else {
                 backPackInItem.SetUpInfoDisplay(EntityType.Enemy);
             }

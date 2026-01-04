@@ -2,7 +2,6 @@
 using UnityEngine;
 using R3;
 using System.Threading;
-using UnityEngine.Events;
 
 /// <summary>
 /// コンディションの進捗管理クラス
@@ -23,10 +22,12 @@ public class ConditionProgressData {
 
     protected IConditionEffect conditionEffect;
     public IConditionEffect ConditionEffect => conditionEffect;
+    public ConditionContext conditionContext;
 
 
-    public ConditionProgressData(ConditionData conditionData, float conditionPowerMultiplier, int stackCount, IConditionEffect conditionEffect, CancellationToken token) {
+    public ConditionProgressData(ConditionData conditionData, float conditionPowerMultiplier, int stackCount, IConditionEffect conditionEffect, ConditionContext context, CancellationToken token) {
         this.conditionData = conditionData;
+        conditionContext = context;
 
         int remainingPower = CalcRemainingPower(this.conditionData.conditionPower, conditionPowerMultiplier);
         RemainingPower.Value = Mathf.Min(RemainingPower.Value + remainingPower, conditionData.maxConditionPower);

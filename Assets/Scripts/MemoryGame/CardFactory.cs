@@ -15,15 +15,15 @@ public class CardFactory {
     private TreasureGetExecutor treasureGetExecutor;         // 宝箱獲得実行処理クラス
     private EventExecutor eventExecutor;
 
-    public CardFactory(MemoryGameManager memoryGameManager, BattleManager battleManager, TrapDisarmQTEManager trapDisarmQTEManager, MemoryLinkManager memoryLinkManager, PlayerInventoryManager playerInventoryManager, ItemInfoDisplayManager itemInfoDisplayManager, ConditionManager conditionManager) {
-        InitExecutors(memoryGameManager, battleManager, trapDisarmQTEManager, memoryLinkManager, playerInventoryManager, itemInfoDisplayManager, conditionManager);
+    public CardFactory(MemoryGameManager memoryGameManager, BattleManager battleManager, TrapDisarmQTEManager trapDisarmQTEManager, MemoryLinkManager memoryLinkManager, PlayerInventoryManager playerInventoryManager, ItemInfoDisplayManager itemInfoDisplayManager, ConditionManager conditionManager, StageUIManager stageUIManager) {
+        InitExecutors(memoryGameManager, battleManager, trapDisarmQTEManager, memoryLinkManager, playerInventoryManager, itemInfoDisplayManager, conditionManager, stageUIManager);
     }
 
     /// <summary>
     /// 各カードの実行処理クラスの初期化
     /// コンストラクタで呼び出して依存性を注入
     /// </summary>
-    public void InitExecutors(MemoryGameManager memoryGameManager, BattleManager battleManager, TrapDisarmQTEManager trapDisarmQTEManager, MemoryLinkManager memoryLinkManager, PlayerInventoryManager playerInventoryManager, ItemInfoDisplayManager itemInfoDisplayManager, ConditionManager conditionManager) {
+    public void InitExecutors(MemoryGameManager memoryGameManager, BattleManager battleManager, TrapDisarmQTEManager trapDisarmQTEManager, MemoryLinkManager memoryLinkManager, PlayerInventoryManager playerInventoryManager, ItemInfoDisplayManager itemInfoDisplayManager, ConditionManager conditionManager, StageUIManager stageUIManager) {
         // 各 Executor 生成
         battleExecutor = new BattleExecutor(battleManager);
         trapExecutor = new TrapExecutor(battleManager, trapDisarmQTEManager, conditionManager, memoryGameManager, itemInfoDisplayManager);
@@ -34,7 +34,7 @@ public class CardFactory {
         // 各カード用の Executor 生成と、利用する Executor の依存性注入
         enemyCardExecutor = new EnemyCardExecutor(battleExecutor);
         trapCardExecutor = new TrapCardExecutor(trapExecutor);
-        treasureChestCardExecutor = new TreasureChestCardExecutor(treasureGetExecutor);
+        treasureChestCardExecutor = new TreasureChestCardExecutor(treasureGetExecutor, conditionManager, stageUIManager);
         blessingCardExecutor = new BlessingCardExecutor(itemInfoDisplayManager, eventExecutor);
         memoryFragmentsCardExecutor = new MemoryFragmentsCardExecutor(memoriaRankUpExecutor);
         stairsCardExecutor = new StairsCardExecutor();

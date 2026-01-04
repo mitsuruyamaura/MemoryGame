@@ -6,9 +6,13 @@ using System.Threading;
 /// </summary>
 public class TreasureChestCardExecutor : ICardExecutor {
     private TreasureGetExecutor treasureGetExecutor;
+    private ConditionManager conditionManager;
+    private StageUIManager stageUIManager;
 
-    public TreasureChestCardExecutor(TreasureGetExecutor treasureGetExecutor) {
+    public TreasureChestCardExecutor(TreasureGetExecutor treasureGetExecutor, ConditionManager conditionManager, StageUIManager stageUIManager) {
         this.treasureGetExecutor = treasureGetExecutor;
+        this.conditionManager = conditionManager;
+        this.stageUIManager = stageUIManager;
     }
 
     public async UniTask ExecuteCardAsync(CardModelBase card, CancellationToken token) {
@@ -16,6 +20,17 @@ public class TreasureChestCardExecutor : ICardExecutor {
 
         if (card is not TreasureChestCard treasureChestCard) {
             DebugLogger.Log($"TreasureChestCard ではありません : {card.GetType().Name}");
+            return;
+        }
+
+        // アイテム獲得可否チェック
+        if (!conditionManager.CanObtainItem()) {
+            DebugLogger.Log("デバフにより、アイテム獲得できません。");
+
+            stageUIManager.UnobtainableItemInfo();
+
+            // TODO SE など
+
             return;
         }
 
