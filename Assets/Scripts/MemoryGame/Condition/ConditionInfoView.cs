@@ -13,7 +13,7 @@ public class ConditionInfoView : InfoViewBase {
 
         txtName.text = $"{conditionProgressData.ConditionData.name} : {conditionProgressData.StackCount.Value}";
 
-        txtDesc.text = conditionProgressData.ConditionData.desc;
+        txtDesc.text = conditionProgressData.ConditionData.desc.Replace("\\n", "\n");
 
         txtRemainingPower.text = $"強度 : {conditionProgressData.RemainingPower.Value}";
 

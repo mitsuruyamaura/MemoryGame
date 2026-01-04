@@ -1,6 +1,7 @@
-﻿using UnityEngine;
+﻿using Cysharp.Threading.Tasks;
 using DG.Tweening;
-using Cysharp.Threading.Tasks;
+using System.Threading.Tasks;
+using UnityEngine;
 
 
 public enum FloatingViewType {
@@ -51,25 +52,55 @@ public class FloatingView : TextViewBase {
     [SerializeField] private Color reactionColor;
     private FloatingViewType floatingViewType = FloatingViewType.normalDamage;
 
+    protected RectTransform rectTransform;
+    protected float valueFontSize = 45.0f;
 
     /// <summary>
-    /// フロート表示更新
+    /// ダメージのフロート表示用
     /// </summary>
     /// <param name="newMessage"></param>
     /// <returns></returns>
-    public override async UniTask UpdateText(string newMessage) {
-
+    public override async UniTask UpdateTextAsync(string newMessage) {
         string type = floatingViewType == FloatingViewType.critical ? $"Critical!\n" : "";
         newMessage = type + newMessage;
         
-        base.UpdateText(newMessage).Forget();
+        base.UpdateTextAsync(newMessage).Forget();
 
         // アニメさせる場合
         if (isAnimOn) {
-            Bounce();
+            await BounceAsync();
+        } 
+
+        //// オブジェクトプールへ戻す
+        Release();
+    }
+
+    /// <summary>
+    /// めくれる回数、ソウルポイントのフロート表示用
+    /// </summary>
+    /// <param name="value"></param>
+    /// <returns></returns>
+    public async UniTask FloatText(int value) {
+        if(rectTransform == null) {
+            rectTransform = transform as RectTransform;
         }
 
-        await UniTask.Delay(System.TimeSpan.FromSeconds(moveDuration));
+        txtView.fontSize = valueFontSize;
+        base.UpdateTextAsync(value.ToString()).Forget();
+
+        txtView.alpha = 1;
+        Sequence sequence = DOTween.Sequence();
+        sequence.SetLink(gameObject);
+
+        if (value > 0) {
+            sequence.Append(rectTransform.DOAnchorPosY(50, moveDuration).SetEase(Ease.Linear));
+            sequence.Join(txtView.DOFade(0, moveDuration).SetEase(Ease.Linear));
+        } else {
+            sequence.Append(rectTransform.DOAnchorPosY(-50, moveDuration).SetEase(Ease.Linear));
+            sequence.Join(txtView.DOFade(0, moveDuration).SetEase(Ease.Linear));
+        }
+
+        await sequence.AsyncWaitForCompletion();
 
         //// オブジェクトプールへ戻す
         Release();
@@ -127,28 +158,7 @@ public class FloatingView : TextViewBase {
         }
     }
 
-    /// <summary>
-    /// オブジェクトプールへ戻す
-    /// </summary>
-    public override void Release() {
-        if (isReleased) {
-            return;
-        }
-
-        // 文字の色を白に戻す
-        SetDefaultColorAndFontSize();
-
-        // フェードアウトした後に初期値に戻す
-        if (this == null || canvasGroupTextView == null) return;
-        canvasGroupTextView.alpha = 1.0f;
-        transform.localScale = Vector3.one * defaultScale;
-        floatingViewType = FloatingViewType.normalDamage;
-
-        //Debug.Log(objectPool);
-        ObjectPool.Release(this);
-    }
-
-    private void Bounce() {
+    private async Task BounceAsync() {
         // リセット
         transform.localPosition = Vector3.zero;
 
@@ -189,5 +199,28 @@ public class FloatingView : TextViewBase {
         sequence.Join(transform.DOScale(Vector3.zero, duration));
 
         sequence.SetLink(gameObject);
+
+        await sequence.AsyncWaitForCompletion();
+    }
+
+    /// <summary>
+    /// オブジェクトプールへ戻す
+    /// </summary>
+    public override void Release() {
+        if (isReleased) {
+            return;
+        }
+
+        // 文字の色を白に戻す
+        SetDefaultColorAndFontSize();
+
+        // フェードアウトした後に初期値に戻す
+        if (this == null || canvasGroupTextView == null) return;
+        canvasGroupTextView.alpha = 1.0f;
+        transform.localScale = Vector3.one * defaultScale;
+        floatingViewType = FloatingViewType.normalDamage;
+
+        //Debug.Log(objectPool);
+        ObjectPool.Release(this);
     }
 }

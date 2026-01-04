@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
-using R3;
+﻿using Cysharp.Threading.Tasks;
 using DG.Tweening;
+using R3;
+using System.Collections.Generic;
 using System.Linq;
-using Cysharp.Threading.Tasks;
+using UnityEngine;
 
 /// <summary>
 /// インベントリ用のアイテムデータ
@@ -78,6 +78,15 @@ public class GameData : AbstractSingleton<GameData> {
     private PlayerInventoryManager playerInventoryManager;
     private ConditionManager conditionManager;
     private FloatingViewGenerator floatingViewGenerator;
+
+    private UniTask currentSoulPointTask = UniTask.CompletedTask;
+    private UniTask currentFlipCountTask = UniTask.CompletedTask;
+
+    private readonly Queue<int> soulPointQueue = new();
+    private bool isPlayingSoulPoint;
+
+    private readonly Queue<int> flipCountQueue = new();
+    private bool isPlayingFlipCount;
 
 
     protected override void Awake() {
@@ -284,11 +293,40 @@ public class GameData : AbstractSingleton<GameData> {
         int finalPoint = conditionManager.ApplyFlipPointModifiers(basePoint);
         userData.FlipPoint.Value = Mathf.Max(userData.FlipPoint.Value + finalPoint, 0);
 
-        FloatingView floatingView = (FloatingView)floatingViewGenerator.GetObjectFromPool(flipPointFloatingViewTran);
-        FloatingViewType floatingViewType = finalPoint > 0 ? FloatingViewType.heal: FloatingViewType.normalDamage;
-        floatingView.SetColor(floatingViewType);
-        floatingView.SetViewFontSize(floatingViewType);
-        floatingView.UpdateText(finalPoint.ToString()).Forget();
+        EnqueueFlipCount(finalPoint);
+    }
+
+    /// <summary>
+    /// 複数の計算処理の結果をまとめておいて順番に表示
+    /// </summary>
+    /// <param name="finalPoint"></param>
+    private void EnqueueFlipCount(int finalPoint) {
+        flipCountQueue.Enqueue(finalPoint);
+
+        if (!isPlayingFlipCount) {
+            PlayFlipCountFloatTextAsync().Forget();
+        }
+    }
+
+    /// <summary>
+    /// めくれる回数のフロート表示
+    /// </summary>
+    /// <returns></returns>
+    private async UniTask PlayFlipCountFloatTextAsync() {
+        isPlayingFlipCount = true;
+
+        while(flipCountQueue.Count > 0){
+            int finalPoint = flipCountQueue.Dequeue();
+
+            FloatingView floatingView = (FloatingView)floatingViewGenerator.GetObjectFromPool(flipPointFloatingViewTran);
+            FloatingViewType floatingViewType = finalPoint > 0 ? FloatingViewType.heal : FloatingViewType.normalDamage;
+            floatingView.SetColor(floatingViewType);
+            floatingView.SetViewFontSize(FloatingViewType.normalDamage);
+
+            await floatingView.FloatText(finalPoint);
+        }
+
+        isPlayingFlipCount = false;
     }
 
     /// <summary>
@@ -300,11 +338,40 @@ public class GameData : AbstractSingleton<GameData> {
         int soulPoint = conditionManager.ApplyExpModifiers(baseSoulPoint);
         userData.SoulPoint.Value = Mathf.Max(userData.SoulPoint.Value + soulPoint, 0);
 
-        FloatingView floatingView = (FloatingView)floatingViewGenerator.GetObjectFromPool(soulPointFloatingViewTran);
-        FloatingViewType floatingViewType = soulPoint > 0 ? FloatingViewType.heal : FloatingViewType.normalDamage;
-        floatingView.SetColor(floatingViewType);
-        floatingView.SetViewFontSize(floatingViewType);
-        floatingView.UpdateText(soulPoint.ToString()).Forget();
+        EnqueueSoulPoint(soulPoint);
+    }
+
+    /// <summary>
+    /// 複数の計算処理の結果をまとめておいて順番に表示
+    /// </summary>
+    /// <param name="soulPoint"></param>
+    private void EnqueueSoulPoint(int soulPoint) {
+        soulPointQueue.Enqueue(soulPoint);
+
+        if (!isPlayingSoulPoint) {
+            PlaySoulPointFloatTextAsync().Forget();
+        }
+    }
+
+    /// <summary>
+    /// ソウルポイントのフロート表示
+    /// </summary>
+    /// <returns></returns>
+    private async UniTask PlaySoulPointFloatTextAsync() {
+        isPlayingSoulPoint = true;
+
+        while (soulPointQueue.Count > 0) {
+            int soulPoint = soulPointQueue.Dequeue();
+
+            FloatingView floatingView = (FloatingView)floatingViewGenerator.GetObjectFromPool(soulPointFloatingViewTran);
+            FloatingViewType floatingViewType = soulPoint > 0 ? FloatingViewType.heal : FloatingViewType.normalDamage;
+            floatingView.SetColor(floatingViewType);
+            floatingView.SetViewFontSize(FloatingViewType.normalDamage);
+
+            await floatingView.FloatText(soulPoint);
+        }
+
+        isPlayingSoulPoint = false;
     }
 
     /// <summary>

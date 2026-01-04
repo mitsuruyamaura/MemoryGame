@@ -49,7 +49,7 @@ public class ConditionManager : MonoBehaviour {
 
         // コンディションの効果用クラスの生成
         IConditionEffect conditionEffect = conditionEffectFactory.CreateEffect(conditionData.conditionType);
-        ConditionContext context = new(stageUIManager, this);
+        ConditionContext context = new(stageUIManager);
 
         // コンディション管理データ生成
         ConditionProgressData conditionProgressData = new(conditionData, conditionPowerMultiplier, stackCount, conditionEffect, context, token);

@@ -395,7 +395,7 @@ public class BattleManager : MonoBehaviour, IPoisonDamageApplier {
         FloatingViewType floatingViewType = isCritical == true ? FloatingViewType.critical : FloatingViewType.shield;
         floatingView.SetColor(floatingViewType);
         floatingView.SetViewFontSize(floatingViewType);
-        floatingView.UpdateText(amount.ToString()).Forget();
+        floatingView.UpdateTextAsync(amount.ToString()).Forget();
     }
 
     /// <summary>
@@ -412,7 +412,7 @@ public class BattleManager : MonoBehaviour, IPoisonDamageApplier {
         FloatingViewType floatingViewType = isCritical == true ? FloatingViewType.critical : FloatingViewType.shield;
         floatingView.SetColor(floatingViewType);
         floatingView.SetViewFontSize(floatingViewType);
-        floatingView.UpdateText(amount.ToString()).Forget();
+        floatingView.UpdateTextAsync(amount.ToString()).Forget();
     }
 
     /// <summary>
@@ -448,7 +448,7 @@ public class BattleManager : MonoBehaviour, IPoisonDamageApplier {
                                           : effectType == EffectType.Passive ? FloatingViewType.reaction : FloatingViewType.normalDamage;
         floatingView.SetColor(floatingViewType);
         floatingView.SetViewFontSize(floatingViewType);
-        floatingView.UpdateText(amount.ToString()).Forget();
+        floatingView.UpdateTextAsync(amount.ToString()).Forget();
     }
 
     /// <summary>
@@ -476,7 +476,7 @@ public class BattleManager : MonoBehaviour, IPoisonDamageApplier {
         FloatingViewType floatingViewType = isCritical == true ? FloatingViewType.critical : effectType == EffectType.Heal ? FloatingViewType.heal : FloatingViewType.normalDamage;
         floatingView.SetColor(floatingViewType);
         floatingView.SetViewFontSize(floatingViewType);
-        floatingView.UpdateText(amount.ToString()).Forget();
+        floatingView.UpdateTextAsync(amount.ToString()).Forget();
     }
 
     /// <summary>

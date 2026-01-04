@@ -509,7 +509,7 @@ public class BackPackInItem : PoolBase {
                     FloatingView floatingView = (FloatingView)floatingViewGenerator.GetObjectFromPool(battleManager.playerFloatingViewTran);
                     floatingView.SetColor(FloatingViewType.dodge);
                     floatingView.SetViewFontSize(FloatingViewType.dodge);
-                    floatingView.UpdateText("Parry!!").Forget();
+                    floatingView.UpdateTextAsync("Parry!!").Forget();
 
                     SoundManager.instance.PlaySE(SE_TYPE.Parry);
                 } else {
@@ -549,7 +549,7 @@ public class BackPackInItem : PoolBase {
                     FloatingView floatingView = (FloatingView)floatingViewGenerator.GetObjectFromPool(battleManager.playerFloatingViewTran);
                     floatingView.SetColor(FloatingViewType.reaction);
                     floatingView.SetViewFontSize(FloatingViewType.reaction);
-                    floatingView.UpdateText("Reflect!!").Forget();
+                    floatingView.UpdateTextAsync("Reflect!!").Forget();
 
                     SoundManager.instance.PlaySE(SE_TYPE.Reflect);
                 }
@@ -577,7 +577,7 @@ public class BackPackInItem : PoolBase {
                     FloatingView floatingView = (FloatingView)floatingViewGenerator.GetObjectFromPool(battleManager.playerFloatingViewTran);
                     floatingView.SetColor(FloatingViewType.heal);
                     floatingView.SetViewFontSize(FloatingViewType.heal);
-                    floatingView.UpdateText("Absorb!!").Forget();
+                    floatingView.UpdateTextAsync("Absorb!!").Forget();
 
                     SoundManager.instance.PlaySE(SE_TYPE.Absorb);
                 }
@@ -602,7 +602,7 @@ public class BackPackInItem : PoolBase {
             }
             floatingView.SetColor(FloatingViewType.dodge);
             floatingView.SetViewFontSize(FloatingViewType.dodge);
-            floatingView.UpdateText("Miss").Forget();
+            floatingView.UpdateTextAsync("Miss").Forget();
 
             SoundManager.instance.PlaySE(SE_TYPE.Miss);
         }

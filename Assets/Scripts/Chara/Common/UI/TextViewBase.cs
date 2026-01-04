@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
-using Cysharp.Threading.Tasks;
 using TMPro;
+using Cysharp.Threading.Tasks;
 
 /// <summary>
 /// Text 表示の基底クラス
@@ -13,15 +13,15 @@ public class TextViewBase : PoolBase {
     //[SerializeField] protected Canvas canvasView;
 #pragma warning restore 0649
 
-
     /// <summary>
     /// Text 表示更新
     /// </summary>
     /// <param name="newMessage"></param>
     /// <returns></returns>
-    public virtual async UniTask UpdateText(string newMessage) {
+    public virtual async UniTask UpdateTextAsync(string newMessage) {
         ShowText();
         txtView.text = newMessage;
+
         await UniTask.Yield();
     }
 
@@ -34,7 +34,7 @@ public class TextViewBase : PoolBase {
     /// </summary>
     /// <param name="newMessage"></param>
     public virtual void SetUpView(string newMessage) {
-        UpdateText(newMessage).Forget();
+        UpdateTextAsync(newMessage).Forget();
 
         //if (canvasView.worldCamera == null) {
         //    canvasView.worldCamera = Camera.main;

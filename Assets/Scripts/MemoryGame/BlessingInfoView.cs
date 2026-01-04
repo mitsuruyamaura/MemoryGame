@@ -8,7 +8,7 @@ public class BlessingInfoView : InfoViewBase {
         if (masterData is IInfoView view) {
             // 表示内容の設定
             txtName.text = view.Name;
-            txtDesc.text = view.Description.Replace("\\n", "\n"); ;
+            txtDesc.text = view.Description.Replace("\\n", "\n");
 
             int rarity = (int)view.Rarity;
             for (int i = 0; i < (int)Rarity.Rare + 1; i++) {
