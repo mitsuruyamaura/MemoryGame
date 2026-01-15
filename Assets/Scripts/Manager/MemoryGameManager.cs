@@ -85,6 +85,7 @@ public class MemoryGameManager : MonoBehaviour {
     private CardFactory cardFactory;
     private PlayerInventoryManager playerInventoryManager;
     private ConditionManager conditionManager;
+    private StageUIManager stageUIManager;
 
     // デバッグ用
     //private async void Start() {
@@ -96,10 +97,11 @@ public class MemoryGameManager : MonoBehaviour {
     /// ステージ初期設定
     /// </summary>
     /// <returns></returns>
-    public async UniTask SetUpAsync(CardFactory cardFactory, BattleManager battleManager, PlayerInventoryManager playerInventoryManager, ConditionManager conditionManager) {
+    public async UniTask SetUpAsync(CardFactory cardFactory, BattleManager battleManager, PlayerInventoryManager playerInventoryManager, ConditionManager conditionManager, StageUIManager stageUIManager) {
         this.cardFactory = cardFactory;
         this.playerInventoryManager = playerInventoryManager;
         this.conditionManager = conditionManager;
+        this.stageUIManager = stageUIManager;
 
         // 各初期化処理
         cts = new();
@@ -207,10 +209,10 @@ public class MemoryGameManager : MonoBehaviour {
         turnEndDisposable = onTurnEnd.Subscribe(_ => conditionManager.UpdateConditionRemainingPowers()).AddTo(this);
 
         // デバッグ用リセット機能
-        this.UpdateAsObservable()
-            .Where(_ => Input.GetKeyDown(KeyCode.A))
-            .Subscribe(_ => NextFloorAsync().Forget())
-            .AddTo(this);
+        //this.UpdateAsObservable()
+        //    .Where(_ => Input.GetKeyDown(KeyCode.A))
+        //    .Subscribe(_ => NextFloorAsync().Forget())
+        //    .AddTo(this);
     }
 
     /// <summary>
@@ -249,6 +251,9 @@ public class MemoryGameManager : MonoBehaviour {
 
         // イベント系カードの残り時間減算。0 になっていないなら効果適用。背景用の画像の変更
         onNextFloor.OnNext(GameData.instance.userData.FloorCount.Value);
+
+        // フロア数の表示(カード生成前に出さないとテンポが悪いため)
+        stageUIManager.ShowFloorCount(GameData.instance.userData.FloorCount.Value);
 
         // スロットを生成
         CreateSlots();
