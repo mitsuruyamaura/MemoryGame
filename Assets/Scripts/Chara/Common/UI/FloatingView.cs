@@ -53,6 +53,7 @@ public class FloatingView : TextViewBase {
     private FloatingViewType floatingViewType = FloatingViewType.normalDamage;
 
     protected RectTransform rectTransform;
+    protected Vector2 startValuePos;
     protected float valueFontSize = 45.0f;
 
     /// <summary>
@@ -83,9 +84,12 @@ public class FloatingView : TextViewBase {
     public async UniTask FloatText(int value) {
         if(rectTransform == null) {
             rectTransform = transform as RectTransform;
+            startValuePos = rectTransform.anchoredPosition;
         }
 
         txtView.fontSize = valueFontSize;
+        rectTransform.anchoredPosition = startValuePos;
+
         base.UpdateTextAsync(value.ToString()).Forget();
 
         txtView.alpha = 1;
@@ -203,7 +207,7 @@ public class FloatingView : TextViewBase {
         await sequence.AsyncWaitForCompletion();
     }
 
-    /// <summary>
+        /// <summary>
     /// オブジェクトプールへ戻す
     /// </summary>
     public override void Release() {

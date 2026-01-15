@@ -73,6 +73,6 @@ public class StageEntryManager : MonoBehaviour {
 
         GameData.instance.CurrentGameState.Value = GameState.Play;
 
-        await memoryGameManager.SetUpAsync(cardFactory, battleManager, playerInventoryManager, conditionManager);
+        await memoryGameManager.SetUpAsync(cardFactory, battleManager, playerInventoryManager, conditionManager, stageUIManager);
     }
 }

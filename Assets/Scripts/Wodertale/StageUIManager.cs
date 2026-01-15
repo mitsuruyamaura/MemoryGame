@@ -71,6 +71,12 @@ public class StageUIManager : MonoBehaviour {
     public Transform PlayerBackPackItemTran => playerBackPackItemTran;
 
     [SerializeField] private CanvasGroup cgItemRestrictionShade;
+    [SerializeField] private CanvasGroup cgFloorCount;
+    [SerializeField] private Text txtFloorCount;
+    [SerializeField] private RectTransform floorCountStartRect;
+    [SerializeField] private RectTransform floorCountTargetRect;
+    [SerializeField] private RectTransform floorCountEndRect;
+    [SerializeField] private RectTransform floorCountRect;
 
 
     private string SuccessSettlementMessage = "平和的解決に成功しました!!";
@@ -112,6 +118,7 @@ public class StageUIManager : MonoBehaviour {
         HideTimeCanvas();
         HideBattleState(null);
         HideItemLockShade();
+        HideFloorCount();
 
         GameData.instance.userData.SoulPoint
             .Zip(GameData.instance.userData.SoulPoint.Skip(1), (prevPoint, nextPoint) => (prevPoint, nextPoint))
@@ -486,6 +493,29 @@ public class StageUIManager : MonoBehaviour {
     public void HideItemLockShade() {
         cgItemRestrictionShade.alpha = 0;
         cgItemRestrictionShade.blocksRaycasts = false;
+    }
+
+    /// <summary>
+    /// 次のフロア数の表示
+    /// </summary>
+    /// <param name="floorCount"></param>
+    public void ShowFloorCount(int floorCount) {        
+        txtFloorCount.text = $"{floorCount}F";
+        Sequence sequence = DOTween.Sequence();
+        sequence.SetLink(gameObject);
+
+        sequence.Append(floorCountRect.DOAnchorPosY(floorCountTargetRect.position.y, 0.5f).SetEase(Ease.OutBack));
+        sequence.Join(cgFloorCount.DOFade(1.0f, 0.5f));
+        sequence.AppendInterval(0.5f);
+
+        sequence.Append(floorCountRect.DOAnchorPosY(floorCountEndRect.position.y, 0.5f).SetEase(Ease.OutBack));
+        sequence.Join(cgFloorCount.DOFade(0f, 0.5f)).OnComplete(() => HideFloorCount());
+    }
+
+    private void HideFloorCount() {
+        cgFloorCount.alpha = 0f;
+        cgFloorCount.blocksRaycasts = false;
+        floorCountRect.position = floorCountStartRect.position;
     }
 
 
