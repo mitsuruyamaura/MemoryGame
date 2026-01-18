@@ -37,6 +37,6 @@ public abstract class CardModelBase {
     }
 
     public virtual void FaceDown() {
-        isFaceUp = false;    
+        isFaceUp = false;
     }
 }

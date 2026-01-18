@@ -499,23 +499,23 @@ public class StageUIManager : MonoBehaviour {
     /// 次のフロア数の表示
     /// </summary>
     /// <param name="floorCount"></param>
-    public void ShowFloorCount(int floorCount) {        
+    public void ShowFloorCount(int floorCount) {
         txtFloorCount.text = $"{floorCount}F";
         Sequence sequence = DOTween.Sequence();
         sequence.SetLink(gameObject);
 
-        sequence.Append(floorCountRect.DOAnchorPosY(floorCountTargetRect.position.y, 0.5f).SetEase(Ease.OutBack));
+        sequence.Append(floorCountRect.DOAnchorPosY(floorCountTargetRect.anchoredPosition.y, 0.5f).SetEase(Ease.OutBack));
         sequence.Join(cgFloorCount.DOFade(1.0f, 0.5f));
         sequence.AppendInterval(0.5f);
 
-        sequence.Append(floorCountRect.DOAnchorPosY(floorCountEndRect.position.y, 0.5f).SetEase(Ease.OutBack));
+        sequence.Append(floorCountRect.DOAnchorPosY(floorCountEndRect.anchoredPosition.y, 0.5f).SetEase(Ease.InQuart));
         sequence.Join(cgFloorCount.DOFade(0f, 0.5f)).OnComplete(() => HideFloorCount());
     }
 
     private void HideFloorCount() {
         cgFloorCount.alpha = 0f;
         cgFloorCount.blocksRaycasts = false;
-        floorCountRect.position = floorCountStartRect.position;
+        floorCountRect.anchoredPosition = floorCountStartRect.anchoredPosition;
     }
 
 

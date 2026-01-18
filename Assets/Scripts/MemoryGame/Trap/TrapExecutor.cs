@@ -28,6 +28,9 @@ public class TrapExecutor {
             { TrapActionType.Damage, new DamageTrapExecutor(battleManager) },
             { TrapActionType.FlipCountDown, new FlipCountDownTrapExecutor() },
             { TrapActionType.PlayerDebuff, new PlayerDebuffTrapExecutor(conditionManager, memoryGameManager)},
+            { TrapActionType.DeleteTargetCard, new DestroyTargetCardTrapExecutor(memoryGameManager)},
+            { TrapActionType.ChangeCardTypeFromTo, new ChangeCardTypeFromToTrapExevutor(memoryGameManager)},
+            { TrapActionType.ChangeAllCard, new ChangeAllCardsTypeToTrapExecutor(memoryGameManager)},
         };
 
         float timeLimitFromData = float.Parse(DataBaseManager.instance.GetConstantDataValue("LIMIT_TRAP_DISARM_TIME_SECOND"));

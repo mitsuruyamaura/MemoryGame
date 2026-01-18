@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 [System.Serializable]
 public class TrapActionData : IMasterData {
@@ -9,6 +9,8 @@ public class TrapActionData : IMasterData {
     public float value;
     public ConditionType conditionType;
     public TrapDamageType trapDamageType;
+    public CardEventType fromCardEventType;
+    public CardEventType toCardEventType;
     public int implemented;
 
     public int Id => id;
@@ -21,7 +23,9 @@ public class TrapActionData : IMasterData {
         value = float.Parse(datas[4]);
         conditionType = ParseConditionType(datas[5]);
         trapDamageType = ParseTrapDamageType(datas[6]);
-        implemented = int.Parse(datas[7]);
+        fromCardEventType = ParseCardEventType(datas[7]);
+        toCardEventType = ParseCardEventType(datas[8]);
+        implemented = int.Parse(datas[9]);
     }
 
     public static TrapActionType ParseTrapActionType(string typeStr) {
@@ -49,5 +53,13 @@ public class TrapActionData : IMasterData {
 
         DebugLogger.Log($"Unknown TrapDamageType: {typeStr}");
         return TrapDamageType.None;
+    }
+
+    public static CardEventType ParseCardEventType(string typeStr) {
+        if (Enum.TryParse(typeStr, ignoreCase: true, out CardEventType result)) {
+            return result;
+        }
+        DebugLogger.Log($"Unknown CardEventType: {typeStr}");
+        return CardEventType.Stairs;
     }
 }
