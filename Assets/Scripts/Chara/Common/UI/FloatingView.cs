@@ -88,15 +88,18 @@ public class FloatingView : TextViewBase {
         }
 
         txtView.fontSize = valueFontSize;
-        rectTransform.anchoredPosition = startValuePos;
+        rectTransform.anchoredPosition = Vector2.zero;
 
-        base.UpdateTextAsync(value.ToString()).Forget();
+        // 表示する文字列の作成。0 以上の値の場合は「+」を付与
+        string text = value >= 0 ? $"+{value}" : value.ToString();
+
+        base.UpdateTextAsync(text).Forget();
 
         txtView.alpha = 1;
         Sequence sequence = DOTween.Sequence();
         sequence.SetLink(gameObject);
 
-        if (value > 0) {
+        if (value >= 0) {
             sequence.Append(rectTransform.DOAnchorPosY(50, moveDuration).SetEase(Ease.Linear));
             sequence.Join(txtView.DOFade(0, moveDuration).SetEase(Ease.Linear));
         } else {

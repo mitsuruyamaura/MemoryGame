@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardTypeSO
   cardTypeList:
   - cardEventType: 0
-    spriteCardType: {fileID: 21300000, guid: 6c75c0c49e293c04eb0c1d9e7d67a8b8, type: 3}
+    spriteCardType: {fileID: 21300000, guid: faf8f0eeb5cd1204699cb452ee5fcba1, type: 3}
   - cardEventType: 1
     spriteCardType: {fileID: 21300000, guid: c52f1ab8e1ff1c2498364f2688796638, type: 3}
   - cardEventType: 2

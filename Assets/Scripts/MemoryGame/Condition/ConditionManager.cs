@@ -154,13 +154,31 @@ public class ConditionManager : MonoBehaviour {
     /// <param name="predicate"></param>
     private void RemoveByPredicate(Func<ConditionProgressData, bool> predicate) {
         for (int i = conditionProgressDataList.Count - 1; i >= 0; i--) {
-            if (predicate(conditionProgressDataList[i])) {
-                // 削除時の効果がある場合には実行する
-                if (conditionProgressDataList[i].ConditionEffect is IOnConditionExit exit) {
-                    exit.OnExit(conditionProgressDataList[i]);
-                }
-                conditionProgressDataList.RemoveAt(i);
+            ConditionProgressData data = conditionProgressDataList[i];
+            if (predicate(data)) {
+                RemoveConditionInternal(data);
             }
+        }
+    }
+
+    /// <summary>
+    /// コンディションのデータとインジケーターの削除
+    /// </summary>
+    /// <param name="data"></param>
+    private void RemoveConditionInternal(ConditionProgressData data) {
+        // Exit 時効果(コンディション除時の効果がある場合には実行する)
+        if (data.ConditionEffect is IOnConditionExit exit) {
+            exit.OnExit(data);
+        }
+
+        conditionProgressDataList.Remove(data);
+
+        // UI インジケーター削除
+        ConditionIndicator indicator =
+            indicatorList.FirstOrDefault(i => i.HasCondition(data));
+
+        if (indicator != null) {
+            indicator.Release();
         }
     }
 
@@ -169,13 +187,17 @@ public class ConditionManager : MonoBehaviour {
     /// 現在未使用
     /// </summary>
     public void RemoveConditionList(ConditionProgressData conditionProgressData) {
-        conditionProgressDataList.Remove(conditionProgressData);
+        // コンディションデータリストから削除
+        RemoveConditionInternal(conditionProgressData);
 
-        // 対応するインジケーターを探して削除
-        ConditionIndicator indicator = indicatorList.FirstOrDefault(i => i.HasCondition(conditionProgressData));
-        if (indicator != null) {
-            indicator.Release();
-        }
+        // 上記のメソッドに処理をまとめたため、以下のコードは不要
+        //conditionProgressDataList.Remove(conditionProgressData);
+
+        //// 対応するインジケーターを探して削除
+        //ConditionIndicator indicator = indicatorList.FirstOrDefault(i => i.HasCondition(conditionProgressData));
+        //if (indicator != null) {
+        //    indicator.Release();
+        //}
     }
 
     /// <summary>

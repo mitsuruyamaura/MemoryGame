@@ -100,6 +100,22 @@ public class CardView : PoolBase {
     }
 
     /// <summary>
+    /// カードタイプの差し替え
+    /// </summary>
+    /// <param name="newCardType"></param>
+    public void ReplaceCardType(CardEventType newCardType) {
+        cardEventType = newCardType;
+    }
+
+    /// <summary>
+    /// カードのイラストを差し替え
+    /// </summary>
+    /// <param name="newSprite"></param>
+    public void ReplaceCardSprite(Sprite newSprite) {
+        spriteCardType = newSprite;
+    }
+
+    /// <summary>
     /// オブジェクトプールに戻す
     /// </summary>
     public override void Release() {

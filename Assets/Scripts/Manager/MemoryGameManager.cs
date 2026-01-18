@@ -163,8 +163,8 @@ public class MemoryGameManager : MonoBehaviour {
             .Subscribe(flipPoint => battleManager.ForceGameEndAsync().Forget()).AddTo(this);  // GameEndAsync().Forget()
 
         // 思い出の断片獲得時の購読処理
-        GameData.instance.userData.MemoryStoneSlotList.ObserveAdd()
-            .Subscribe(memoryStoneIndex => SetMemoryStoneIcon(memoryStoneIndex.Value)).AddTo(this);
+        //GameData.instance.userData.MemoryStoneSlotList.ObserveAdd()
+        //    .Subscribe(memoryStoneIndex => SetMemoryStoneIcon(memoryStoneIndex.Value)).AddTo(this);
 
         GameData.instance.ComboPairCount.Subscribe(comboCount => CheckComboEffect(comboCount)).AddTo(this);
 
@@ -301,13 +301,12 @@ public class MemoryGameManager : MonoBehaviour {
 
         // カード生成して各スロットに１つずつ配置
         for (int i = 0; i < selectedCardDataList.Count; i++) {
-            int index = i;
             await UniTask.Delay(200);
 
             if (this == null || cardGenerator == null || slotList == null) return;
 
             CardView card = (CardView)cardGenerator.GetObjectFromPool(slotList[i].transform);
-            card.Setup(index, OnCardSelected, flipDuration, selectedCardDataList[i].cardTypeMaster.spriteCardType, selectedCardDataList[i].cardTypeMaster.cardEventType);
+            card.Setup(selectedCardDataList[i].cardIndex, OnCardSelected, flipDuration, selectedCardDataList[i].cardTypeMaster.spriteCardType, selectedCardDataList[i].cardTypeMaster.cardEventType);
             cardViewList.Add(card);
         }
     }
@@ -323,16 +322,31 @@ public class MemoryGameManager : MonoBehaviour {
         // CardType の List を フロアの階数より作成
         List<CardTypeMaster> cardTypeMasterList = CreateCardTypeList();
 
+        int cardIndex = 0;
+
         // カードの種類ごとにペアを作成
-        for (int i = 0; i < cardTypeMasterList.Count; i++) {
-            CardData cardData = new() {
-                cardIndex = i,
-                cardTypeMaster = cardTypeMasterList[i],
+        foreach (CardTypeMaster master in cardTypeMasterList) {
+            // 1枚目
+            selectedCardDataList.Add(new CardData {
+                cardIndex = cardIndex,
+                cardTypeMaster = master,
                 masterData = null
-            };
-            selectedCardDataList.Add(cardData);
-            selectedCardDataList.Add(cardData);
+            });
+
+            cardIndex++;
+
+            // 2枚目
+            selectedCardDataList.Add(new CardData {
+                cardIndex = cardIndex,
+                cardTypeMaster = master,
+                masterData = null
+            });
+
+            cardIndex++;
         }
+
+        //DebugLogger.Log($"selectedCardDataList.Count : {selectedCardDataList.Count}");
+        //selectedCardDataList.ForEach(cardData => DebugLogger.Log($"Index : {cardData.cardIndex}"));
 
         // デバッグ用
         //for (int i = 0; i < pairCount; i++) {
@@ -346,7 +360,16 @@ public class MemoryGameManager : MonoBehaviour {
         //}
 
         // カード配置をランダム化するためにシャッフル
-        return selectedCardDataList.OrderBy(_ => Guid.NewGuid()).ToList();
+        selectedCardDataList = selectedCardDataList.OrderBy(_ => Guid.NewGuid()).ToList();
+
+        // Index を振り直す
+        selectedCardDataList.Select((cardData, index) => {
+            cardData.cardIndex = index;
+            return cardData;
+        }).ToList();
+
+        //selectedCardDataList.ForEach(cardData => DebugLogger.Log($"Shuffled Index : {cardData.cardIndex}"));
+        return selectedCardDataList;
     }
 
     /// <summary>
@@ -854,7 +877,7 @@ public class MemoryGameManager : MonoBehaviour {
     /// </summary>
     /// <param name="blessingValueType"></param>
     /// <returns></returns>
-    private CardEventType ConvertCardEventTypeByBlessingValueType(BlessingValueType blessingValueType) {
+    public static CardEventType ConvertCardEventTypeByBlessingValueType(BlessingValueType blessingValueType) {
         return blessingValueType switch {
             BlessingValueType.Trap => CardEventType.Trap,
             BlessingValueType.Enemy => CardEventType.Enemy,
@@ -989,9 +1012,145 @@ public class MemoryGameManager : MonoBehaviour {
         DebugLogger.Log("カード破棄実行");
     }
 
+    /// <summary>
+    /// 指定した種類のカードを1ペア破壊する
+    /// </summary>
+    /// <param name="targetType"></param>
+    /// <returns></returns>
+    public async UniTask<bool> DestroyOnePairByTypeAsync(CardEventType targetType) {
+        List<CardModelBase> restModels = cardModelList
+            .Where(model =>
+                !model.isPair &&
+                model.cardData.cardTypeMaster.cardEventType == targetType)
+            .ToList();
+
+        if (restModels.Count < 2)
+            return false;
+
+        List<CardModelBase> pairModels = restModels.Take(2).ToList();
+
+        Dictionary<int, CardView> viewByIndex = cardViewList.ToDictionary(v => v.cardIndex);
+
+        if (!viewByIndex.TryGetValue(pairModels[0].cardIndex, out var firstView) ||
+            !viewByIndex.TryGetValue(pairModels[1].cardIndex, out var secondView)) {
+            DebugLogger.Log("CardView が見つかりません");
+            return false;
+        }
+
+        await DestroyTargetPairCard(
+            pairModels[0], firstView,
+            pairModels[1], secondView
+        );
+
+        return true;
+    }
+
+
+    public async UniTask DestroyAllPairsByTypeAsync(CardEventType targetCardEventType) {
+        while (true) {
+            bool isDestroyed = await DestroyOnePairByTypeAsync(targetCardEventType);
+            if (!isDestroyed) {
+                break;
+            }
+        }
+    }
+
+    /// <summary>
+    /// ペアになり、かつ残っているカードが2枚以上あるかどうか
+    /// </summary>
+    /// <param name="type"></param>
+    /// <returns></returns>
+    private bool CanDestroy(CardEventType type) {
+        return cardModelList.Count(model => !model.isPair && model.cardData.cardTypeMaster.cardEventType == type) >= 2;
+    }
+
 
     public void ChangeCardsByType(BlessingData blessingData) {
 
+    }
+
+    /// <summary>
+    /// 指定された CardType のカードを新しく別の CardType に置き換え
+    /// </summary>
+    /// <param name="fromType">対象となる CardType</param>
+    /// <param name="toType">新しい CardType</param>
+    public void ReplaceCardsByType(CardEventType fromType, CardEventType toType) {
+        // 置き換え対象のカードを抽出
+        List<CardModelBase> targetCardList = cardModelList.Where(model => !model.isPair && model.cardData.cardTypeMaster.cardEventType == fromType).ToList();
+        DebugLogger.Log($"ReplaceCardsByType from:{fromType} to:{toType} targetCardList.Count:{targetCardList.Count}");
+        targetCardList.ForEach(model => DebugLogger.Log($" target index:{model.cardData.cardIndex}"));
+
+        // 対象がなければ終了
+        if (targetCardList.Count == 0) {
+            return;
+        }
+
+        // 置き換え実行
+        ReplaceCardModelsAndViews(targetCardList, toType);
+    }
+
+    /// <summary>
+    /// 全カードを指定された CardType に置き換え
+    /// </summary>
+    /// <param name="toType">新しい CardType</param>
+    public void ReplaceAllCardsToType(CardEventType toType) {
+        // 置き換え対象のカードを抽出
+        List<CardModelBase> targetCardList = cardModelList.Where(model => !model.isPair).ToList();
+        DebugLogger.Log($"ReplaceCardsByType to:{toType} targetCardList.Count:{targetCardList.Count}");
+
+        // 置き換え実行
+        ReplaceCardModelsAndViews(targetCardList, toType);
+    }
+
+    /// <summary>
+    /// カードの置き替え実行。モデルとビューの両方を更新する
+    /// </summary>
+    /// <param name="targetModelList">書き換え対象のカードリスト</param>
+    /// <param name="toType">新しい CardType</param>
+    private void ReplaceCardModelsAndViews(List<CardModelBase> targetModelList, CardEventType toType) {
+        // 対象 index を先に確定させる
+        List<int> targetIndices = targetModelList
+            .Select(model => model.cardData.cardIndex)
+            .ToList();
+
+        // View 側を cardIndex で辞書化
+        Dictionary<int, CardView> viewByIndex = cardViewList.ToDictionary(view => view.cardIndex);
+
+        // 置き換え先の CardTypeMaster と各カードタイプのマスターを取得
+        CardTypeMaster newCardTypeMaster = DataBaseManager.instance.GetCardType(toType);
+        IMasterData newMasterData = CreateCardData(toType, currentFloorData);
+
+
+        foreach (int index in targetIndices) {
+            //DebugLogger.Log($"ReplaceCardModelsAndViews index:{index}");
+            // 現在の Model を取得
+            CardModelBase oldModel = cardModelList.First(model => model.cardData.cardIndex == index);
+
+            // 新 CardData 作成
+            CardData newData = new() {
+                cardIndex = index,
+                cardTypeMaster = newCardTypeMaster,
+                masterData = CreateCardData(toType, currentFloorData)
+            };
+
+            // 新 Model 作成
+            CardModelBase newModel = cardFactory.CreateCardModel(newData, index);
+
+            // Model 差し替え
+            int modelListIndex = cardModelList.FindIndex(model => model.cardData.cardIndex == index);
+
+            cardModelList[modelListIndex] = newModel;
+
+            //DebugLogger.Log($"CardModel 書き換え index:{index} from:{oldModel.cardData.cardTypeMaster.cardEventType} to:{toType}");
+
+            // View 更新
+            if (viewByIndex.TryGetValue(index, out var view)) {
+                view.ReplaceCardType(toType);
+                view.ReplaceCardSprite(newCardTypeMaster.spriteCardType);
+
+                DebugLogger.Log($"CardView 書き換え index:{index} to:{toType}");
+            }
+        }
     }
 
     /// <summary>

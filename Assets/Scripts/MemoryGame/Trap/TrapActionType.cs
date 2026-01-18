@@ -5,11 +5,9 @@
     ForceBattle,
     ChangeCardPosition,
     PlayerDebuff,
-    DeleteAllCard,
+    DeleteTargetCard,
     FlipCountDown,
-    ChangeBlessingCard,
-    ChangeMemoryCard,
     Deportation,
-    ChangeAllCard
-
+    ChangeAllCard,
+    ChangeCardTypeFromTo,
 }

@@ -86,15 +86,16 @@ public class ItemInfoView : InfoViewBase {
         txtDescs[1].text += "EffectType : " + effectTypeName;  // backPackInItem.itemData.effectType.ToString();
 
         txtDescs[2].text = $"ItemType : {backPackInItem.itemData.itemType}\n\n";
+
         // Passive のみ HpBonus 表示
         if (backPackInItem.itemData.effectType == EffectType.Passive) {
             txtDescs[2].text += valueName + " + " + backPackInItem.itemData.hpBonus.ToString() + "\n";
         }
 
         // 各ステータス値
-        for (int i = 0; i < backPackInItem.itemData.statusTypes.Length; i++) {
-            txtDescs[2].text += backPackInItem.itemData.statusTypes[i].ToString() + " + " + backPackInItem.itemData.requiredValues[i].ToString() + "\n";
-        }
+        //for (int i = 0; i < backPackInItem.itemData.statusTypes.Length; i++) {
+        //    txtDescs[2].text += backPackInItem.itemData.statusTypes[i].ToString() + " + " + backPackInItem.itemData.requiredValues[i].ToString() + "\n";
+        //}
 
         //txtDescs[3].text = "Rarity : " + backPackInItem.itemData.rarity.ToString();
         //txtDescs[0].text += backPackInItem.ItemData.Value.description;
@@ -187,15 +188,16 @@ public class ItemInfoView : InfoViewBase {
         txtDescs[1].text += "EffectType : " + effectTypeName;  // itemData.effectType.ToString();
 
         txtDescs[2].text = $"ItemType : {itemData.itemType}\n\n";
+
         // Passive のみ HpBonus 表示
         if (itemData.effectType == EffectType.Passive) {
             txtDescs[2].text += valueName + " + " + itemData.hpBonus.ToString() + "\n";
         }
 
         // 各ステータス値
-        for (int i = 0; i < itemData.statusTypes.Length; i++) {
-            txtDescs[2].text += itemData.statusTypes[i].ToString() + " + " + itemData.requiredValues[i].ToString() + "\n";
-        }
+        //for (int i = 0; i < itemData.statusTypes.Length; i++) {
+        //    txtDescs[2].text += itemData.statusTypes[i].ToString() + " + " + itemData.requiredValues[i].ToString() + "\n";
+        //}
 
         //txtDescs[3].text = "Rarity : " + itemData.rarity.ToString();
         //txtDescs[0].text += backPackInItem.ItemData.Value.description;
