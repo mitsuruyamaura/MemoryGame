@@ -2,7 +2,7 @@
 using System.Threading;
 
 /// <summary>
-/// めくれる回数(行動回数)を減少させる罠実行クラス
+/// めくれる回数(行動回数)を減少させるトラップ実行クラス
 /// </summary>
 public class FlipCountDownTrapExecutor : ITrapEffect {
     public async UniTask ExecuteTrapEffectAsync(TrapActionData trapActionData, CancellationToken token) {
