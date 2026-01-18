@@ -3,10 +3,11 @@ using System.Threading;
 using UnityEngine;
 
 /// <summary>
-/// ダメージ罠実行クラス
+/// ダメージトラップ実行クラス
 /// </summary>
 public class DamageTrapExecutor : ITrapEffect {
     private BattleManager battleManager;
+
     public DamageTrapExecutor(BattleManager battleManager) {
         this.battleManager = battleManager;
     }

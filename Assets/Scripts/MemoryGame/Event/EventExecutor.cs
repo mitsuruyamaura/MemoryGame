@@ -23,6 +23,7 @@ public class EventExecutor {
             { BlessingType.InventorySizeUp, new InventorySizeUpEventExecutor() },
             { BlessingType.EnhanceRandomItems, new EnhanceRandomItemsExecutor(playerInventoryManager, conditionManager) },
             { BlessingType.DestroyCardsByType, new DestroyCardsByTypeEventExecutor(memoryGameManager) },
+            { BlessingType.ChangeCardsByType, new ChangeCardsByTypeEventExecutor(memoryGameManager) },
 
         };
     }

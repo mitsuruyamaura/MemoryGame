@@ -721,6 +721,30 @@ public class PlayerInventoryManager : MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// インベントリ内のランダムなアイテムを指定数削除
+    /// </summary>
+    /// <param name="count"></param>
+    public void DeleteRandomItemFromInventory(int count) {
+        if (PlayerBackPackItemList.Count == 0) {
+            DebugLogger.Log($"インベントリが空です");
+            return;
+        }
+
+        // インベントリリストをランダムにシャッフルする
+        List<BackPackInItem> shuffledList = PlayerBackPackItemList.OrderBy(x => Guid.NewGuid()).ToList();
+
+        // 削除可能な範囲内で、指定された数だけ削除リストを作成(Take は最大値取るので足りなくてもエラーにはならない)
+        int deleteCount = Mathf.Min(count, PlayerBackPackItemList.Count);
+        List<BackPackInItem> deleteList = shuffledList.Take(deleteCount).ToList();
+
+        // シャッフルされたリストから最初から順に要素を取得して削除
+        for (int i = 0; i < deleteList.Count; i++) {
+            BackPackInItem backPackInItem = deleteList[i];
+            backPackInItem.DestoryItem();
+        }
+    }
+
     private void OnDestory() {
         disposables?.Clear();
     }

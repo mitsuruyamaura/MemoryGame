@@ -12,17 +12,19 @@ public class TrapExecutor {
     private ConditionManager conditionManager;
     private MemoryGameManager memoryGameManager;
     private ItemInfoDisplayManager itemInfoDisplayManager;
+    private PlayerInventoryManager playerInventoryManager;
 
     private readonly Dictionary<TrapActionType, ITrapEffect> executorMap;
     private readonly int symbolTypeCount = 4;    // QTEシンボル種類数
     private readonly float timeLimitSeconds = 5f; // QTE制限時間(秒)   ConstantData から取得するように変更
 
-    public TrapExecutor(BattleManager battleManager, TrapDisarmQTEManager trapDisarmQTEManager, ConditionManager conditionManager, MemoryGameManager memoryGameManager, ItemInfoDisplayManager itemInfoDisplayManager) {
+    public TrapExecutor(BattleManager battleManager, TrapDisarmQTEManager trapDisarmQTEManager, ConditionManager conditionManager, MemoryGameManager memoryGameManager, ItemInfoDisplayManager itemInfoDisplayManager, PlayerInventoryManager playerInventoryManager) {
         this.battleManager = battleManager;
         this.trapDisarmQTEManager = trapDisarmQTEManager;
         this.conditionManager = conditionManager;
         this.memoryGameManager = memoryGameManager;
         this.itemInfoDisplayManager = itemInfoDisplayManager;
+        this.playerInventoryManager = playerInventoryManager;
 
         executorMap = new() {
             { TrapActionType.Damage, new DamageTrapExecutor(battleManager) },
@@ -31,6 +33,7 @@ public class TrapExecutor {
             { TrapActionType.DeleteTargetCard, new DestroyTargetCardTrapExecutor(memoryGameManager)},
             { TrapActionType.ChangeCardTypeFromTo, new ChangeCardTypeFromToTrapExevutor(memoryGameManager)},
             { TrapActionType.ChangeAllCard, new ChangeAllCardsTypeToTrapExecutor(memoryGameManager)},
+            { TrapActionType.DeleteItem, new DeleteItemTrapExecutor(playerInventoryManager) },
         };
 
         float timeLimitFromData = float.Parse(DataBaseManager.instance.GetConstantDataValue("LIMIT_TRAP_DISARM_TIME_SECOND"));
