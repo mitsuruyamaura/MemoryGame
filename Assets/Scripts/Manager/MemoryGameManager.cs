@@ -86,6 +86,7 @@ public class MemoryGameManager : MonoBehaviour {
     private PlayerInventoryManager playerInventoryManager;
     private ConditionManager conditionManager;
     private StageUIManager stageUIManager;
+    private BlessingInfoDisplayManager blessingInfoDisplayManager;  // 一旦ここで。マネージャー作成したらそちらで管理
 
     // デバッグ用
     //private async void Start() {
@@ -97,11 +98,12 @@ public class MemoryGameManager : MonoBehaviour {
     /// ステージ初期設定
     /// </summary>
     /// <returns></returns>
-    public async UniTask SetUpAsync(CardFactory cardFactory, BattleManager battleManager, PlayerInventoryManager playerInventoryManager, ConditionManager conditionManager, StageUIManager stageUIManager) {
+    public async UniTask SetUpAsync(CardFactory cardFactory, BattleManager battleManager, PlayerInventoryManager playerInventoryManager, ConditionManager conditionManager, StageUIManager stageUIManager, BlessingInfoDisplayManager blessingInfoDisplayManager) {
         this.cardFactory = cardFactory;
         this.playerInventoryManager = playerInventoryManager;
         this.conditionManager = conditionManager;
         this.stageUIManager = stageUIManager;
+        this.blessingInfoDisplayManager = blessingInfoDisplayManager;
 
         // 各初期化処理
         cts = new();
@@ -825,7 +827,7 @@ public class MemoryGameManager : MonoBehaviour {
 
                 // アイコン表示
                 BlessingIconView blessingIconView = (BlessingIconView)blessingIconGenerator.GetObjectFromPool(blessingIconViewTran);
-                blessingIconView.Setup(blessingData);
+                blessingIconView.Setup(blessingInfoDisplayManager, blessingData);
 
                 // 残り時間表示更新処理の購読
                 lookTarget.lookCount.Subscribe(lookCount => blessingIconView.UpdateDisplayDuration(lookCount)).AddTo(lookTarget.disposables);

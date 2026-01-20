@@ -185,6 +185,7 @@ GameObject:
   - component: {fileID: 8483037290144055787}
   - component: {fileID: 6632977332613222433}
   - component: {fileID: 741081147242656603}
+  - component: {fileID: 6923138064215506095}
   m_Layer: 5
   m_Name: BlessingIconView
   m_TagString: Untagged
@@ -257,7 +258,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8739568536071150236}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
   m_Name: 
@@ -319,3 +320,17 @@ MonoBehaviour:
     weight: 0
     exp: 0
     stack: 0
+    implemented: 0
+  blessingHoverUI: {fileID: 6923138064215506095}
+--- !u!114 &6923138064215506095
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8739568536071150236}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 13d5c189282d30747bb9b4fc6ef30ede, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BlessingHoverUI
