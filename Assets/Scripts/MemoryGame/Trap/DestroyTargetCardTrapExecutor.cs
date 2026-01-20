@@ -12,7 +12,7 @@ public class DestroyTargetCardTrapExecutor : ITrapEffect {
 
 
     public async UniTask ExecuteTrapEffectAsync(TrapActionData trapActionData, CancellationToken token) {
-        // 指定されたタイプのカードペアをすべて破壊する
-        await memoryGameManager.DestroyAllPairsByTypeAsync(trapActionData.toCardEventType);
+        // 指定されたタイプのカードペアをすべて破壊する(ソウルポイントはもらえない)
+        await memoryGameManager.DestroyAllPairsByTypeAsync(trapActionData.toCardEventType, ReleaseType.Destroy);
     }
 }

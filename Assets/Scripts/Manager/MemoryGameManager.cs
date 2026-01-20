@@ -601,7 +601,7 @@ public class MemoryGameManager : MonoBehaviour {
             case CardEventType.Trap:
                 chosenData = debugTrapID != 0   // debugIDが 0 以外なら、指定 ID のトラップデバッグ。0 なら通常処理
                            ? DataBaseManager.instance.trapDataSO.trapDataList.FirstOrDefault(data => data.id == debugTrapID)
-                           : DataBaseManager.instance.GetRandomTrapByRarity(floorData.trapRarities, floorData.trapRates);
+                           : DataBaseManager.instance.GetRandomTrapByTier(floorData); // Tier で抽選。Rarity は GetRandomTrapByRarity(floorData.trapRarities, floorData.trapRates);
                 break;
             case CardEventType.Blessing:
                 chosenData = debugBlessingID != 0   // debugIDが 0 以外なら、指定 ID のイベントデバッグ。0 なら通常処理
@@ -924,7 +924,7 @@ public class MemoryGameManager : MonoBehaviour {
     /// </summary>
     /// <param name="blessingData"></param>
     /// <returns></returns>
-    public async UniTask<bool> ChooseDestroyEnemyOrTrapCardAsync(BlessingData blessingData) {
+    public async UniTask<bool> ChooseDestroyEnemyOrTrapCardAsync(BlessingData blessingData, ReleaseType releaseType) {
 
         // 敵かトラップの「残っている Model」を取得
         List<CardModelBase> restEnemyModels = cardModelList
@@ -981,7 +981,7 @@ public class MemoryGameManager : MonoBehaviour {
         }
 
         // ペア破壊
-        await DestroyTargetPairCard(targetModels[0], firstView, targetModels[1], secondView);
+        await DestroyTargetPairCard(targetModels[0], firstView, targetModels[1], secondView, releaseType);
         return true;
     }
 
@@ -993,7 +993,9 @@ public class MemoryGameManager : MonoBehaviour {
     /// <param name="secoundCardModel"></param>
     /// <param name="secoundCardView"></param>
     /// <returns></returns>
-    private async UniTask DestroyTargetPairCard(CardModelBase firstCardModel, CardView firstCardView, CardModelBase secoundCardModel, CardView secoundCardView) {
+    private async UniTask DestroyTargetPairCard(CardModelBase firstCardModel, CardView firstCardView, CardModelBase secoundCardModel, CardView secoundCardView, ReleaseType releaseType) {
+        DebugLogger.Log("カード破棄実行");
+        
         // View 側状態更新
         firstCardView.isPaired = true;
         secoundCardView.isPaired = true;
@@ -1001,15 +1003,25 @@ public class MemoryGameManager : MonoBehaviour {
         firstCardModel.SetPair();
         secoundCardModel.SetPair();
 
+        // ReleaseType が Distribute の場合、ソウルポイント獲得対象なので、カードの種類とフロアデータから、カードのマスターデータを設定
+        IMasterData masterData = null;
+        if(releaseType == ReleaseType.Distribute) {
+            masterData = CreateCardData(firstCardModel.cardData.cardTypeMaster.cardEventType, currentFloorData);
+        }
+        //DebugLogger.Log($"firstCardModel.cardData.cardTypeMaster.cardEventType {firstCardModel.cardData.cardTypeMaster.cardEventType} / masterData : {masterData}");
+
+        // Exp が獲得できるカードの場合、Exp 獲得処理を実行
+        if (masterData is IExp expGiver) {  // is のパターンマッチング(null チェックも自動で行う)
+            int expAmount = expGiver.Exp;
+            GameData.instance.CalcSoulPoint(expAmount);
+            //DebugLogger.Log($"カードの効果により Exp 獲得 : {expAmount}");
+        }
+
         // ペア破壊アニメーションが両方終了するまで待機
         await UniTask.WhenAll(
             firstCardView.PlayHideAnimationAsync(cts.Token),
             secoundCardView.PlayHideAnimationAsync(cts.Token)
         );
-
-        // カードの効果を実行
-        if (this == null || secoundCardModel == null || cts == null) return;
-        DebugLogger.Log("カード破棄実行");
     }
 
     /// <summary>
@@ -1017,7 +1029,7 @@ public class MemoryGameManager : MonoBehaviour {
     /// </summary>
     /// <param name="targetType"></param>
     /// <returns></returns>
-    public async UniTask<bool> DestroyOnePairByTypeAsync(CardEventType targetType) {
+    public async UniTask<bool> DestroyOnePairByTypeAsync(CardEventType targetType, ReleaseType releaseType) {
         List<CardModelBase> restModels = cardModelList
             .Where(model =>
                 !model.isPair &&
@@ -1037,18 +1049,21 @@ public class MemoryGameManager : MonoBehaviour {
             return false;
         }
 
-        await DestroyTargetPairCard(
-            pairModels[0], firstView,
-            pairModels[1], secondView
-        );
+        // ペア破壊
+        await DestroyTargetPairCard(pairModels[0], firstView, pairModels[1], secondView, releaseType);
 
         return true;
     }
 
-
-    public async UniTask DestroyAllPairsByTypeAsync(CardEventType targetCardEventType) {
+    /// <summary>
+    /// 指定したタイプのカードペアをすべて破壊する
+    /// </summary>
+    /// <param name="targetCardEventType"></param>
+    /// <param name="releaseType"></param>
+    /// <returns></returns>
+    public async UniTask DestroyAllPairsByTypeAsync(CardEventType targetCardEventType, ReleaseType releaseType) {
         while (true) {
-            bool isDestroyed = await DestroyOnePairByTypeAsync(targetCardEventType);
+            bool isDestroyed = await DestroyOnePairByTypeAsync(targetCardEventType, releaseType);
             if (!isDestroyed) {
                 break;
             }

@@ -272,14 +272,15 @@ public class BattleManager : MonoBehaviour, IPoisonDamageApplier {
         float settlementRate = playerInventoryManager.GetSettlementRate();
         //DebugLogger.Log($"settlementRate : {settlementRate}");
 
-        float settlementBonus = GameData.instance.charaStatus.GetReactionBonusRate(StatusType.Charm);
+        // TODO ステータスの反映は一旦なし
+        //float settlementBonus = GameData.instance.charaStatus.GetReactionBonusRate(StatusType.Charm);
         //DebugLogger.Log($"settlementBonus : {settlementBonus}");
 
         float randomSettlementValue = UnityEngine.Random.Range(0, 100.00f);
         //DebugLogger.Log($"settlement randomValue : {randomSettlementValue}");
 
         // 合計
-        settlementRate += settlementBonus;
+        //settlementRate += settlementBonus;
 
         // 交渉成功時にはバトルなし
         if (randomSettlementValue <= settlementRate) {

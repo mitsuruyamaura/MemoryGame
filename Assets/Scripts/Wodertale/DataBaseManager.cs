@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 public class DataBaseManager : AbstractSingleton<DataBaseManager> {
     public CardTypeSO cardTypeSO;
@@ -164,6 +163,75 @@ public class DataBaseManager : AbstractSingleton<DataBaseManager> {
     }
 
     /// <summary>
+    /// Tier を利用し、フロアごとのランダムなトラップを取得
+    /// </summary>
+    /// <param name=""></param>
+    /// <returns></returns>
+    public TrapData GetRandomTrapByTier(FloorData floorData) {
+        // フロアの Tier からトラップの候補 List を取得
+        List<TrapData> candidateList = GetTrapDataListByTier(floorData);
+
+        if (candidateList == null || candidateList.Count == 0) {
+            DebugLogger.Log($"指定 Tier のトラップが存在しません。");
+            return null;
+        }
+
+        float totalWeight = 0f;
+        Dictionary<TrapData, float> weightTable = new ();
+
+        // Tier に補正を反映してトラップの重み付け計算
+        foreach (TrapData trap in candidateList) {
+            float tierRatio = 0.0f;
+
+            // Tier Ratio の計算
+            if (floorData.maxTrapTier == floorData.minTrapTier) {
+                tierRatio = 1f;
+            } else {
+                // 0.0 〜 1.0 の範囲で正規化
+                tierRatio = (trap.tier - floorData.minTrapTier) / (float)(floorData.maxTrapTier - floorData.minTrapTier);
+            }
+
+            // 念のため、Clamp して範囲内に収める
+            tierRatio = Mathf.Clamp01(tierRatio);
+
+            // Tier Range に応じた AnimataionCurve 補正の強さを計算(tierRange が高くなるほど、カーブをそのまま使う)
+            int tierRange = floorData.maxTrapTier - floorData.minTrapTier;
+            float curveStrength = Mathf.Clamp01((tierRange - 1) / 3.0f);
+            //DebugLogger.Log($"TrapID:{trap.id} TierRange:{tierRange} CurveStrength:{curveStrength}");
+
+            // Tier Ratio を元にした補正値を計算
+            float tierBonus = Mathf.Lerp(1f, GameSettings.instance.trapBalanceSettings.tierWeightCurve.Evaluate(tierRatio), curveStrength);
+            //DebugLogger.Log($"TrapID:{trap.id} Tier:{trap.tier} TierRatio:{tierRatio} TierBonus:{tierBonus}");
+
+            // 最終的な重みの値を算出
+            float effectiveWeight = trap.weight * tierBonus;
+
+            // 重みが 0 より大きいものだけを合計する
+            if (effectiveWeight > 0f) {
+                weightTable.Add(trap, effectiveWeight);
+                totalWeight += effectiveWeight;
+            }
+        }
+
+        if (totalWeight <= 0f) {
+            return null;
+        }
+
+        // 重み付きランダム抽選
+        float rand = Random.Range(0f, totalWeight);
+
+        foreach (var pair in weightTable) {
+            rand -= pair.Value;
+            if (rand <= 0f) {
+                return pair.Key;
+            }
+        }
+
+        // 保険(通常はここに来ない)
+        return null;
+    }
+
+    /// <summary>
     /// レアリティの重み付けを利用したイベントの抽選
     /// </summary>
     /// <param name="blessingRarities"></param>
@@ -276,17 +344,29 @@ public class DataBaseManager : AbstractSingleton<DataBaseManager> {
         return blessingDataSO.blessingDataList.Where(data => data.implemented == 1 && data.rarity == rarity).ToList();
     }
 
-
+    /// <summary>
+    /// 未使用
+    /// </summary>
+    /// <param name="rarity"></param>
+    /// <returns></returns>
     public List<TrapData> GetTrapDataListByRarity(Rarity rarity) {
         // 実装済のトラップのみ対象
         return trapDataSO.trapDataList.Where(data => data.implemented == 1 && data.rarity == rarity).ToList();
     }
 
+    /// <summary>
+    /// 現在のフロアデータから出現可能なトラップの List を取得
+    /// </summary>
+    /// <param name="floorData"></param>
+    /// <returns></returns>
+    public List<TrapData> GetTrapDataListByTier(FloorData floorData) {
+        var candidateList = trapDataSO.trapDataList.Where(trap => trap.implemented == 1 && trap.tier >= floorData.minTrapTier && trap.tier <= floorData.maxTrapTier);
+        return candidateList.ToList();
+    }
 
     public ItemData GetItemData(int searchId) {
         return itemDataSO.itemDataList.FirstOrDefault(data => data.id == searchId);
     }
-
 
     public List<ItemData> GetItemDataListByRarity(Rarity rarity) {
         return itemDataSO.itemDataList.Where(data => data.rarity == rarity).ToList();

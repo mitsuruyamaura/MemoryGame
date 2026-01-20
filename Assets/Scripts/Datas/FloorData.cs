@@ -28,6 +28,8 @@ public class FloorData : IMasterData {
     public int[] blessingRate;
     public int clearFlipBonus;               // フロアクリア時のめくれる回数ボーナス
     public float conditionPowerMultiplier;   // コンディションの強度の補正値
+    public int minTrapTier;                  // 出現するトラップの最低ティア
+    public int maxTrapTier;                  // 出現するトラップの最高ティア
 
     public int Id => id;
 
@@ -66,5 +68,7 @@ public class FloorData : IMasterData {
         clearFlipBonus = int.Parse(datas[23]);
 
         conditionPowerMultiplier = float.Parse(datas[24]);
+        minTrapTier = int.Parse(datas[25]);
+        maxTrapTier = int.Parse(datas[26]);
     }
 }

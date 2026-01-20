@@ -18,7 +18,7 @@ public enum EnemyType {
 
 
 [System.Serializable]
-public class EnemyData : IMasterData, IInfoView, IHasIcon {
+public class EnemyData : IMasterData, IInfoView, IHasIcon, IExp {
     public int enemyNo;
     public Rarity rarity;
     public string race;
@@ -46,6 +46,8 @@ public class EnemyData : IMasterData, IInfoView, IHasIcon {
     public string Name => race;
 
     public string Description => "";
+
+    public int Exp => exp;
 
     public Sprite GetIcon() {
         return Resources.Load<Sprite>("Enemy/" + Id);

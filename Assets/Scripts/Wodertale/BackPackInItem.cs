@@ -699,8 +699,8 @@ public class BackPackInItem : PoolBase {
     /// <summary>
     /// アイテム破棄
     /// </summary>
-    public void DestoryItem() {
-        AddPriceToMoney(ReleaseType.Destroy);
+    public void DestoryItem(ReleaseType releaseType) {
+        AddPriceToMoney(releaseType);
         Release();
     }
 

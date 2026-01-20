@@ -13,7 +13,7 @@ public class DestroyCardEventExecutor : IEventExecutor {
     public async UniTask ExecuteAsync(BlessingData blessingData, CancellationToken token) {
         // 指定回数だけ、敵かトラップカードを破棄
         for (int i = 0; i < blessingData.value; i++) {
-            bool destroyed = await memoryGameManager.ChooseDestroyEnemyOrTrapCardAsync(blessingData);
+            bool destroyed = await memoryGameManager.ChooseDestroyEnemyOrTrapCardAsync(blessingData, ReleaseType.Distribute);
 
             // 破棄されなかった(破棄可能なカードがなかった)場合にはループを抜ける
             if (!destroyed) {

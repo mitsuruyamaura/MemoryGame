@@ -24,7 +24,11 @@ public class Title : MonoBehaviour {
     [SerializeField] private Button btnLevelSelect;
     [SerializeField] private DifficultySelectToggle[] difficultySelectToggles;
     [SerializeField] private CanvasGroup cgDifficultySelect;
-    protected CompositeDisposable disposables;
+    [SerializeField] private ToggleGroup difficultyToggleGroup;
+
+    private CompositeDisposable disposables;
+
+    private bool hasSelectedOnce = false;
 
 
     void Start() {
@@ -125,6 +129,12 @@ public class Title : MonoBehaviour {
 
                         // ゲームスタートボタンの活性化(目線誘導)
                         ActivateGameStartBtn();
+
+                        // 初回選択時のみトグル未選択状態になっているので、2回目以降は、未選択状態を許可しないようにする
+                        if (!hasSelectedOnce) {
+                            hasSelectedOnce = true;
+                            difficultyToggleGroup.allowSwitchOff = false;
+                        }
                     } else {
                         // 文字色の演出を戻す
                         difficultySelectToggles[index].Unchoose();

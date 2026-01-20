@@ -37,6 +37,11 @@ public interface IInfoView {
     string Description { get; }
 }
 
+
+public interface IExp {
+    int Exp { get; }
+}
+
 /// <summary>
 /// IMasterData インターフェースを実装しているマスターデータをテーブル化する抽象クラス
 /// </summary>

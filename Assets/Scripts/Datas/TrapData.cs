@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [System.Serializable]
-public class TrapData : IMasterData, IInfoView, IHasIcon {
+public class TrapData : IMasterData, IInfoView, IHasIcon, IExp {
     public int id;
     public string name;
     public string desc;
@@ -11,6 +11,7 @@ public class TrapData : IMasterData, IInfoView, IHasIcon {
     public int weight;
     public int exp;
     public int implemented;
+    public int tier;          // トラップのティア
 
     public List<TrapActionData> trapActionDataList = new();
 
@@ -23,6 +24,8 @@ public class TrapData : IMasterData, IInfoView, IHasIcon {
         return Resources.Load<Sprite>("Trap/" + Id);
     }
 
+    public int Exp => exp;
+
     public TrapData(string[] datas) {
         id = int.Parse(datas[0]);
         name = datas[1];
@@ -31,6 +34,7 @@ public class TrapData : IMasterData, IInfoView, IHasIcon {
         weight = int.Parse(datas[4]);
         exp = int.Parse(datas[5]);
         implemented = int.Parse(datas[6]);
+        tier = int.Parse(datas[7]);
 
         trapActionDataList = DataBaseManager.instance.GetTrapActionDataList(id);
     }

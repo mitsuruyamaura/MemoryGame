@@ -22,8 +22,11 @@ public class MemoriaRankUpExecutor {
         bool isRankUp = GameData.instance.CheckMemoriaRankUp();
 
         if (isRankUp) {
+            // TODO 一旦コメントアウト
             // 獲得した思い出の秘石の情報をポップアップで表示
-            await memoryLinkManager.ShowMemoryLinkPopup();
+            //await memoryLinkManager.ShowMemoryLinkPopup();
         }
+
+        await UniTask.Yield(token);
     }
 }
