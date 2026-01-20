@@ -8,13 +8,16 @@ public class BlessingIconView : PoolBase {
     [SerializeField] private Image imgIcon;
     [SerializeField] private Text txtDuration;
     [SerializeField] private BlessingData blessingData;
+    [SerializeField] private BlessingHoverUI blessingHoverUI;
 
-    public void Setup(BlessingData blessingData) {
+    public void Setup(BlessingInfoDisplayManager blessingInfoDisplayManager, BlessingData blessingData) {
         isReleased = false;
 
         this.blessingData = blessingData;
 
         UpdateDisplayDuration((int)blessingData.value);
+
+        blessingHoverUI.Setup(blessingInfoDisplayManager, blessingData);
 
         // TODO アイコン画像設定
 

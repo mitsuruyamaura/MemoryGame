@@ -20,6 +20,7 @@ public class StageEntryManager : MonoBehaviour {
     [SerializeField] private ConditionManager conditionManager;
 
     [SerializeField] private ConditionInfoDisplayManager conditionInfoDisplayManager;
+    [SerializeField] private BlessingInfoDisplayManager blessingInfoDisplayManager;
 
     private CardFactory cardFactory;
     private ConditionEffectFactory conditionEffectFactory;
@@ -52,6 +53,7 @@ public class StageEntryManager : MonoBehaviour {
         floatingViewGenerator.SetUp(gameObject);
         itemInfoDisplayManager.Setup();
         conditionInfoDisplayManager.Setup();
+        blessingInfoDisplayManager.Setup();
 
         memoryLinkManager.Setup();
 
@@ -73,6 +75,6 @@ public class StageEntryManager : MonoBehaviour {
 
         GameData.instance.CurrentGameState.Value = GameState.Play;
 
-        await memoryGameManager.SetUpAsync(cardFactory, battleManager, playerInventoryManager, conditionManager, stageUIManager);
+        await memoryGameManager.SetUpAsync(cardFactory, battleManager, playerInventoryManager, conditionManager, stageUIManager, blessingInfoDisplayManager);
     }
 }

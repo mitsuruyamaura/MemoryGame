@@ -1,8 +1,4 @@
 ﻿using Cysharp.Threading.Tasks;
-using DG.Tweening;
-using System;
-using System.Linq;
-using System.Threading;
 using UnityEngine;
 
 public class ConditionInfoDisplayManager : MonoBehaviour {
