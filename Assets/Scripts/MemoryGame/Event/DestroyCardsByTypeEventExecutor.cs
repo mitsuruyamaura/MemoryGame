@@ -15,6 +15,6 @@ public class DestroyCardsByTypeEventExecutor : IEventExecutor {
     public async UniTask ExecuteAsync(BlessingData blessingData, CancellationToken token) {
         // 指定したタイプのカードペアをすべて破壊する
         CardEventType targetCardEventType = MemoryGameManager.ConvertCardEventTypeByBlessingValueType(blessingData.valueType);
-        await memoryGameManager.DestroyAllPairsByTypeAsync(targetCardEventType);
+        await memoryGameManager.DestroyAllPairsByTypeAsync(targetCardEventType, ReleaseType.Distribute);
     }
 }

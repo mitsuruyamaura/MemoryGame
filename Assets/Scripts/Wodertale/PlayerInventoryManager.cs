@@ -741,7 +741,7 @@ public class PlayerInventoryManager : MonoBehaviour {
         // シャッフルされたリストから最初から順に要素を取得して削除
         for (int i = 0; i < deleteList.Count; i++) {
             BackPackInItem backPackInItem = deleteList[i];
-            backPackInItem.DestoryItem();
+            backPackInItem.DestoryItem(ReleaseType.Destroy);  // ソウルポイントはもらえない
         }
     }
 
