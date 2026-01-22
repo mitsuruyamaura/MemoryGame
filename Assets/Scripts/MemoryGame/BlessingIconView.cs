@@ -19,8 +19,11 @@ public class BlessingIconView : PoolBase {
 
         blessingHoverUI.Setup(blessingInfoDisplayManager, blessingData);
 
-        // TODO アイコン画像設定
-
+        // アイコン画像設定
+        Sprite iconImage = blessingData.GetIcon();
+        if (iconImage != null) {
+            imgIcon.sprite = iconImage;
+        }
     }
 
     public void UpdateDisplayDuration(int duration) {
